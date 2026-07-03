@@ -1,0 +1,105 @@
+import Icon, { type IconName } from "./Icon";
+
+interface MenuItem {
+  label: string;
+  icon: IconName;
+  path: string;
+}
+
+export const menuItems: MenuItem[] = [
+  { label: "หน้าหลัก", icon: "home", path: "/" },
+  { label: "เลือกไพ่", icon: "cards", path: "/decks" },
+  { label: "การอ่านของฉัน", icon: "book", path: "/readings" },
+  { label: "ร้านค้า", icon: "bag", path: "/shop" },
+  { label: "โปรไฟล์", icon: "user", path: "/profile" },
+  { label: "ตั้งค่า", icon: "settings", path: "/settings" },
+];
+
+interface SidebarProps {
+  activePath: string;
+  onNavigate: (path: string) => void;
+}
+
+export default function Sidebar({ activePath, onNavigate }: SidebarProps) {
+  return (
+    <div className="flex h-full flex-col gap-5 overflow-y-auto bg-white px-5 py-6">
+      {/* Logo */}
+      <div className="flex flex-col items-center text-center">
+        <img
+          src="/img/logo.png"
+          alt="แมวน้อยใส่หมวกแม่มด สัญลักษณ์ Mystic Card"
+          className="h-24 w-auto mix-blend-multiply [mask-image:radial-gradient(ellipse_60%_58%_at_center,black_62%,transparent_98%)]"
+        />
+        <h1 className="mt-1 text-2xl font-extrabold tracking-wide text-mystic-ink">
+          MYSTIC CARD
+        </h1>
+        <p className="text-sm text-mystic-muted">Oracle &amp; Tarot Online</p>
+      </div>
+
+      {/* Menu */}
+      <nav aria-label="เมนูหลัก">
+        <ul className="flex flex-col gap-1">
+          {menuItems.map((item) => {
+            const active = item.path === activePath;
+            return (
+              <li key={item.path}>
+                <button
+                  type="button"
+                  onClick={() => onNavigate(item.path)}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex w-full items-center gap-3.5 rounded-2xl px-4 py-2.5 text-left text-[15px] font-medium transition-colors ${
+                    active
+                      ? "bg-mystic-pink-soft text-mystic-pink shadow-pastel"
+                      : "text-mystic-ink/75 hover:bg-mystic-pink-light hover:text-mystic-pink"
+                  }`}
+                >
+                  <Icon name={item.icon} className="h-[19px] w-[19px] shrink-0" />
+                  {item.label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {/* Premium card */}
+      <section
+        aria-label="อัปเกรดเป็น Premium"
+        className="rounded-bubble border border-mystic-border bg-mystic-pink-light p-5"
+      >
+        <h2 className="flex items-center gap-2 text-[15px] font-bold text-mystic-pink">
+          <span aria-hidden="true">👑</span> อัปเกรดเป็น Premium
+        </h2>
+        <ul className="mt-3 space-y-1.5 text-sm text-mystic-ink/80">
+          {[
+            "ปลดล็อก Deck พิเศษ",
+            "อ่านไม่จำกัด",
+            "ไม่มีโฆษณา",
+            "สิทธิพิเศษอีกมากมาย",
+          ].map((benefit) => (
+            <li key={benefit} className="flex items-start gap-2">
+              <span className="font-bold text-mystic-pink" aria-hidden="true">
+                ✓
+              </span>
+              {benefit}
+            </li>
+          ))}
+        </ul>
+        <button
+          type="button"
+          onClick={() => onNavigate("/premium")}
+          className="mt-4 w-full rounded-full bg-gradient-to-r from-mystic-pink to-mystic-purple-soft px-4 py-2.5 font-bold text-white shadow-pastel transition-transform hover:scale-[1.03] active:scale-95"
+        >
+          อัปเกรดเลย! ✨
+        </button>
+      </section>
+
+      {/* Sleeping mascot */}
+      <img
+        src="/img/mascot.png"
+        alt="แมวน้อยนอนหลับบนก้อนเมฆ"
+        className="animate-float-slow mx-auto mt-auto w-40"
+      />
+    </div>
+  );
+}

@@ -1,0 +1,165 @@
+import { useState } from "react";
+import type { ReadingItem } from "../../data/myReadings";
+import Icon from "../Icon";
+
+interface ReadingHistoryItemProps {
+  item: ReadingItem;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
+  onView: () => void;
+  onNote: () => void;
+  onDelete: () => void;
+  onShare: () => void;
+  onDownload: () => void;
+}
+
+export default function ReadingHistoryItem({
+  item,
+  isFavorite,
+  onToggleFavorite,
+  onView,
+  onNote,
+  onDelete,
+  onShare,
+  onDownload,
+}: ReadingHistoryItemProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const menuAction = (fn: () => void) => () => {
+    setMenuOpen(false);
+    fn();
+  };
+
+  return (
+    <article className="relative grid grid-cols-[72px_minmax(0,1fr)] gap-4 rounded-[18px] border border-[#EFE1F4] bg-white p-3.5 shadow-[0_8px_22px_rgba(80,64,120,0.06)] md:grid-cols-[84px_minmax(0,1fr)_170px] md:p-4">
+      <img
+        src={item.cover}
+        alt={`ปกไพ่ ${item.deckName}`}
+        className="h-[100px] w-[72px] rounded-xl border border-white object-cover shadow-pastel md:h-[116px] md:w-[84px]"
+      />
+
+      <div className="min-w-0">
+        <span
+          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+            item.deckType === "Oracle"
+              ? "bg-[#EFE6FF] text-[#7C3AED]"
+              : "bg-[#F3E8FF] text-[#8B5CF6]"
+          }`}
+        >
+          {item.deckType}
+        </span>
+        <h4 className="mt-1.5 truncate font-bold text-mystic-ink-deep md:text-[17px]">
+          {item.title}
+        </h4>
+        <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-mystic-muted">
+          <span className="flex items-center gap-1.5">
+            <Icon name="calendar" className="h-3.5 w-3.5" />
+            {item.date} • {item.time}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Icon name="cards" className="h-3.5 w-3.5" />
+            {item.cardCount} ใบ
+            {item.category && ` (${item.category})`}
+          </span>
+        </p>
+        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-mystic-ink/65">
+          {item.preview}
+        </p>
+      </div>
+
+      {/* actions */}
+      <div className="col-span-2 flex items-center gap-2.5 md:col-span-1 md:flex-col md:items-stretch md:justify-center">
+        <button
+          type="button"
+          onClick={onView}
+          className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] text-sm font-semibold text-white shadow-[0_8px_18px_rgba(139,92,246,0.22)] transition-transform hover:scale-[1.03] active:scale-95 md:flex-none"
+        >
+          <Icon name="eye" className="h-4 w-4" />
+          ดูผลการอ่าน
+        </button>
+        <button
+          type="button"
+          onClick={onNote}
+          className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-mystic-border-purple bg-white text-sm font-semibold text-mystic-purple transition-colors hover:bg-mystic-lavender/60 md:flex-none"
+        >
+          <Icon name="book" className="h-4 w-4" />
+          บันทึกโน้ต
+        </button>
+        <button
+          type="button"
+          onClick={onToggleFavorite}
+          aria-pressed={isFavorite}
+          aria-label={
+            isFavorite
+              ? `เอา ${item.title} ออกจากรายการโปรด`
+              : `เพิ่ม ${item.title} ในรายการโปรด`
+          }
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-colors md:mx-auto ${
+            isFavorite
+              ? "border-mystic-pink-soft bg-mystic-pink-soft"
+              : "border-mystic-border bg-white hover:bg-mystic-pink-light"
+          }`}
+        >
+          <span key={String(isFavorite)} className="animate-heart-pop">
+            {isFavorite ? (
+              <span aria-hidden="true">💗</span>
+            ) : (
+              <Icon name="heart" className="h-[18px] w-[18px] text-mystic-muted" />
+            )}
+          </span>
+        </button>
+      </div>
+
+      {/* more menu */}
+      <div className="absolute right-3 top-3">
+        <button
+          type="button"
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-label={`ตัวเลือกเพิ่มเติมของ ${item.title}`}
+          aria-expanded={menuOpen}
+          className="rounded-full p-1.5 text-mystic-muted transition-colors hover:bg-mystic-lavender/60"
+        >
+          <Icon name="dots" className="h-[18px] w-[18px]" />
+        </button>
+        {menuOpen && (
+          <>
+            <button
+              type="button"
+              aria-label="ปิดเมนู"
+              onClick={() => setMenuOpen(false)}
+              className="fixed inset-0 z-10 cursor-default"
+            />
+            <div className="absolute right-0 z-20 mt-1 w-48 overflow-hidden rounded-2xl border border-mystic-border bg-white py-1.5 shadow-pastel-lg">
+              {[
+                { label: "แชร์ผลการอ่าน", emoji: "🔗", action: onShare },
+                {
+                  label: "ดาวน์โหลดเป็นรูปภาพ",
+                  emoji: "🖼️",
+                  action: onDownload,
+                },
+              ].map((m) => (
+                <button
+                  key={m.label}
+                  type="button"
+                  onClick={menuAction(m.action)}
+                  className="flex w-full items-center gap-2.5 px-4 py-2 text-left text-sm text-mystic-ink/80 transition-colors hover:bg-mystic-lavender/50"
+                >
+                  <span aria-hidden="true">{m.emoji}</span>
+                  {m.label}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={menuAction(onDelete)}
+                className="flex w-full items-center gap-2.5 px-4 py-2 text-left text-sm text-rose-500 transition-colors hover:bg-rose-50"
+              >
+                <span aria-hidden="true">🗑️</span>
+                ลบรายการนี้
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </article>
+  );
+}

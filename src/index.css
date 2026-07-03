@@ -1,0 +1,194 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
+
+  --color-mystic-bg: #fff9fc;
+  --color-mystic-pink: #f76aa0;
+  --color-mystic-pink-soft: #fde7f1;
+  --color-mystic-pink-light: #fff0f7;
+  --color-mystic-purple: #7c5ae8;
+  --color-mystic-purple-soft: #8e6be8;
+  --color-mystic-lavender: #f1eaff;
+  --color-mystic-ink: #1e1b4b;
+  --color-mystic-muted: #8b7fa8;
+  --color-mystic-border: #f3dcec;
+  --color-mystic-border-purple: #e9d8ff;
+  --color-mystic-pink-deep: #f062a7;
+  --color-mystic-ink-deep: #2f2361;
+
+  --shadow-pastel: 0 8px 24px rgba(247, 106, 160, 0.12);
+  --shadow-pastel-lg: 0 14px 36px rgba(124, 90, 232, 0.18);
+
+  --radius-bubble: 22px;
+  --radius-bubble-lg: 28px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-mystic-bg);
+  color: var(--color-mystic-ink);
+  font-family: var(--font-sans);
+}
+
+/* soft focus ring for keyboard users */
+:focus-visible {
+  outline: 3px solid var(--color-mystic-purple-soft);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* hide scrollbar on the deck carousel but keep it scrollable */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.animate-float-slow {
+  animation: float-slow 4s ease-in-out infinite;
+}
+
+@keyframes card-shake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  25% {
+    transform: translateX(-6px) rotate(-2deg);
+  }
+  50% {
+    transform: translateX(5px) rotate(1.5deg);
+  }
+  75% {
+    transform: translateX(-3px) rotate(-1deg);
+  }
+}
+.animate-card-shake {
+  animation: card-shake 0.4s ease-in-out;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.animate-twinkle {
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+
+@keyframes floatCard {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(-1deg);
+  }
+}
+.animate-float-card {
+  animation: floatCard 2.6s ease-in-out infinite;
+}
+
+@keyframes softGlow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.08);
+  }
+}
+.animate-soft-glow {
+  animation: softGlow 2s ease-in-out infinite;
+}
+
+@keyframes sparkleFade {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+.animate-sparkle-fade {
+  animation: sparkleFade 1.8s ease-in-out infinite;
+}
+
+@keyframes card-flip-in {
+  from {
+    opacity: 0;
+    transform: rotateY(70deg) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0) scale(1);
+  }
+}
+.animate-card-flip-in {
+  animation: card-flip-in 0.5s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-card,
+  .animate-soft-glow,
+  .animate-sparkle-fade,
+  .animate-float-slow,
+  .animate-twinkle,
+  .animate-card-shake,
+  .animate-card-flip-in {
+    animation: none;
+  }
+}
+
+@keyframes heart-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.45);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-heart-pop {
+  animation: heart-pop 0.35s ease-out;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-toast-in {
+  animation: toast-in 0.25s ease-out;
+}
