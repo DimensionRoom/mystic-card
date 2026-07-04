@@ -8,7 +8,14 @@ interface UserActionsProps {
 
 export default function UserActions({ onNavigate }: UserActionsProps) {
   const { t, language } = useLanguage();
-  const { isConfigured, user, profile, signInWithGoogle } = useAuth();
+  const {
+    isConfigured,
+    user,
+    profile,
+    displayName,
+    avatarUrl,
+    signInWithGoogle,
+  } = useAuth();
 
   // signed out (Supabase configured): offer Google login instead of the mock user
   if (isConfigured && !user) {
@@ -43,8 +50,6 @@ export default function UserActions({ onNavigate }: UserActionsProps) {
     );
   }
 
-  const displayName = profile?.display_name ?? "น้องดาว";
-  const avatarUrl = profile?.avatar_url ?? "/img/avatar.png";
   const points = profile?.points ?? 250;
 
   return (

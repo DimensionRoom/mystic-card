@@ -16,10 +16,15 @@ const saveButtonClass =
 /* ---------- บัญชีผู้ใช้ ---------- */
 
 export function ProfileSettings({ showToast }: ViewProps) {
-  const { user, profile, updateProfile } = useAuth();
-  const [name, setName] = useState("น้องดาว");
-  const [username, setUsername] = useState("nongdao");
-  const [bio, setBio] = useState("สาวน้อยผู้หลงรักแสงจันทร์และเสียงกระซิบของไพ่ 🌙");
+  const { user, profile, displayName, avatarUrl, updateProfile } = useAuth();
+  // เริ่มด้วยชื่อจริงจาก Google ทันที (ไม่ใช้ "น้องดาว" ค้างระหว่างรอ profile โหลด)
+  const [name, setName] = useState(displayName);
+  const [username, setUsername] = useState(
+    () => user?.email?.split("@")[0] ?? "nongdao",
+  );
+  const [bio, setBio] = useState(() =>
+    user ? "" : "สาวน้อยผู้หลงรักแสงจันทร์และเสียงกระซิบของไพ่ 🌙",
+  );
   const [saving, setSaving] = useState(false);
 
   // เมื่อโหลดโปรไฟล์จาก Supabase เสร็จ ให้เติมค่าจริงลงฟอร์ม
@@ -50,7 +55,7 @@ export function ProfileSettings({ showToast }: ViewProps) {
     <form onSubmit={submit} className="flex flex-col gap-5">
       <div className="flex items-center gap-4">
         <img
-          src={profile?.avatar_url ?? "/img/avatar.png"}
+          src={avatarUrl}
           alt={`รูปโปรไฟล์ของ ${name}`}
           referrerPolicy="no-referrer"
           className="h-20 w-20 rounded-full object-cover shadow-pastel"

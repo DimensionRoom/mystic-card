@@ -24,6 +24,13 @@ interface AuthContextValue {
   loading: boolean;
   user: User | null;
   profile: Profile | null;
+  /**
+   * ชื่อที่ควรแสดงผลเสมอ: profiles.display_name → ชื่อจาก Google โดยตรง →
+   * ส่วนหน้าอีเมล → mock "น้องดาว" เฉพาะตอนไม่ได้ล็อกอินจริงเท่านั้น
+   * ใช้ค่านี้แทนการ fallback เป็น "น้องดาว" เองในแต่ละ component
+   */
+  displayName: string;
+  avatarUrl: string;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (
@@ -32,6 +39,13 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+interface GoogleUserMeta {
+  full_name?: string;
+  name?: string;
+  avatar_url?: string;
+  picture?: string;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(isSupabaseConfigured);
@@ -96,6 +110,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [user, fetchProfile],
   );
 
+  // เมื่อมีการล็อกอินจริง ให้ใช้ชื่อ/รูปจาก Google ทันที ไม่ต้องรอ profiles โหลดเสร็จ
+  // "น้องดาว" เป็น mock persona ที่โชว์เฉพาะตอนไม่มี session จริงเท่านั้น
+  const googleMeta = user?.user_metadata as GoogleUserMeta | undefined;
+  const displayName =
+    profile?.display_name ??
+    (user
+      ? (googleMeta?.full_name ??
+        googleMeta?.name ??
+        user.email?.split("@")[0] ??
+        "นักเดินทาง")
+      : "น้องดาว");
+  const avatarUrl =
+    profile?.avatar_url ??
+    (user
+      ? (googleMeta?.avatar_url ?? googleMeta?.picture ?? "/img/avatar.png")
+      : "/img/avatar.png");
+
   return (
     <AuthContext.Provider
       value={{
@@ -103,6 +134,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         user,
         profile,
+        displayName,
+        avatarUrl,
         signInWithGoogle,
         signOut,
         updateProfile,

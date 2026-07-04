@@ -103,7 +103,7 @@ interface SettingsPageProps {
 
 export default function SettingsPage({ onNavigate }: SettingsPageProps) {
   const { language, setLanguage, t } = useLanguage();
-  const { user, profile, signOut } = useAuth();
+  const { user, displayName, avatarUrl, signOut } = useAuth();
   const [view, setView] = useState<SettingsView>("main");
   const [showLanguage, setShowLanguage] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -255,17 +255,17 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
           <button
             type="button"
             onClick={() => setView("profile")}
-            aria-label={`${t.user.profileMenuFor} ${profile?.display_name ?? "น้องดาว"}`}
+            aria-label={`${t.user.profileMenuFor} ${displayName}`}
             className="flex items-center gap-2.5 transition-transform hover:scale-105"
           >
             <img
-              src={profile?.avatar_url ?? "/img/avatar.png"}
+              src={avatarUrl}
               alt=""
               referrerPolicy="no-referrer"
               className="h-11 w-11 rounded-full object-cover shadow-pastel"
             />
             <span className="hidden max-w-36 truncate font-semibold text-mystic-ink sm:inline">
-              {profile?.display_name ?? "น้องดาว"}
+              {displayName}
             </span>
             <span className="text-mystic-ink/60" aria-hidden="true">
               ▾
@@ -396,10 +396,7 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
               {t.settings.logoutConfirmTitle}
             </h3>
             <p className="mt-1.5 text-sm text-mystic-muted">
-              {t.settings.logoutConfirmBody1.replace(
-                "น้องดาว",
-                profile?.display_name ?? "น้องดาว",
-              )}
+              {t.settings.logoutConfirmBody1.replace("{name}", displayName)}
               <br />
               {t.settings.logoutConfirmBody2}
             </p>
