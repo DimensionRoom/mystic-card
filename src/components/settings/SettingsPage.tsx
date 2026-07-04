@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Icon, { type IconName } from "../Icon";
+import UserActions from "../UserActions";
 import { useAuth } from "../../auth/AuthContext";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { languageNames, type Language } from "../../i18n/translations";
@@ -103,7 +104,7 @@ interface SettingsPageProps {
 
 export default function SettingsPage({ onNavigate }: SettingsPageProps) {
   const { language, setLanguage, t } = useLanguage();
-  const { user, displayName, avatarUrl, signOut } = useAuth();
+  const { user, displayName, signOut } = useAuth();
   const [view, setView] = useState<SettingsView>("main");
   const [showLanguage, setShowLanguage] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -211,6 +212,13 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
     else setView(row.id as SettingsView);
   };
 
+  // เมื่อคลิก avatar ใน UserActions ขณะอยู่หน้านี้แล้ว ให้เปิดข้อมูลส่วนตัว
+  // ในหน้าเดิมเลยแทนที่จะ navigate ไป "/settings" ซ้ำ (ซึ่งไม่มีผลอะไร)
+  const handleUserActionsNavigate = (path: string) => {
+    if (path === "/settings") setView("profile");
+    else onNavigate(path);
+  };
+
   // sub-page metadata comes from the same rows shown on the main list
   const allRows = [...accountSettings, ...appSettings, ...moreSettings];
   const activeRow = allRows.find((r) => r.id === view);
@@ -239,39 +247,11 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => onNavigate("/notifications")}
-            aria-label={t.user.notifications}
-            className="relative p-1 text-mystic-ink/80 transition-transform hover:scale-110"
-          >
-            <Icon name="bell" className="h-6 w-6" />
-            <span
-              className="absolute right-0 top-0.5 h-2.5 w-2.5 rounded-full bg-mystic-pink"
-              aria-hidden="true"
-            />
-          </button>
-          <button
-            type="button"
-            onClick={() => setView("profile")}
-            aria-label={`${t.user.profileMenuFor} ${displayName}`}
-            className="flex items-center gap-2.5 transition-transform hover:scale-105"
-          >
-            <img
-              src={avatarUrl}
-              alt=""
-              referrerPolicy="no-referrer"
-              className="h-11 w-11 rounded-full object-cover shadow-pastel"
-            />
-            <span className="hidden max-w-36 truncate font-semibold text-mystic-ink sm:inline">
-              {displayName}
-            </span>
-            <span className="text-mystic-ink/60" aria-hidden="true">
-              ▾
-            </span>
-          </button>
-        </div>
+        {/* ปุ่มเดียวกับทุกหน้า: ล็อกอินด้วย Google เมื่อยังไม่ได้ล็อกอิน,
+            หรือคะแนน/แจ้งเตือน/โปรไฟล์จริงเมื่อล็อกอินแล้ว — เดิม Settings
+            มีปุ่มโปรไฟล์แยกของตัวเองที่ไม่เคยเสนอปุ่มล็อกอินเลย ทำให้ดูเหมือน
+            ค้างเป็น "น้องดาว" ทั้งที่จริง ๆ ยังไม่ได้ล็อกอิน */}
+        <UserActions onNavigate={handleUserActionsNavigate} />
       </header>
 
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
