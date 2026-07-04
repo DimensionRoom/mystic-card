@@ -1,4 +1,5 @@
 import Icon, { type IconName } from "./Icon";
+import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
 
 type NavKey = "home" | "decks" | "readings" | "shop" | "profile";
@@ -18,6 +19,11 @@ interface BottomNavProps {
 
 export default function BottomNav({ activePath, onNavigate }: BottomNavProps) {
   const { t } = useLanguage();
+  const { isConfigured, user } = useAuth();
+  const signedOut = isConfigured && !user;
+  const visibleItems = signedOut
+    ? items.filter((item) => item.key !== "readings")
+    : items;
 
   return (
     <nav
@@ -25,7 +31,7 @@ export default function BottomNav({ activePath, onNavigate }: BottomNavProps) {
       className="fixed inset-x-0 bottom-0 z-40 border-t border-mystic-border bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
     >
       <ul className="flex">
-        {items.map((item) => {
+        {visibleItems.map((item) => {
           const active = item.path === activePath;
           return (
             <li key={item.path} className="flex-1">

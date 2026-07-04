@@ -100,7 +100,7 @@ interface MyReadingsPageProps {
 }
 
 export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
-  const { user } = useAuth();
+  const { isConfigured, user, signInWithGoogle } = useAuth();
   const [items, setItems] = useState<ReadingItem[]>(myReadings);
   const [favorites, setFavorites] = useState<Set<string>>(
     new Set(myReadings.filter((r) => r.isFavorite).map((r) => r.id)),
@@ -270,6 +270,64 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
   };
 
   const latest = items[0] ?? myReadings[0];
+
+  // ต้องล็อกอินก่อนถึงจะดูประวัติการอ่านจริงได้ — กันไว้ตรงนี้จุดเดียว
+  // ครอบคลุมทุกทางที่จะมาถึงหน้านี้ (เมนู, ปุ่ม "ดูทั้งหมด" จากหน้าอื่น ๆ)
+  if (isConfigured && !user) {
+    return (
+      <div className="flex flex-col gap-6">
+        <header className="relative z-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h2 className="text-2xl font-extrabold text-mystic-ink-deep md:text-[28px]">
+              การอ่านของฉัน <span aria-hidden="true">✨</span>
+            </h2>
+            <p className="mt-1.5 text-mystic-muted">
+              ดูผลการอ่านที่ผ่านมาและบันทึกที่คุณเก็บไว้
+            </p>
+          </div>
+          <UserActions onNavigate={onNavigate} />
+        </header>
+
+        <div className="flex flex-col items-center gap-4 rounded-[24px] border border-[#F0DFF3] bg-white/90 px-6 py-16 text-center shadow-[0_12px_32px_rgba(139,92,246,0.08)]">
+          <span className="text-4xl" aria-hidden="true">
+            🔮
+          </span>
+          <h3 className="text-lg font-bold text-mystic-ink-deep">
+            เข้าสู่ระบบเพื่อดูประวัติการอ่านของคุณ
+          </h3>
+          <p className="max-w-sm text-sm text-mystic-muted">
+            ล็อกอินด้วย Google เพื่อบันทึกผลการอ่านไพ่ โน้ต และรายการโปรด
+            ให้พร้อมกลับมาดูได้ทุกเมื่อ
+          </p>
+          <button
+            type="button"
+            onClick={() => void signInWithGoogle()}
+            className="flex items-center gap-2.5 rounded-full border border-mystic-border-purple bg-white px-6 py-2.5 font-semibold text-mystic-ink shadow-pastel transition hover:scale-[1.03] hover:bg-mystic-lavender/40 active:scale-95"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+              <path
+                fill="#4285F4"
+                d="M23.5 12.3c0-.9-.1-1.5-.3-2.2H12v4.1h6.5c-.1 1.1-.8 2.7-2.4 3.8l3.7 2.9c2.3-2.1 3.7-5.2 3.7-8.6z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.7-2.9c-1 .7-2.4 1.2-4.2 1.2-3.1 0-5.8-2.1-6.8-5l-3.9 3C3.3 21.4 7.3 24 12 24z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.2 14.4A7.5 7.5 0 0 1 4.8 12c0-.8.2-1.6.4-2.4l-3.9-3A12 12 0 0 0 0 12c0 1.9.5 3.8 1.3 5.4l3.9-3z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 4.7c2.2 0 3.7 1 4.5 1.8l3.3-3.2C17.9 1.2 15.2 0 12 0 7.3 0 3.3 2.6 1.3 6.6l3.9 3c1-2.9 3.7-4.9 6.8-4.9z"
+              />
+            </svg>
+            เข้าสู่ระบบด้วย Google
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">

@@ -1,4 +1,5 @@
 import Icon, { type IconName } from "./Icon";
+import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
 
 type MenuKey = "home" | "decks" | "readings" | "shop" | "settings";
@@ -18,6 +19,13 @@ interface SidebarProps {
 
 export default function Sidebar({ activePath, onNavigate }: SidebarProps) {
   const { t } = useLanguage();
+  const { isConfigured, user } = useAuth();
+  // ซ่อน "การอ่านของฉัน" จนกว่าจะล็อกอินจริง (โหมด mock ล้วนไม่มี Supabase
+  // ยังคงเห็นครบตามเดิม เพื่อให้สำรวจแอปได้โดยไม่ต้องตั้งค่า backend)
+  const signedOut = isConfigured && !user;
+  const visibleMenuItems = signedOut
+    ? menuItems.filter((item) => item.key !== "readings")
+    : menuItems;
 
   return (
     <div className="flex h-full flex-col gap-5 overflow-y-auto bg-white px-5 py-6">
@@ -37,7 +45,7 @@ export default function Sidebar({ activePath, onNavigate }: SidebarProps) {
       {/* Menu */}
       <nav aria-label={t.sidebar.nav}>
         <ul className="flex flex-col gap-1">
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const active = item.path === activePath;
             return (
               <li key={item.path}>
