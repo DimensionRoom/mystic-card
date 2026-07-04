@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   myReadings,
   readingNotes,
-  readingStats,
   type ReadingItem,
 } from "../../data/myReadings";
 import { decks } from "../../data/decks";
@@ -40,6 +39,51 @@ function thumbForDeckName(deckName: string): string {
     "/img/deck-moon.png"
   );
 }
+
+/** true เมื่อ epoch ms ทั้งสองตกอยู่ในเดือน/ปีปฏิทินเดียวกัน */
+function isSameMonth(epochMs: number, reference: Date): boolean {
+  const d = new Date(epochMs);
+  return (
+    d.getFullYear() === reference.getFullYear() &&
+    d.getMonth() === reference.getMonth()
+  );
+}
+
+/** ค่าคงที่เฉพาะหน้าตา (ไอคอน/สี) ส่วนตัวเลขคำนวณจากข้อมูลจริงเสมอ ไม่ hardcode */
+const statMeta = [
+  {
+    key: "total" as const,
+    label: "อ่านทั้งหมด",
+    unit: "ครั้ง",
+    icon: "/img/stat-book.png",
+    valueClass: "text-mystic-purple",
+    bgClass: "from-white to-[#FBF7FF]",
+  },
+  {
+    key: "thisMonth" as const,
+    label: "อ่านเดือนนี้",
+    unit: "ครั้ง",
+    icon: "/img/stat-calendar.png",
+    valueClass: "text-mystic-pink-deep",
+    bgClass: "from-white to-[#FFF5FA]",
+  },
+  {
+    key: "favorites" as const,
+    label: "รายการโปรด",
+    unit: "รายการ",
+    icon: "/img/stat-heart.png",
+    valueClass: "text-mystic-pink-deep",
+    bgClass: "from-white to-[#FFF7F3]",
+  },
+  {
+    key: "notes" as const,
+    label: "บันทึกไว้",
+    unit: "โน้ต",
+    icon: "/img/stat-notebook.png",
+    valueClass: "text-mystic-purple",
+    bgClass: "from-white to-[#FBF7FF]",
+  },
+];
 
 type FilterId = "all" | "latest" | "Oracle" | "Tarot" | "favorite";
 
@@ -129,6 +173,45 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
     toastTimer.current = window.setTimeout(() => setToast(null), 2200);
   };
 
+  // ตัวเลขสรุปทั้ง 4 การ์ด คำนวณจาก items/favorites/sideNotes ที่แสดงอยู่จริง
+  // ไม่ใช่ค่า mock ตายตัว เพื่อให้ตรงกับสิ่งที่ผู้ใช้เห็นในหน้านี้เสมอ
+  const stats = useMemo(() => {
+    const now = new Date();
+    const thisMonthCount = items.filter((r) =>
+      isSameMonth(r.sortKey, now),
+    ).length;
+    const lastMonthRef = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthCount = items.filter((r) =>
+      isSameMonth(r.sortKey, lastMonthRef),
+    ).length;
+    const diff = thisMonthCount - lastMonthCount;
+    const monthCaption =
+      diff > 0
+        ? `↑ ${diff} จากเดือนที่แล้ว`
+        : diff < 0
+          ? `↓ ${Math.abs(diff)} จากเดือนที่แล้ว`
+          : "เท่ากับเดือนที่แล้ว";
+
+    const values: Record<(typeof statMeta)[number]["key"], string> = {
+      total: String(items.length),
+      thisMonth: String(thisMonthCount),
+      favorites: String(favorites.size),
+      notes: String(sideNotes.length),
+    };
+    const captions: Record<(typeof statMeta)[number]["key"], string> = {
+      total: "ตั้งแต่เข้าร่วม",
+      thisMonth: monthCaption,
+      favorites: "ไพ่ที่คุณชื่นชอบ",
+      notes: "ข้อความที่คุณเซฟไว้",
+    };
+
+    return statMeta.map((meta) => ({
+      ...meta,
+      value: values[meta.key],
+      caption: captions[meta.key],
+    }));
+  }, [items, favorites, sideNotes]);
+
   const q = query.trim().toLowerCase();
   let visible = items.filter(
     (r) =>
@@ -208,7 +291,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
         aria-label="สรุปการอ่านของคุณ"
         className="grid grid-cols-2 gap-4 xl:grid-cols-4"
       >
-        {readingStats.map((s) => (
+        {stats.map((s) => (
           <article
             key={s.label}
             className={`flex items-center gap-4 rounded-[20px] border border-[#F3DFF0] bg-gradient-to-b ${s.bgClass} p-4 shadow-[0_10px_28px_rgba(137,94,179,0.06)] md:p-5`}
