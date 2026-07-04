@@ -37,6 +37,14 @@ body {
   font-family: var(--font-sans);
 }
 
+/* browsers default <button>/<select> to a plain arrow cursor, not a hand —
+   every clickable control in this app is a real <button>, so flip it here
+   once instead of adding cursor-pointer to 90+ individual elements */
+button:not(:disabled),
+select {
+  cursor: pointer;
+}
+
 /* soft focus ring for keyboard users */
 :focus-visible {
   outline: 3px solid var(--color-mystic-purple-soft);
