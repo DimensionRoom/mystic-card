@@ -24,7 +24,9 @@ export default function Sidebar({ activePath, onNavigate }: SidebarProps) {
   // ยังคงเห็นครบตามเดิม เพื่อให้สำรวจแอปได้โดยไม่ต้องตั้งค่า backend)
   const signedOut = isConfigured && !user;
   const visibleMenuItems = signedOut
-    ? menuItems.filter((item) => item.key !== "readings")
+    ? menuItems.filter(
+        (item) => item.key !== "readings" && item.key !== "settings",
+      )
     : menuItems;
 
   return (

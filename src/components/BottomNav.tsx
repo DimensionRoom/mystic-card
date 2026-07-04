@@ -22,7 +22,9 @@ export default function BottomNav({ activePath, onNavigate }: BottomNavProps) {
   const { isConfigured, user } = useAuth();
   const signedOut = isConfigured && !user;
   const visibleItems = signedOut
-    ? items.filter((item) => item.key !== "readings")
+    ? items.filter(
+        (item) => item.key !== "readings" && item.key !== "profile",
+      )
     : items;
 
   return (
