@@ -1,4 +1,5 @@
 import Icon from "./Icon";
+import LanguageSwitcher from "./LanguageSwitcher";
 import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
 
@@ -46,6 +47,7 @@ export default function UserActions({ onNavigate }: UserActionsProps) {
           </svg>
           {language === "th" ? "เข้าสู่ระบบด้วย Google" : "Sign in with Google"}
         </button>
+        <LanguageSwitcher />
       </div>
     );
   }
@@ -99,6 +101,8 @@ export default function UserActions({ onNavigate }: UserActionsProps) {
           ▾
         </span>
       </button>
+
+      <LanguageSwitcher />
     </div>
   );
 }

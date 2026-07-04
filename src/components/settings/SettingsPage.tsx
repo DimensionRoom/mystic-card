@@ -3,7 +3,6 @@ import Icon, { type IconName } from "../Icon";
 import UserActions from "../UserActions";
 import { useAuth } from "../../auth/AuthContext";
 import { useLanguage } from "../../i18n/LanguageContext";
-import { languageNames, type Language } from "../../i18n/translations";
 import SubPage from "./SubPage";
 import {
   EmailSettings,
@@ -38,16 +37,10 @@ interface SettingsRow {
 interface SettingsSectionProps {
   title: string;
   rows: SettingsRow[];
-  language: string;
   onRowClick: (row: SettingsRow) => void;
 }
 
-function SettingsSection({
-  title,
-  rows,
-  language,
-  onRowClick,
-}: SettingsSectionProps) {
+function SettingsSection({ title, rows, onRowClick }: SettingsSectionProps) {
   return (
     <section
       aria-label={title}
@@ -81,11 +74,6 @@ function SettingsSection({
                     {row.description}
                   </span>
                 </span>
-                {row.id === "language" && (
-                  <span className="shrink-0 font-bold text-mystic-purple">
-                    {language}
-                  </span>
-                )}
                 <span className="shrink-0 text-mystic-muted" aria-hidden="true">
                   ›
                 </span>
@@ -103,10 +91,9 @@ interface SettingsPageProps {
 }
 
 export default function SettingsPage({ onNavigate }: SettingsPageProps) {
-  const { language, setLanguage, t } = useLanguage();
+  const { t } = useLanguage();
   const { user, displayName, signOut } = useAuth();
   const [view, setView] = useState<SettingsView>("main");
-  const [showLanguage, setShowLanguage] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -147,12 +134,6 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
       title: t.settings.notificationsTitle,
       description: t.settings.notificationsDesc,
       icon: "bell",
-    },
-    {
-      id: "language",
-      title: t.settings.languageTitle,
-      description: t.settings.languageDesc,
-      icon: "globe",
     },
     {
       id: "reading-preferences",
@@ -207,8 +188,7 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
   };
 
   const handleRow = (row: SettingsRow) => {
-    if (row.id === "language") setShowLanguage(true);
-    else if (row.id === "logout") setShowLogout(true);
+    if (row.id === "logout") setShowLogout(true);
     else setView(row.id as SettingsView);
   };
 
@@ -269,19 +249,16 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
             <SettingsSection
               title={t.settings.sectionAccount}
               rows={accountSettings}
-              language={languageNames[language]}
               onRowClick={handleRow}
             />
             <SettingsSection
               title={t.settings.sectionApp}
               rows={appSettings}
-              language={languageNames[language]}
               onRowClick={handleRow}
             />
             <SettingsSection
               title={t.settings.sectionMore}
               rows={moreSettings}
-              language={languageNames[language]}
               onRowClick={handleRow}
             />
 
@@ -291,67 +268,6 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
           </>
         )}
       </div>
-
-      {/* language selector modal */}
-      {showLanguage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label={t.settings.chooseLanguage}
-        >
-          <button
-            type="button"
-            aria-label={t.settings.close}
-            onClick={() => setShowLanguage(false)}
-            className="absolute inset-0 bg-mystic-ink/40 backdrop-blur-sm"
-          />
-          <div className="animate-toast-in relative w-full max-w-xs rounded-bubble-lg bg-white p-6 shadow-pastel-lg">
-            <h3 className="flex items-center gap-2 font-extrabold text-mystic-ink-deep">
-              <Icon name="globe" className="h-5 w-5 text-mystic-purple" />
-              {t.settings.chooseLanguage}
-            </h3>
-            <ul className="mt-4 flex flex-col gap-2">
-              {(Object.keys(languageNames) as Language[]).map((lang) => {
-                const active = lang === language;
-                return (
-                  <li key={lang}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setLanguage(lang);
-                        setShowLanguage(false);
-                        showToast(
-                          t.settings.languageChangedToast.replace(
-                            "{lang}",
-                            languageNames[lang],
-                          ),
-                        );
-                      }}
-                      aria-pressed={active}
-                      className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 font-semibold transition-colors ${
-                        active
-                          ? "border-mystic-purple bg-mystic-lavender/60 text-mystic-purple"
-                          : "border-mystic-border text-mystic-ink/75 hover:bg-mystic-lavender/40"
-                      }`}
-                    >
-                      {languageNames[lang]}
-                      {active && <span aria-hidden="true">✓</span>}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-            <button
-              type="button"
-              onClick={() => setShowLanguage(false)}
-              className="mt-4 w-full rounded-full border border-mystic-border py-2.5 text-sm font-semibold text-mystic-ink/70 transition-colors hover:bg-mystic-pink-light"
-            >
-              {t.settings.close}
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* logout confirm dialog */}
       {showLogout && (
