@@ -3,6 +3,9 @@
 @theme {
   --font-sans: "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
 
+  /* wide-desktop breakpoint (1400px) between xl (1280) and 2xl (1536) */
+  --breakpoint-wide: 87.5rem;
+
   --color-mystic-bg: #fff9fc;
   --color-mystic-pink: #f76aa0;
   --color-mystic-pink-soft: #fde7f1;

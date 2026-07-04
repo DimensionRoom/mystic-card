@@ -8,7 +8,7 @@ import Icon from "../Icon";
 import UserActions from "../UserActions";
 import ProductCard from "./ProductCard";
 
-const filterChips = ["ทั้งหมด", "Oracle", "Tarot", "มี E-book"] as const;
+const filterChips = ["ทั้งหมด", "Oracle", "Tarot"] as const;
 type FilterChip = (typeof filterChips)[number];
 
 const sortOptions = [
@@ -27,10 +27,7 @@ function filterProducts(
 ) {
   const query = search.trim().toLowerCase();
   return products.filter((product) => {
-    const matchesFilter =
-      filter === "ทั้งหมด" ||
-      (filter === "มี E-book" && Boolean(product.ebook)) ||
-      product.kind === filter;
+    const matchesFilter = filter === "ทั้งหมด" || product.kind === filter;
     const matchesSearch =
       !query ||
       product.title.toLowerCase().includes(query) ||

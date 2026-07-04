@@ -19,11 +19,37 @@ npm run dev      # เปิด dev server
 npm run build    # ตรวจ type + build โปรดักชัน
 ```
 
+## เชื่อมต่อ Supabase (Google login + เก็บข้อมูลจริง)
+
+แอปทำงานได้ 2 โหมด: **ไม่ตั้งค่า Supabase** → ใช้ mock data ทั้งหมด (เหมือน demo) /
+**ตั้งค่าแล้ว** → ล็อกอิน Google ได้จริง และเก็บโปรไฟล์ ประวัติการอ่าน โน้ต deck ที่ซื้อ
+และรายการโปรดลงฐานข้อมูล
+
+ขั้นตอน setup (ทำครั้งเดียว):
+
+1. **สร้างตาราง** — เปิด Supabase Dashboard → SQL Editor แล้วรันไฟล์
+   [`supabase/schema.sql`](supabase/schema.sql) ทั้งไฟล์ (สร้างตาราง + RLS +
+   trigger สร้างโปรไฟล์และแถม deck เริ่มต้น 6 สำรับตอนสมัคร)
+2. **เปิด Google provider** — Dashboard → Authentication → Providers → Google
+   (ใส่ Client ID/Secret จาก Google Cloud Console และเพิ่ม redirect URL ของ Supabase
+   ใน Google OAuth consent) จากนั้นเพิ่ม `http://localhost:5173` (หรือพอร์ตที่ใช้)
+   ใน Authentication → URL Configuration → Redirect URLs
+3. **ใส่ key** — คัดลอก `.env.example` เป็น `.env.local` แล้วเติม
+   `VITE_SUPABASE_ANON_KEY` (Dashboard → Project Settings → API → anon public)
+4. รีสตาร์ท dev server (`npm run dev`) — จะเห็นปุ่ม "เข้าสู่ระบบด้วย Google" ที่มุมขวาบน
+
+สิ่งที่เก็บลงฐานข้อมูล: `profiles` (ชื่อ/รูป/คะแนน), `readings` + `reading_notes`
+(บันทึกอัตโนมัติเมื่อกดดูคำทำนายเต็ม), `owned_decks`, `deck_favorites`,
+`ebook_purchases` — ทุกตารางมี RLS ผู้ใช้เห็นเฉพาะข้อมูลตัวเอง
+
 ## โครงสร้าง
 
 ```
 src/
   App.tsx                    # layout หลัก, mock router (Home / Deck / My Readings), drawer, toast
+  i18n/
+    LanguageContext.tsx      # provider ภาษา (persist ผ่าน localStorage) + hook useLanguage()
+    translations.ts          # dictionary ไทย/อังกฤษ สำหรับ sidebar, bottom nav, user area, หน้าตั้งค่า
   data/decks.ts              # mock data ของ deck และการอ่านล่าสุด
   components/
     DeckReadingPage.tsx      # หน้าอ่านไพ่ของแต่ละ Deck (/deck/:id) + result modal
@@ -36,6 +62,14 @@ src/
     shop/
       ShopPage.tsx           # หน้า "ร้านค้า" (/shop): filter/ค้นหา/sort + aside + banner
       ProductCard.tsx        # การ์ดสินค้า Deck / E-book
+    decks/
+      OwnedDecksPage.tsx     # หน้า "เลือกไพ่" (/decks): deck ที่ซื้อแล้ว + ใช้งานล่าสุด + Premium
+      OwnedDeckCard.tsx      # การ์ด deck: ปุ่มเปิดไพ่/E-book + หัวใจโปรด
+    settings/
+      SettingsPage.tsx       # หน้า "ตั้งค่า" (/settings): บัญชี/แอป/อื่นๆ + modal ภาษา (ใช้งานได้จริง) + logout
+      SubPage.tsx            # เปลือกหน้าย่อย: ปุ่มกลับ + การ์ดหัวข้อ
+      views.tsx              # 8 โมดูลย่อย: โปรไฟล์/อีเมล/รหัสผ่าน/แจ้งเตือน/การอ่าน/FAQ/นโยบาย/ข้อกำหนด
+      Toggle.tsx             # สวิตช์เปิด-ปิดแบบ accessible (role=switch)
     deck/
       CardMeaningTab.tsx     # tab ความหมายไพ่: ค้นหา + รายการไพ่ + รายละเอียด + โปรด
       AboutDeckTab.tsx       # tab เกี่ยวกับ Deck: about + รายละเอียด + ตัวอย่างไพ่ + E-book panel

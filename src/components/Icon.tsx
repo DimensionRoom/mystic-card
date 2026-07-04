@@ -27,7 +27,12 @@ export type IconName =
   | "calendar"
   | "lock"
   | "download"
-  | "chat";
+  | "chat"
+  | "mail"
+  | "globe"
+  | "file-text"
+  | "help"
+  | "logout";
 
 const paths: Record<IconName, React.ReactNode> = {
   home: (
@@ -200,6 +205,36 @@ const paths: Record<IconName, React.ReactNode> = {
     <>
       <path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 20l1.5-4.4A8 8 0 1 1 20.5 11.5z" />
       <path d="M8.5 10.5h7M8.5 13.5h4.5" />
+    </>
+  ),
+  mail: (
+    <>
+      <rect x="3" y="5" width="18" height="14.5" rx="2.5" />
+      <path d="m3.5 7.5 8.5 6 8.5-6" />
+    </>
+  ),
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a13.5 13.5 0 0 1 0 18 13.5 13.5 0 0 1 0-18z" />
+    </>
+  ),
+  "file-text": (
+    <>
+      <path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5z" />
+      <path d="M14 3.5V8.5h5M9 12.5h6M9 16h4" />
+    </>
+  ),
+  help: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9.3a2.5 2.5 0 0 1 4.9.7c0 1.6-2.4 2-2.4 3.5M12 16.8v.2" />
+    </>
+  ),
+  logout: (
+    <>
+      <path d="M9 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3" />
+      <path d="M15 8.5 18.5 12 15 15.5M18.5 12H9.5" />
     </>
   ),
 };

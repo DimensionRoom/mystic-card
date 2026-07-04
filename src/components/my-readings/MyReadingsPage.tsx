@@ -1,13 +1,45 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   myReadings,
   readingNotes,
   readingStats,
   type ReadingItem,
 } from "../../data/myReadings";
+import { decks } from "../../data/decks";
+import { useAuth } from "../../auth/AuthContext";
+import {
+  deleteReading,
+  fetchNotes,
+  fetchReadings,
+  formatThaiDateTime,
+  saveNote,
+  setReadingFavorite,
+} from "../../lib/db";
 import Icon from "../Icon";
 import UserActions from "../UserActions";
 import ReadingHistoryItem from "./ReadingHistoryItem";
+
+/** ภาพปกที่ใช้แสดงในรายการ อิงจาก deck_id ที่บันทึกไว้ */
+const readingCovers: Record<string, string> = {
+  moonlight: "/img/deck-cover.png",
+  "dreamy-unicorn": "/img/cover-unicorn.png",
+  "magic-cat": "/img/cover-magic-cat.png",
+};
+
+function coverFor(deckId: string): string {
+  return (
+    readingCovers[deckId] ??
+    decks.find((d) => d.id === deckId)?.image ??
+    "/img/deck-moon.png"
+  );
+}
+
+function thumbForDeckName(deckName: string): string {
+  return (
+    decks.find((d) => deckName.includes(d.name.split(" ")[0]))?.image ??
+    "/img/deck-moon.png"
+  );
+}
 
 type FilterId = "all" | "latest" | "Oracle" | "Tarot" | "favorite";
 
@@ -24,10 +56,12 @@ interface MyReadingsPageProps {
 }
 
 export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
+  const { user } = useAuth();
   const [items, setItems] = useState<ReadingItem[]>(myReadings);
   const [favorites, setFavorites] = useState<Set<string>>(
     new Set(myReadings.filter((r) => r.isFavorite).map((r) => r.id)),
   );
+  const [sideNotes, setSideNotes] = useState(readingNotes);
   const [filter, setFilter] = useState<FilterId>("all");
   const [query, setQuery] = useState("");
   const [noteFor, setNoteFor] = useState<ReadingItem | null>(null);
@@ -37,6 +71,57 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
   const toastTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => () => window.clearTimeout(toastTimer.current), []);
+
+  // เมื่อล็อกอิน: โหลดประวัติการอ่านและโน้ตจริงจาก Supabase แทน mock
+  const loadFromDb = useCallback(async (userId: string) => {
+    const [rows, noteRows] = await Promise.all([
+      fetchReadings(userId),
+      fetchNotes(userId),
+    ]);
+    setItems(
+      rows.map((r) => {
+        const { date, time } = formatThaiDateTime(r.created_at);
+        return {
+          id: r.id,
+          deckName: r.deck_name,
+          deckType: (r.deck_type === "Tarot" ? "Tarot" : "Oracle") as
+            | "Oracle"
+            | "Tarot",
+          cover: coverFor(r.deck_id),
+          title: r.title,
+          date,
+          time,
+          cardCount: r.card_count,
+          preview: r.preview,
+          isFavorite: r.is_favorite,
+          sortKey: Date.parse(r.created_at),
+        };
+      }),
+    );
+    setFavorites(
+      new Set(rows.filter((r) => r.is_favorite).map((r) => r.id)),
+    );
+    setSideNotes(
+      noteRows.map((n) => ({
+        id: n.id,
+        quote: `“${n.content}”`,
+        date: formatThaiDateTime(n.created_at).date,
+        deckName: n.deck_name,
+        thumb: thumbForDeckName(n.deck_name),
+      })),
+    );
+  }, []);
+
+  useEffect(() => {
+    if (user) void loadFromDb(user.id);
+    else {
+      setItems(myReadings);
+      setFavorites(
+        new Set(myReadings.filter((r) => r.isFavorite).map((r) => r.id)),
+      );
+      setSideNotes(readingNotes);
+    }
+  }, [user, loadFromDb]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -61,8 +146,10 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
   const toggleFavorite = (id: string) =>
     setFavorites((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      const nowFavorite = !next.has(id);
+      if (nowFavorite) next.add(id);
+      else next.delete(id);
+      if (user) void setReadingFavorite(id, nowFavorite);
       return next;
     });
 
@@ -84,14 +171,22 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
     setNoteDraft(notes[item.id] ?? "");
   };
 
-  const saveNote = () => {
+  const submitNote = async () => {
     if (!noteFor) return;
     setNotes((prev) => ({ ...prev, [noteFor.id]: noteDraft }));
+    if (user && noteDraft.trim()) {
+      await saveNote(user.id, {
+        readingId: noteFor.id,
+        deckName: noteFor.deckName,
+        content: noteDraft.trim(),
+      });
+      void loadFromDb(user.id);
+    }
     setNoteFor(null);
     showToast("บันทึกโน้ตแล้ว 💜");
   };
 
-  const latest = myReadings[0];
+  const latest = items[0] ?? myReadings[0];
 
   return (
     <div className="flex flex-col gap-6">
@@ -215,6 +310,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                       setItems((prev) =>
                         prev.filter((r) => r.id !== item.id),
                       );
+                      if (user) void deleteReading(item.id);
                       showToast("ลบรายการแล้ว 🗑️");
                     }}
                   />
@@ -223,13 +319,15 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
             </ul>
           )}
 
-          <button
-            type="button"
-            onClick={loadMore}
-            className="mx-auto rounded-full border border-mystic-border-purple bg-white px-8 py-2.5 text-sm font-semibold text-mystic-purple transition-colors hover:bg-mystic-lavender/60"
-          >
-            โหลดเพิ่มเติม ↓
-          </button>
+          {!user && (
+            <button
+              type="button"
+              onClick={loadMore}
+              className="mx-auto rounded-full border border-mystic-border-purple bg-white px-8 py-2.5 text-sm font-semibold text-mystic-purple transition-colors hover:bg-mystic-lavender/60"
+            >
+              โหลดเพิ่มเติม ↓
+            </button>
+          )}
 
           {/* pastel banner */}
           <div className="relative flex min-h-[96px] flex-col justify-center gap-2 overflow-hidden rounded-[18px] border border-[#F5D9EF] bg-[linear-gradient(135deg,#FFF1FA_0%,#EEE3FF_50%,#FFEEF7_100%)] px-6 py-4 md:flex-row md:items-center md:justify-between">
@@ -296,7 +394,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
             </div>
 
             <ul className="mt-3 flex flex-col gap-3">
-              {readingNotes.map((note) => (
+              {sideNotes.map((note) => (
                 <li
                   key={note.id}
                   className="flex items-start gap-3 rounded-2xl border border-[#F0E2F5] bg-[#FBF7FF] p-3.5"
@@ -372,7 +470,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
               </button>
               <button
                 type="button"
-                onClick={saveNote}
+                onClick={() => void submitNote()}
                 className="rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] px-7 py-2.5 text-sm font-bold text-white shadow-pastel transition-transform hover:scale-105"
               >
                 บันทึก ✨

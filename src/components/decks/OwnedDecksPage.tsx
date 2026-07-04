@@ -1,0 +1,329 @@
+import { useEffect, useState } from "react";
+import { lastUsedDeck, ownedDecks } from "../../data/ownedDecks";
+import { useAuth } from "../../auth/AuthContext";
+import {
+  fetchFavoriteDeckIds,
+  fetchOwnedDeckIds,
+  setDeckFavorite,
+} from "../../lib/db";
+import Icon, { type IconName } from "../Icon";
+import UserActions from "../UserActions";
+import OwnedDeckCard from "./OwnedDeckCard";
+
+const filterPills: { id: string; label: string; icon?: IconName }[] = [
+  { id: "all", label: "ทั้งหมด" },
+  { id: "Oracle", label: "Oracle" },
+  { id: "Tarot", label: "Tarot" },
+  { id: "latest", label: "ล่าสุด", icon: "clock" },
+  { id: "favorite", label: "รายการโปรด", icon: "heart" },
+];
+
+const premiumBenefits: {
+  icon: IconName;
+  title: string;
+  text: string;
+}[] = [
+  {
+    icon: "cards",
+    title: "อ่านไพ่ไม่จำกัด",
+    text: "เปิดไพ่ได้ทุกเมื่อที่ต้องการ",
+  },
+  {
+    icon: "book",
+    title: "E-book พิเศษ",
+    text: "เข้าถึงเนื้อหาเชิงลึกและเพิ่มเติม",
+  },
+  {
+    icon: "clock",
+    title: "ไม่ต้องรอโฆษณา",
+    text: "ประสบการณ์ที่ลื่นไหล ไม่มีขั้นตอนกวน",
+  },
+  {
+    icon: "gift",
+    title: "สิทธิพิเศษรายเดือน",
+    text: "ของขวัญพิเศษและรายการใหม่ก่อนใคร",
+  },
+];
+
+interface OwnedDecksPageProps {
+  onNavigate: (path: string) => void;
+}
+
+export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
+  const { user } = useAuth();
+  const [filter, setFilter] = useState("all");
+  const [query, setQuery] = useState("");
+  const [favorites, setFavorites] = useState<Set<string>>(
+    new Set(ownedDecks.filter((d) => d.favorite).map((d) => d.id)),
+  );
+  const [ownedIds, setOwnedIds] = useState<Set<string> | null>(null);
+
+  // เมื่อล็อกอิน: ใช้ deck ที่ซื้อจริงและหัวใจจริงจาก Supabase
+  useEffect(() => {
+    if (!user) {
+      setOwnedIds(null);
+      setFavorites(
+        new Set(ownedDecks.filter((d) => d.favorite).map((d) => d.id)),
+      );
+      return;
+    }
+    void (async () => {
+      const [owned, favs] = await Promise.all([
+        fetchOwnedDeckIds(user.id),
+        fetchFavoriteDeckIds(user.id),
+      ]);
+      setOwnedIds(new Set(owned));
+      setFavorites(new Set(favs));
+    })();
+  }, [user]);
+
+  const myDecks = ownedIds
+    ? ownedDecks.filter((d) => ownedIds.has(d.id))
+    : ownedDecks;
+
+  const q = query.trim().toLowerCase();
+  let visible = myDecks.filter(
+    (d) =>
+      d.title.toLowerCase().includes(q) || d.type.toLowerCase().includes(q),
+  );
+  if (filter === "Oracle" || filter === "Tarot")
+    visible = visible.filter((d) => d.type === filter);
+  if (filter === "favorite") visible = visible.filter((d) => favorites.has(d.id));
+  if (filter === "latest")
+    visible = [...visible].sort(
+      (a, b) => Number(Boolean(b.lastUsedAt)) - Number(Boolean(a.lastUsedAt)),
+    );
+
+  const toggleFavorite = (id: string) =>
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      const nowFavorite = !next.has(id);
+      if (nowFavorite) next.add(id);
+      else next.delete(id);
+      if (user) void setDeckFavorite(user.id, id, nowFavorite);
+      return next;
+    });
+
+  const lastUsedPath = lastUsedDeck.link ?? `/decks/${lastUsedDeck.id}/reading`;
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* page header */}
+      <header className="relative z-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h2 className="flex items-center gap-2.5 text-2xl font-extrabold text-mystic-ink-deep md:text-[30px]">
+            เลือกไพ่
+            <span
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-mystic-lavender text-mystic-purple"
+              aria-hidden="true"
+            >
+              <Icon name="cards" className="h-5 w-5" />
+            </span>
+            <span aria-hidden="true">✨</span>
+          </h2>
+          <p className="mt-1.5 text-mystic-muted">
+            Deck ที่คุณซื้อแล้ว พร้อมให้คุณเปิดไพ่ อ่านความหมาย และใช้งาน
+            E-book ได้ทันที <span aria-hidden="true">✨</span>
+          </p>
+        </div>
+        <UserActions onNavigate={onNavigate} />
+      </header>
+
+      {/* filter pills + search */}
+      <section
+        aria-label="ค้นหาและกรอง Deck"
+        className="flex flex-wrap items-center gap-3"
+      >
+        <div className="no-scrollbar flex gap-2.5 overflow-x-auto">
+          {filterPills.map((pill) => {
+            const active = pill.id === filter;
+            return (
+              <button
+                key={pill.id}
+                type="button"
+                onClick={() => setFilter(pill.id)}
+                aria-pressed={active}
+                className={`flex shrink-0 items-center gap-2 rounded-[14px] px-5 py-2.5 text-sm font-bold transition-all focus:outline-none focus:ring-4 focus:ring-[#EADCFF] ${
+                  active
+                    ? "bg-mystic-pink-soft text-mystic-pink shadow-pastel"
+                    : "border border-[#EADFF7] bg-white text-[#3B3472] hover:bg-mystic-lavender/50"
+                }`}
+              >
+                {pill.label}
+                {pill.icon && <Icon name={pill.icon} className="h-4 w-4" />}
+              </button>
+            );
+          })}
+        </div>
+
+        <label className="relative w-full lg:ml-auto lg:w-[300px]">
+          <span className="sr-only">ค้นหา Deck ของคุณ</span>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="ค้นหา Deck ของคุณ..."
+            className="h-12 w-full rounded-[14px] border border-[#EADFF7] bg-white px-4 pr-11 text-sm text-mystic-ink outline-none placeholder:text-mystic-muted focus:border-[#B89CFF]"
+          />
+          <Icon
+            name="search"
+            className="pointer-events-none absolute right-4 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-[#8D82B3]"
+          />
+        </label>
+      </section>
+
+      <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+        {/* ---- main column ---- */}
+        <div className="flex min-w-0 flex-col gap-6">
+          {visible.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 rounded-[22px] border border-[#EADFF7] bg-white py-16 text-center">
+              <span className="text-3xl" aria-hidden="true">
+                🔮
+              </span>
+              <p className="font-semibold text-mystic-ink/75">
+                ไม่พบ Deck ที่ตรงกับคำค้นหา
+              </p>
+              <p className="text-sm text-mystic-muted">
+                ลองเปลี่ยนคำค้นหรือเลือกตัวกรองอื่นดูนะ ✨
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setFilter("all");
+                  setQuery("");
+                }}
+                className="mt-2 rounded-full border border-mystic-border-purple px-6 py-2 text-sm font-semibold text-mystic-purple transition-colors hover:bg-mystic-lavender/60"
+              >
+                ล้างตัวกรอง
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4 wide:grid-cols-5">
+              {visible.map((deck) => (
+                <OwnedDeckCard
+                  key={deck.id}
+                  deck={deck}
+                  isFavorite={favorites.has(deck.id)}
+                  onToggleFavorite={() => toggleFavorite(deck.id)}
+                  onNavigate={onNavigate}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* bottom CTA banner */}
+          <section
+            aria-label="เริ่มเปิดไพ่ของคุณ"
+            className="relative flex flex-col gap-4 overflow-hidden rounded-[22px] border border-[#F5D9EF] bg-[linear-gradient(135deg,#FFF1FA_0%,#EEE3FF_55%,#FFEEF7_100%)] px-6 py-6 md:min-h-[130px] md:pr-64"
+          >
+            <div className="relative z-10">
+              <h3 className="text-lg font-extrabold text-mystic-ink-deep md:text-xl">
+                เส้นทางแห่งการค้นพบ.. เริ่มต้นทุกครั้งที่คุณเปิดไพ่{" "}
+                <span aria-hidden="true">✨</span>
+              </h3>
+              <p className="mt-1.5 text-sm text-mystic-ink/65">
+                ให้ไพ่เป็นเพื่อนนำทางหัวใจของคุณในทุกช่วงเวลา
+              </p>
+              <button
+                type="button"
+                onClick={() => onNavigate(lastUsedPath)}
+                className="mt-4 rounded-xl bg-gradient-to-r from-[#8B63EE] to-[#7B4BE8] px-6 py-3 text-sm font-bold text-white shadow-pastel transition hover:scale-[1.02] active:scale-95"
+              >
+                เปิดไพ่ของฉันเลย ✨
+              </button>
+            </div>
+            <img
+              src="/img/banner-witch.png"
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-0 right-6 hidden w-52 mix-blend-multiply [mask-image:linear-gradient(to_top,black_65%,transparent_96%),linear-gradient(to_right,transparent_2%,black_18%,black_82%,transparent_98%)] [mask-composite:intersect] md:block"
+            />
+          </section>
+        </div>
+
+        {/* ---- right sidebar ---- */}
+        <aside className="flex flex-col gap-5">
+          {/* last used */}
+          <section
+            aria-label="ใช้งานล่าสุด"
+            className="rounded-[24px] border border-[#EADFF7] bg-gradient-to-b from-[#FDF8FF] to-white p-4 shadow-[0_8px_24px_rgba(124,92,250,0.08)]"
+          >
+            <h4 className="flex items-center gap-2 font-bold text-mystic-ink-deep">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-mystic-lavender text-mystic-purple">
+                <Icon name="clock" className="h-4 w-4" />
+              </span>
+              ใช้งานล่าสุด <span aria-hidden="true">✨</span>
+            </h4>
+            <img
+              src={lastUsedDeck.cover}
+              alt={`ปกไพ่ ${lastUsedDeck.title}`}
+              className="mt-3 aspect-square w-full rounded-2xl object-cover shadow-pastel"
+            />
+            <h5 className="mt-3 text-center text-lg font-extrabold text-mystic-ink-deep">
+              {lastUsedDeck.title}
+            </h5>
+            <p className="mt-1.5 flex items-center justify-center gap-2 text-xs">
+              <span className="rounded-full bg-mystic-lavender px-2.5 py-0.5 font-bold text-mystic-purple">
+                {lastUsedDeck.type}
+              </span>
+              <span className="text-mystic-muted">{lastUsedDeck.cards} ใบ</span>
+            </p>
+            <p className="mt-2 text-center text-xs text-mystic-muted">
+              อ่านล่าสุด: {lastUsedDeck.lastUsedAt}
+            </p>
+            <button
+              type="button"
+              onClick={() => onNavigate(lastUsedPath)}
+              className="mt-4 h-12 w-full rounded-[14px] bg-gradient-to-r from-[#8B63EE] to-[#7B4BE8] font-bold text-white shadow-pastel transition hover:scale-[1.02] active:scale-95"
+            >
+              ต่อจากเดิม ✨
+            </button>
+          </section>
+
+          {/* premium benefits */}
+          <section
+            aria-label="สิทธิพิเศษสำหรับสมาชิก Premium"
+            className="rounded-[24px] border border-[#F5D9EF] bg-gradient-to-b from-[#FFF5FB] to-[#F8F1FF] p-5"
+          >
+            <h4 className="flex items-start gap-2.5 font-bold leading-snug text-mystic-ink-deep">
+              <span
+                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-mystic-pink-soft text-base"
+                aria-hidden="true"
+              >
+                👑
+              </span>
+              สิทธิพิเศษสำหรับสมาชิก{" "}
+              <span className="text-mystic-pink">Premium ✨</span>
+            </h4>
+
+            <ul className="mt-4 flex flex-col gap-3.5">
+              {premiumBenefits.map((b) => (
+                <li key={b.title} className="flex items-start gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-mystic-purple shadow-pastel">
+                    <Icon name={b.icon} className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-mystic-ink-deep">
+                      {b.title}
+                    </p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-mystic-muted">
+                      {b.text}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              type="button"
+              onClick={() => onNavigate("/premium")}
+              className="mt-5 h-12 w-full rounded-[14px] bg-gradient-to-r from-[#FF6FAE] to-[#F75FA2] font-bold text-white shadow-[0_8px_18px_rgba(247,95,162,0.25)] transition hover:scale-[1.02] active:scale-95"
+            >
+              ดูสิทธิพิเศษทั้งหมด 👑
+            </button>
+          </section>
+        </aside>
+      </div>
+    </div>
+  );
+}

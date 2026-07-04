@@ -1,18 +1,14 @@
 import Icon, { type IconName } from "./Icon";
+import { useLanguage } from "../i18n/LanguageContext";
 
-interface MenuItem {
-  label: string;
-  icon: IconName;
-  path: string;
-}
+type MenuKey = "home" | "decks" | "readings" | "shop" | "settings";
 
-export const menuItems: MenuItem[] = [
-  { label: "หน้าหลัก", icon: "home", path: "/" },
-  { label: "เลือกไพ่", icon: "cards", path: "/decks" },
-  { label: "การอ่านของฉัน", icon: "book", path: "/readings" },
-  { label: "ร้านค้า", icon: "bag", path: "/shop" },
-  { label: "โปรไฟล์", icon: "user", path: "/profile" },
-  { label: "ตั้งค่า", icon: "settings", path: "/settings" },
+const menuItems: { key: MenuKey; icon: IconName; path: string }[] = [
+  { key: "home", icon: "home", path: "/" },
+  { key: "decks", icon: "cards", path: "/decks" },
+  { key: "readings", icon: "book", path: "/readings" },
+  { key: "shop", icon: "bag", path: "/shop" },
+  { key: "settings", icon: "settings", path: "/settings" },
 ];
 
 interface SidebarProps {
@@ -21,6 +17,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activePath, onNavigate }: SidebarProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="flex h-full flex-col gap-5 overflow-y-auto bg-white px-5 py-6">
       {/* Logo */}
@@ -37,7 +35,7 @@ export default function Sidebar({ activePath, onNavigate }: SidebarProps) {
       </div>
 
       {/* Menu */}
-      <nav aria-label="เมนูหลัก">
+      <nav aria-label={t.sidebar.nav}>
         <ul className="flex flex-col gap-1">
           {menuItems.map((item) => {
             const active = item.path === activePath;
@@ -54,7 +52,7 @@ export default function Sidebar({ activePath, onNavigate }: SidebarProps) {
                   }`}
                 >
                   <Icon name={item.icon} className="h-[19px] w-[19px] shrink-0" />
-                  {item.label}
+                  {t.sidebar[item.key]}
                 </button>
               </li>
             );
@@ -64,18 +62,18 @@ export default function Sidebar({ activePath, onNavigate }: SidebarProps) {
 
       {/* Premium card */}
       <section
-        aria-label="อัปเกรดเป็น Premium"
+        aria-label={t.sidebar.premiumTitle}
         className="rounded-bubble border border-mystic-border bg-mystic-pink-light p-5"
       >
         <h2 className="flex items-center gap-2 text-[15px] font-bold text-mystic-pink">
-          <span aria-hidden="true">👑</span> อัปเกรดเป็น Premium
+          <span aria-hidden="true">👑</span> {t.sidebar.premiumTitle}
         </h2>
         <ul className="mt-3 space-y-1.5 text-sm text-mystic-ink/80">
           {[
-            "ปลดล็อก Deck พิเศษ",
-            "อ่านไม่จำกัด",
-            "ไม่มีโฆษณา",
-            "สิทธิพิเศษอีกมากมาย",
+            t.sidebar.benefit1,
+            t.sidebar.benefit2,
+            t.sidebar.benefit3,
+            t.sidebar.benefit4,
           ].map((benefit) => (
             <li key={benefit} className="flex items-start gap-2">
               <span className="font-bold text-mystic-pink" aria-hidden="true">
@@ -90,7 +88,7 @@ export default function Sidebar({ activePath, onNavigate }: SidebarProps) {
           onClick={() => onNavigate("/premium")}
           className="mt-4 w-full rounded-full bg-gradient-to-r from-mystic-pink to-mystic-purple-soft px-4 py-2.5 font-bold text-white shadow-pastel transition-transform hover:scale-[1.03] active:scale-95"
         >
-          อัปเกรดเลย! ✨
+          {t.sidebar.premiumCta}
         </button>
       </section>
 

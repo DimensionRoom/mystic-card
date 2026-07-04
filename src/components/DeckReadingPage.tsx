@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Deck } from "../data/decks";
 import { sampleCards } from "../data/readingCards";
+import { useAuth } from "../auth/AuthContext";
+import { saveReading } from "../lib/db";
 import DeckHeader from "./DeckHeader";
 import DeckTabs, { type DeckTab } from "./DeckTabs";
 import ReadingTypePanel, {
@@ -29,6 +31,9 @@ export default function DeckReadingPage({
   const [mode, setMode] = useState<"select" | "reveal">("select");
   const [revealedCount, setRevealedCount] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const { user } = useAuth();
+  // กันบันทึกซ้ำ: เก็บผลลง Supabase ครั้งเดียวต่อการเปิดไพ่หนึ่งรอบ
+  const savedThisRound = useRef(false);
 
   const requiredCount = readingOptions.find(
     (o) => o.id === readingType,
@@ -60,6 +65,21 @@ export default function DeckReadingPage({
   const startReading = () => {
     setMode("reveal");
     setRevealedCount(1);
+    savedThisRound.current = false;
+  };
+
+  const openFullReading = () => {
+    setShowResult(true);
+    if (user && !savedThisRound.current) {
+      savedThisRound.current = true;
+      void saveReading(user.id, {
+        deckId: deck.id,
+        deckName: deck.name,
+        deckType: deck.type,
+        readingType,
+        cards: drawnCards,
+      });
+    }
   };
 
   const revealNext = () =>
@@ -101,7 +121,7 @@ export default function DeckReadingPage({
               onShuffle={mode === "select" ? shuffle : reshuffleBoard}
               onStart={startReading}
               onRevealNext={revealNext}
-              onViewFullReading={() => setShowResult(true)}
+              onViewFullReading={openFullReading}
             />
           )}
 

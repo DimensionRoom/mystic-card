@@ -10,6 +10,8 @@ import BottomNav from "./components/BottomNav";
 import DeckReadingPage from "./components/DeckReadingPage";
 import MyReadingsPage from "./components/my-readings/MyReadingsPage";
 import ShopPage from "./components/shop/ShopPage";
+import OwnedDecksPage from "./components/decks/OwnedDecksPage";
+import SettingsPage from "./components/settings/SettingsPage";
 import { getDeck } from "./data/decks";
 
 export default function App() {
@@ -26,6 +28,8 @@ export default function App() {
       path === "/" ||
       path === "/readings" ||
       path === "/shop" ||
+      path === "/decks" ||
+      path === "/settings" ||
       (deckMatch && getDeck(deckMatch[1]))
     ) {
       setRoute(path);
@@ -100,6 +104,10 @@ export default function App() {
             <MyReadingsPage onNavigate={navigate} />
           ) : route === "/shop" ? (
             <ShopPage onNavigate={navigate} />
+          ) : route === "/decks" ? (
+            <OwnedDecksPage onNavigate={navigate} />
+          ) : route === "/settings" ? (
+            <SettingsPage onNavigate={navigate} />
           ) : currentDeck ? (
             <DeckReadingPage
               key={currentDeck.id}
