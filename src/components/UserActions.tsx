@@ -82,11 +82,9 @@ export default function UserActions({ onNavigate }: UserActionsProps) {
         />
       </button>
 
-      <button
-        type="button"
-        onClick={() => onNavigate("/settings")}
+      <div
+        className="flex items-center gap-2.5"
         aria-label={`${t.user.profileMenuFor} ${displayName}`}
-        className="flex items-center gap-2.5 transition-transform hover:scale-105"
       >
         <img
           src={avatarUrl}
@@ -97,10 +95,7 @@ export default function UserActions({ onNavigate }: UserActionsProps) {
         <span className="hidden max-w-36 truncate font-semibold text-mystic-ink sm:inline">
           {displayName}
         </span>
-        <span className="text-mystic-ink/60" aria-hidden="true">
-          ▾
-        </span>
-      </button>
+      </div>
 
       <LanguageSwitcher />
     </div>
