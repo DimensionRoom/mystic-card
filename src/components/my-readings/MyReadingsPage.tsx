@@ -101,11 +101,20 @@ interface MyReadingsPageProps {
 
 export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
   const { isConfigured, user, signInWithGoogle } = useAuth();
-  const [items, setItems] = useState<ReadingItem[]>(myReadings);
-  const [favorites, setFavorites] = useState<Set<string>>(
-    new Set(myReadings.filter((r) => r.isFavorite).map((r) => r.id)),
+  // เมื่อต่อ Supabase จริง ห้ามเริ่มด้วยข้อมูล mock เพราะจะโชว์ตัวเลข/รายการ
+  // ปลอมวูบหนึ่งก่อนข้อมูลจริงโหลดเสร็จ — ต้องเริ่มจากค่าว่าง (0) เสมอ
+  const [items, setItems] = useState<ReadingItem[]>(
+    isConfigured ? [] : myReadings,
   );
-  const [sideNotes, setSideNotes] = useState(readingNotes);
+  const [favorites, setFavorites] = useState<Set<string>>(
+    isConfigured
+      ? new Set()
+      : new Set(myReadings.filter((r) => r.isFavorite).map((r) => r.id)),
+  );
+  const [sideNotes, setSideNotes] = useState(isConfigured ? [] : readingNotes);
+  const [loadingReadings, setLoadingReadings] = useState(
+    isConfigured && !!user,
+  );
   const [filter, setFilter] = useState<FilterId>("all");
   const [query, setQuery] = useState("");
   const [noteFor, setNoteFor] = useState<ReadingItem | null>(null);
@@ -157,15 +166,17 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
   }, []);
 
   useEffect(() => {
-    if (user) void loadFromDb(user.id);
-    else {
+    if (user) {
+      setLoadingReadings(true);
+      void loadFromDb(user.id).finally(() => setLoadingReadings(false));
+    } else if (!isConfigured) {
       setItems(myReadings);
       setFavorites(
         new Set(myReadings.filter((r) => r.isFavorite).map((r) => r.id)),
       );
       setSideNotes(readingNotes);
     }
-  }, [user, loadFromDb]);
+  }, [user, loadFromDb, isConfigured]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -269,7 +280,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
     showToast("บันทึกโน้ตแล้ว 💜");
   };
 
-  const latest = items[0] ?? myReadings[0];
+  const latest = items[0] ?? (isConfigured ? undefined : myReadings[0]);
 
   // ต้องล็อกอินก่อนถึงจะดูประวัติการอ่านจริงได้ — กันไว้ตรงนี้จุดเดียว
   // ครอบคลุมทุกทางที่จะมาถึงหน้านี้ (เมนู, ปุ่ม "ดูทั้งหมด" จากหน้าอื่น ๆ)
@@ -423,16 +434,29 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
             ประวัติการอ่านของฉัน
           </h3>
 
-          {visible.length === 0 ? (
+          {loadingReadings ? (
             <div className="flex flex-col items-center gap-2 py-14 text-center">
               <span className="text-3xl" aria-hidden="true">
                 🔮
               </span>
               <p className="font-semibold text-mystic-ink/75">
-                ยังไม่พบการอ่านที่ตรงกับคำค้นหา
+                กำลังโหลดประวัติการอ่านของคุณ...
+              </p>
+            </div>
+          ) : visible.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-14 text-center">
+              <span className="text-3xl" aria-hidden="true">
+                🔮
+              </span>
+              <p className="font-semibold text-mystic-ink/75">
+                {items.length === 0
+                  ? "ยังไม่มีประวัติการอ่านของคุณ"
+                  : "ยังไม่พบการอ่านที่ตรงกับคำค้นหา"}
               </p>
               <p className="text-sm text-mystic-muted">
-                ลองเปลี่ยนคำค้นหรือเลือกตัวกรองอื่นดูนะ ✨
+                {items.length === 0
+                  ? "เริ่มเปิดไพ่ครั้งแรกเพื่อเก็บบันทึกไว้ที่นี่ ✨"
+                  : "ลองเปลี่ยนคำค้นหรือเลือกตัวกรองอื่นดูนะ ✨"}
               </p>
             </div>
           ) : (
@@ -496,27 +520,37 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
             className="rounded-[20px] border border-[#F1DDF2] bg-white p-4 shadow-[0_8px_22px_rgba(80,64,120,0.06)]"
           >
             <h4 className="font-bold text-mystic-ink-deep">อ่านล่าสุด</h4>
-            <img
-              src="/img/latest-reading.png"
-              alt={`ภาพการอ่านล่าสุดจาก ${latest.deckName}`}
-              className="mt-3 aspect-video w-full rounded-2xl object-cover"
-            />
-            <h5 className="mt-3 font-bold leading-snug text-mystic-ink-deep">
-              {latest.title}
-            </h5>
-            <p className="mt-1.5 flex items-center gap-2 text-xs text-mystic-muted">
-              <Icon name="calendar" className="h-3.5 w-3.5" />
-              {latest.date} • {latest.time} •
-              <Icon name="cards" className="h-3.5 w-3.5" />
-              {latest.cardCount} ใบ
-            </p>
-            <button
-              type="button"
-              onClick={() => onNavigate(`/my-readings/${latest.id}`)}
-              className="mt-3 w-full rounded-xl border-t border-mystic-border/60 pt-3 text-center text-sm font-semibold text-mystic-purple transition-colors hover:text-mystic-pink"
-            >
-              ดูผลการอ่านล่าสุด →
-            </button>
+            {latest ? (
+              <>
+                <img
+                  src="/img/latest-reading.png"
+                  alt={`ภาพการอ่านล่าสุดจาก ${latest.deckName}`}
+                  className="mt-3 aspect-video w-full rounded-2xl object-cover"
+                />
+                <h5 className="mt-3 font-bold leading-snug text-mystic-ink-deep">
+                  {latest.title}
+                </h5>
+                <p className="mt-1.5 flex items-center gap-2 text-xs text-mystic-muted">
+                  <Icon name="calendar" className="h-3.5 w-3.5" />
+                  {latest.date} • {latest.time} •
+                  <Icon name="cards" className="h-3.5 w-3.5" />
+                  {latest.cardCount} ใบ
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onNavigate(`/my-readings/${latest.id}`)}
+                  className="mt-3 w-full rounded-xl border-t border-mystic-border/60 pt-3 text-center text-sm font-semibold text-mystic-purple transition-colors hover:text-mystic-pink"
+                >
+                  ดูผลการอ่านล่าสุด →
+                </button>
+              </>
+            ) : (
+              <p className="mt-3 text-sm text-mystic-muted">
+                {loadingReadings
+                  ? "กำลังโหลด..."
+                  : "ยังไม่มีประวัติการอ่านของคุณ"}
+              </p>
+            )}
           </section>
 
           <section
