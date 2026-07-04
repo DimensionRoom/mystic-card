@@ -56,17 +56,25 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
   const [favorites, setFavorites] = useState<Set<string>>(
     new Set(ownedDecks.filter((d) => d.favorite).map((d) => d.id)),
   );
-  const [ownedIds, setOwnedIds] = useState<Set<string> | null>(null);
+  // ถ้ามี user อยู่แล้วตั้งแต่ mount (เช่นกลับมาหน้านี้หลังล็อกอิน) ต้องเริ่มจาก
+  // เซ็ตว่าง ไม่ใช่ null/ยังไม่กรอง มิฉะนั้นจะเห็น deck ทั้งชุด mock วูบก่อน
+  // ที่ fetchOwnedDeckIds() จะโหลดเสร็จและกรองเหลือแค่ deck ที่ซื้อจริง
+  const [ownedIds, setOwnedIds] = useState<Set<string> | null>(
+    user ? new Set() : null,
+  );
+  const [loadingOwned, setLoadingOwned] = useState(!!user);
 
   // เมื่อล็อกอิน: ใช้ deck ที่ซื้อจริงและหัวใจจริงจาก Supabase
   useEffect(() => {
     if (!user) {
       setOwnedIds(null);
+      setLoadingOwned(false);
       setFavorites(
         new Set(ownedDecks.filter((d) => d.favorite).map((d) => d.id)),
       );
       return;
     }
+    setLoadingOwned(true);
     void (async () => {
       const [owned, favs] = await Promise.all([
         fetchOwnedDeckIds(user.id),
@@ -74,6 +82,7 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
       ]);
       setOwnedIds(new Set(owned));
       setFavorites(new Set(favs));
+      setLoadingOwned(false);
     })();
   }, [user]);
 
@@ -175,27 +184,42 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
       <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         {/* ---- main column ---- */}
         <div className="flex min-w-0 flex-col gap-6">
-          {visible.length === 0 ? (
+          {loadingOwned ? (
             <div className="flex flex-col items-center gap-2 rounded-[22px] border border-[#EADFF7] bg-white py-16 text-center">
               <span className="text-3xl" aria-hidden="true">
                 🔮
               </span>
               <p className="font-semibold text-mystic-ink/75">
-                ไม่พบ Deck ที่ตรงกับคำค้นหา
+                กำลังโหลด Deck ของคุณ...
+              </p>
+            </div>
+          ) : visible.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 rounded-[22px] border border-[#EADFF7] bg-white py-16 text-center">
+              <span className="text-3xl" aria-hidden="true">
+                🔮
+              </span>
+              <p className="font-semibold text-mystic-ink/75">
+                {myDecks.length === 0
+                  ? "คุณยังไม่มี Deck ที่ซื้อไว้"
+                  : "ไม่พบ Deck ที่ตรงกับคำค้นหา"}
               </p>
               <p className="text-sm text-mystic-muted">
-                ลองเปลี่ยนคำค้นหรือเลือกตัวกรองอื่นดูนะ ✨
+                {myDecks.length === 0
+                  ? "ไปที่ร้านค้าเพื่อเลือก Deck ที่คุณชอบได้เลย ✨"
+                  : "ลองเปลี่ยนคำค้นหรือเลือกตัวกรองอื่นดูนะ ✨"}
               </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setFilter("all");
-                  setQuery("");
-                }}
-                className="mt-2 rounded-full border border-mystic-border-purple px-6 py-2 text-sm font-semibold text-mystic-purple transition-colors hover:bg-mystic-lavender/60"
-              >
-                ล้างตัวกรอง
-              </button>
+              {myDecks.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilter("all");
+                    setQuery("");
+                  }}
+                  className="mt-2 rounded-full border border-mystic-border-purple px-6 py-2 text-sm font-semibold text-mystic-purple transition-colors hover:bg-mystic-lavender/60"
+                >
+                  ล้างตัวกรอง
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4 wide:grid-cols-5">
