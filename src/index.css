@@ -41,10 +41,10 @@ body {
    every clickable control in this app is a real <button>, so flip it here
    once instead of adding cursor-pointer to 90+ individual elements.
    Custom mystic wand cursor on hover, with "pointer" as the fallback if the
-   image fails to load. Hotspot (16 8) lines up with the wand's tip. */
+   image fails to load. Hotspot (11 4) lines up with the wand's tip. */
 button:not(:disabled),
 select {
-  cursor: url("/cursor/mystic-cursor.svg") 16 8, pointer;
+  cursor: url("/cursor/mystic-cursor.svg") 11 4, pointer;
 }
 
 /* sparkle trail spawned by CursorSparkles.tsx as the mouse moves */
