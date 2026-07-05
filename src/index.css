@@ -47,6 +47,28 @@ select {
   cursor: url("/cursor/mystic-cursor.svg") 16 8, pointer;
 }
 
+/* sparkle trail spawned by CursorSparkles.tsx as the mouse moves */
+.cursor-sparkle {
+  position: fixed;
+  translate: -50% -50%;
+  line-height: 1;
+  animation: cursor-sparkle-pop 650ms ease-out forwards;
+}
+@keyframes cursor-sparkle-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1) rotate(20deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.6) rotate(50deg) translateY(-18px);
+  }
+}
+
 /* soft focus ring for keyboard users */
 :focus-visible {
   outline: 3px solid var(--color-mystic-purple-soft);

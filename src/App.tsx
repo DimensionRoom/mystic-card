@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import CursorSparkles from "./components/CursorSparkles";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import HeroBanner from "./components/HeroBanner";
@@ -59,6 +60,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
+      <CursorSparkles />
+
       {/* Fixed sidebar: desktop only */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] border-r border-mystic-border xl:block">
         <Sidebar activePath={activePath} onNavigate={navigate} />
