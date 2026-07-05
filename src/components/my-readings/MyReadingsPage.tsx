@@ -21,8 +21,6 @@ import ReadingHistoryItem from "./ReadingHistoryItem";
 /** ภาพปกที่ใช้แสดงในรายการ อิงจาก deck_id ที่บันทึกไว้ */
 const readingCovers: Record<string, string> = {
   moonlight: "/img/deck-cover.png",
-  "dreamy-unicorn": "/img/cover-unicorn.png",
-  "magic-cat": "/img/cover-magic-cat.png",
 };
 
 function coverFor(deckId: string): string {
