@@ -5,8 +5,10 @@ export interface Deck {
   name: string;
   type: DeckType;
   cardCount: number;
-  /** card cover art cropped from the reference design */
+  /** ปกด้านนอก (thumbnail) ที่โชว์ในชั้นวาง/ร้านค้า/รายการ Deck */
   image: string;
+  /** ปกใบเต็มด้านในหน้า "เกี่ยวกับ Deck" — ถ้าไม่ระบุจะใช้ cardBack แทน */
+  cover?: string;
   /** short poetic subtitle shown on the deck reading page */
   tagline: string;
   /** who this deck suits, shown as a badge */
@@ -23,6 +25,7 @@ export const decks: Deck[] = [
     type: "Oracle",
     cardCount: 44,
     image: "/img/deck-moon.png",
+    cover: "/img/deck-cover.png",
     tagline: "ไพ่ปลอบใจจากแสงจันทร์ นำทางหัวใจในทุกช่วงเวลา",
     level: "เหมาะสำหรับผู้เริ่มต้น",
     cardBack: "/img/card-back.png",
@@ -35,6 +38,7 @@ export const decks: Deck[] = [
     type: "Tarot",
     cardCount: 78,
     image: "/img/deck-cutie-cat.png",
+    cover: "/img/cover-cutie-cat.png",
     tagline: "ไพ่ทาโรต์แมวน้อยแสนน่ารัก อ่านหัวใจได้ครบทุกมิติของชีวิต",
     level: "เหมาะสำหรับทุกระดับ",
     cardBack: "/img/card-back-cutie-cat.png",

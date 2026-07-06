@@ -73,11 +73,8 @@ export function getAboutInfo(deck: Deck): DeckAboutInfo {
     description: isMoonlight
       ? "Moonlight Oracle คือไพ่ที่เกิดขึ้นเพื่อเป็นเพื่อนในใจยามที่คุณต้องการคำปลอบโยน แสงจันทร์เป็นสัญลักษณ์ของความอ่อนโยน ความหวัง และการเริ่มต้นใหม่ ไพ่ชุดนี้จะช่วยให้คุณเชื่อมโยงกับสัญชาตญาณภายในตัวเอง และพบคำตอบที่คุณมองหาอยู่เสมอ ✨"
       : deck.about,
-    cover: isMoonlight
-      ? "/img/deck-cover.png"
-      : isCutieCat
-        ? deck.image
-        : deck.cardBack,
+    // ปกใบเต็มด้านใน ใช้ deck.cover ก่อน ถ้าไม่ระบุค่อย fallback เป็นหลังไพ่
+    cover: deck.cover ?? deck.cardBack,
     features,
     details: [
       ["ประเภท", deck.type],
