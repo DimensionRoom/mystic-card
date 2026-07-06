@@ -20,25 +20,13 @@ export interface Product {
 
 export const shopProducts: Product[] = [
   {
-    id: "moonlight-oracle-deck",
-    kind: "Oracle",
-    title: "Moonlight Oracle",
-    countLabel: "44 ใบ",
-    price: 590,
-    image: "/img/deck-moon.png",
-    badge: "ขายดี",
-    rating: 4.9,
-    link: "/deck/moonlight",
-    ebook: { price: 290, pages: "72 หน้า" },
-  },
-  {
     id: "cutie-cat-tarot-deck",
     kind: "Tarot",
     title: "Cutie Cat Tarot",
     countLabel: "78 ใบ",
     price: 690,
     image: "/img/deck-cutie-cat.png",
-    badge: "ใหม่",
+    badge: "ขายดี",
     rating: 4.9,
     link: "/deck/cutie-cat",
     ebook: { price: 349, pages: "168 หน้า" },
@@ -57,14 +45,6 @@ export interface BestSeller {
 export const bestSellers: BestSeller[] = [
   {
     rank: 1,
-    title: "Moonlight Oracle",
-    category: "Deck · Oracle",
-    price: 590,
-    rating: 4.9,
-    thumb: "/img/deck-moon.png",
-  },
-  {
-    rank: 2,
     title: "Cutie Cat Tarot",
     category: "Deck · Tarot",
     price: 690,
@@ -72,11 +52,11 @@ export const bestSellers: BestSeller[] = [
     thumb: "/img/deck-cutie-cat.png",
   },
   {
-    rank: 3,
-    title: "คู่มือ Moonlight Oracle",
+    rank: 2,
+    title: "คู่มือ Cutie Cat Tarot",
     category: "E-book · คู่มือ",
-    price: 290,
+    price: 349,
     rating: 4.9,
-    thumb: "/img/ebook-moonlight.png",
+    thumb: "/img/cover-cutie-cat.png",
   },
 ];

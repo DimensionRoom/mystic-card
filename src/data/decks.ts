@@ -20,19 +20,6 @@ export interface Deck {
 
 export const decks: Deck[] = [
   {
-    id: "moonlight",
-    name: "Moonlight Oracle",
-    type: "Oracle",
-    cardCount: 44,
-    image: "/img/deck-moon.png",
-    cover: "/img/deck-cover.png",
-    tagline: "ไพ่ปลอบใจจากแสงจันทร์ นำทางหัวใจในทุกช่วงเวลา",
-    level: "เหมาะสำหรับผู้เริ่มต้น",
-    cardBack: "/img/card-back.png",
-    about:
-      "Moonlight Oracle คือไพ่ออราเคิล 44 ใบใต้แสงจันทร์สีพาสเทล ทุกใบส่งข้อความอ่อนโยนเหมือนแสงจันทร์ยามค่ำคืน เหมาะกับการถามหาคำปลอบใจ กำลังใจ และทิศทางของหัวใจ",
-  },
-  {
     id: "cutie-cat",
     name: "Cutie Cat Tarot",
     type: "Tarot",
@@ -64,8 +51,8 @@ export const recentReadings: Reading[] = [
   {
     id: "r1",
     title: "คำแนะนำจากจักรวาล",
-    deckName: "Moonlight Oracle",
-    image: "/img/deck-moon.png",
+    deckName: "Cutie Cat Tarot",
+    image: "/img/deck-cutie-cat.png",
     cardCount: 3,
     when: "2 ชั่วโมงที่แล้ว",
   },

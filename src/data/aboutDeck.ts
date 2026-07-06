@@ -52,27 +52,15 @@ const features: DeckAboutInfo["features"] = [
   },
 ];
 
-const moonlightPreviews = [
-  { name: "New Beginnings", image: "/img/preview-1.png" },
-  { name: "Inner Peace", image: "/img/preview-2.png" },
-  { name: "Healing Heart", image: "/img/preview-3.png" },
-  { name: "Full Moon", image: "/img/preview-4.png" },
-  { name: "Trust the Journey", image: "/img/preview-5.png" },
-];
-
-// ตัวอย่างไพ่ Cutie Cat ดึงจากสำรับจริง (ภาพเป็น placeholder จนกว่าจะมีภาพจริง)
+// ตัวอย่างไพ่ Cutie Cat ดึงจากสำรับจริง
 const cutieCatPreviews = [1, 20, 18, 37, 22].map((id) => {
   const c = cutieCatCards.find((card) => card.id === id)!;
   return { name: c.thaiTitle, image: c.image };
 });
 
 export function getAboutInfo(deck: Deck): DeckAboutInfo {
-  const isMoonlight = deck.id === "moonlight";
-  const isCutieCat = deck.id === "cutie-cat";
   return {
-    description: isMoonlight
-      ? "Moonlight Oracle คือไพ่ที่เกิดขึ้นเพื่อเป็นเพื่อนในใจยามที่คุณต้องการคำปลอบโยน แสงจันทร์เป็นสัญลักษณ์ของความอ่อนโยน ความหวัง และการเริ่มต้นใหม่ ไพ่ชุดนี้จะช่วยให้คุณเชื่อมโยงกับสัญชาตญาณภายในตัวเอง และพบคำตอบที่คุณมองหาอยู่เสมอ ✨"
-      : deck.about,
+    description: deck.about,
     // ปกใบเต็มด้านใน ใช้ deck.cover ก่อน ถ้าไม่ระบุค่อย fallback เป็นหลังไพ่
     cover: deck.cover ?? deck.cardBack,
     features,
@@ -81,39 +69,25 @@ export function getAboutInfo(deck: Deck): DeckAboutInfo {
       ["จำนวนไพ่", `${deck.cardCount} ใบ`],
       ["ขนาดไพ่", "70 x 120 mm"],
       ["สไตล์", "Pastel Fantasy"],
-      [
-        "เหมาะสำหรับ",
-        isCutieCat
-          ? "ทั้งผู้เริ่มต้นและผู้มีประสบการณ์"
-          : "ผู้เริ่มต้น และผู้ที่ต้องการคำปลอบโยนในชีวิต",
-      ],
-      [
-        "พลังงานหลัก",
-        isCutieCat
-          ? "ความน่ารัก, ปัญญา, ครอบคลุมทุกด้านของชีวิต"
-          : "ความอ่อนโยน, ความหวัง, การเริ่มต้นใหม่",
-      ],
+      ["เหมาะสำหรับ", "ทั้งผู้เริ่มต้นและผู้มีประสบการณ์"],
+      ["พลังงานหลัก", "ความน่ารัก, ปัญญา, ครอบคลุมทุกด้านของชีวิต"],
       ["เผยแพร่ครั้งแรก", "2024"],
     ],
-    previews: isCutieCat ? cutieCatPreviews : moonlightPreviews,
+    previews: cutieCatPreviews,
     ebook: {
       title: `${deck.name} Guidebook`,
-      subtitle: isCutieCat
-        ? "คู่มือทาโรต์แมวน้อยฉบับสมบูรณ์"
-        : "คู่มือนำทางด้วยแสงจันทร์",
+      subtitle: "คู่มือทาโรต์แมวน้อยฉบับสมบูรณ์",
       cover: "/img/ebook-cover.png",
       bullets: [
         `ความหมายไพ่ทั้ง ${deck.cardCount} ใบ`,
         "เทคนิคการอ่านไพ่",
         "ตัวอย่างการอ่านจริง",
-        isCutieCat
-          ? "ความหมายไพ่กลับหัวครบทุกใบ"
-          : "แบบฝึกหัดเชื่อมโยงสัญชาตญาณ",
+        "ความหมายไพ่กลับหัวครบทุกใบ",
       ],
       format: "PDF",
-      pages: isCutieCat ? "168 หน้า" : "128 หน้า",
+      pages: "168 หน้า",
       language: "ไทย",
-      price: isCutieCat ? 349 : 299,
+      price: 349,
     },
   };
 }

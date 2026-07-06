@@ -1,4 +1,3 @@
-import { oracleCards } from "./oracleCards";
 import { cutieCatCards } from "./cutieCatCards";
 
 export interface OracleCard {
@@ -11,10 +10,10 @@ export interface OracleCard {
 
 /**
  * กองไพ่ที่จั่วได้ของแต่ละ deck — สร้างจากชุดความหมายไพ่จริงของ deck นั้น
- * (Moonlight: ไพ่ที่มีความหมายครบ, Cutie Cat: ครบทั้ง 78 ใบ)
+ * (ตอนนี้มีสำรับเดียวคือ Cutie Cat ครบ 78 ใบ)
  */
 function getDrawPool(deckId: string): OracleCard[] {
-  const source = deckId === "cutie-cat" ? cutieCatCards : oracleCards;
+  const source = cutieCatCards;
   return source.map((c) => ({
     id: `${deckId}-${c.id}`,
     title: c.title,

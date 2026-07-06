@@ -23,7 +23,6 @@ import ReadingHistoryItem from "./ReadingHistoryItem";
 
 /** ภาพปกที่ใช้แสดงในรายการ อิงจาก deck_id ที่บันทึกไว้ */
 const readingCovers: Record<string, string> = {
-  moonlight: "/img/deck-cover.png",
   "cutie-cat": "/img/deck-cutie-cat.png",
 };
 
@@ -31,14 +30,14 @@ function coverFor(deckId: string): string {
   return (
     readingCovers[deckId] ??
     decks.find((d) => d.id === deckId)?.image ??
-    "/img/deck-moon.png"
+    "/img/deck-cutie-cat.png"
   );
 }
 
 function thumbForDeckName(deckName: string): string {
   return (
     decks.find((d) => deckName.includes(d.name.split(" ")[0]))?.image ??
-    "/img/deck-moon.png"
+    "/img/deck-cutie-cat.png"
   );
 }
 

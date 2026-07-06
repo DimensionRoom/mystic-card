@@ -16,28 +16,17 @@ export interface OwnedDeck {
 
 export const ownedDecks: OwnedDeck[] = [
   {
-    id: "moonlight",
-    title: "Moonlight Oracle",
-    type: "Oracle",
-    cards: 44,
-    cover: "/img/deck-moon.png",
-    favorite: false,
-    lastUsedAt: "วันนี้ เวลา 10:24 น.",
-    hasEbook: true,
-    link: "/deck/moonlight",
-  },
-  {
     id: "cutie-cat",
     title: "Cutie Cat Tarot",
     type: "Tarot",
     cards: 78,
     cover: "/img/deck-cutie-cat.png",
     favorite: false,
-    lastUsedAt: null,
+    lastUsedAt: "วันนี้ เวลา 10:24 น.",
     hasEbook: true,
     link: "/deck/cutie-cat",
   },
 ];
 
 /** the deck shown in the "ใช้งานล่าสุด" side panel */
-export const lastUsedDeck = ownedDecks.find((d) => d.id === "moonlight")!;
+export const lastUsedDeck = ownedDecks.find((d) => d.id === "cutie-cat")!;
