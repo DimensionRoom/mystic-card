@@ -5,6 +5,7 @@ import {
   type ReadingItem,
 } from "../../data/myReadings";
 import { decks } from "../../data/decks";
+import { getDeckCardSet } from "../../data/deckCards";
 import { useAuth } from "../../auth/AuthContext";
 import {
   deleteReading,
@@ -16,6 +17,7 @@ import {
 } from "../../lib/db";
 import Icon from "../Icon";
 import UserActions from "../UserActions";
+import CardFace from "../deck/CardFace";
 import ReadingHistoryItem from "./ReadingHistoryItem";
 
 /** ภาพปกที่ใช้แสดงในรายการ อิงจาก deck_id ที่บันทึกไว้ */
@@ -37,6 +39,21 @@ function thumbForDeckName(deckName: string): string {
     decks.find((d) => deckName.includes(d.name.split(" ")[0]))?.image ??
     "/img/deck-moon.png"
   );
+}
+
+/**
+ * หา path รูปหน้าไพ่ "ปัจจุบัน" จากชื่อไพ่ในสำรับ — การอ่านเก่าอาจบันทึก path
+ * ยุค placeholder (หลังไพ่) หรือไม่มีรูปเลยไว้ใน DB ถ้าเทียบชื่อเจอในสำรับ
+ * ให้ใช้รูปจริงตอนนี้แทน จะได้เห็นหน้าไพ่แม้เพิ่งเติมภาพทีหลัง
+ */
+function cardImageFor(
+  deckId: string,
+  card: { title: string; image?: string },
+): string | undefined {
+  const match = getDeckCardSet(deckId).cards.find(
+    (c) => c.title === card.title,
+  );
+  return match?.image ?? card.image;
 }
 
 /** true เมื่อ epoch ms ทั้งสองตกอยู่ในเดือน/ปีปฏิทินเดียวกัน */
@@ -137,6 +154,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
         const { date, time } = formatThaiDateTime(r.created_at);
         return {
           id: r.id,
+          deckId: r.deck_id,
           deckName: r.deck_name,
           deckType: (r.deck_type === "Tarot" ? "Tarot" : "Oracle") as
             | "Oracle"
@@ -643,8 +661,13 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
               <ul className="mt-5 flex flex-col gap-4">
                 {resultFor.cards.map((card, i) => (
                   <li key={card.id} className="flex items-start gap-4">
-                    <img
-                      src={card.image ?? resultFor.cover}
+                    {/* ใช้รูปหน้าไพ่ปัจจุบัน (เทียบจากชื่อ) และ fallback เป็นหลังไพ่ถ้ายังไม่มีภาพ */}
+                    <CardFace
+                      src={cardImageFor(resultFor.deckId, card)}
+                      fallback={
+                        decks.find((d) => d.id === resultFor.deckId)
+                          ?.cardBack ?? resultFor.cover
+                      }
                       alt={`ไพ่ ${card.title}`}
                       className="aspect-[19/28] w-16 shrink-0 rounded-lg border-2 border-mystic-border-purple object-cover shadow-pastel md:w-20"
                     />

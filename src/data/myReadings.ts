@@ -2,6 +2,8 @@ import { formatThaiDateTime, type ReadingCardRow } from "../lib/db";
 
 export interface ReadingItem {
   id: string;
+  /** deck id ที่อ่าน ใช้หา card back สำหรับ fallback รูปไพ่ใน modal ผลการอ่าน */
+  deckId: string;
   deckName: string;
   deckType: "Oracle" | "Tarot";
   cover: string;
@@ -35,6 +37,7 @@ function mockEntry(
 export const myReadings: ReadingItem[] = [
   mockEntry(0, {
     id: "reading-001",
+    deckId: "moonlight",
     deckName: "Moonlight Oracle",
     deckType: "Oracle",
     cover: "/img/deck-cover.png",
@@ -67,8 +70,31 @@ export const myReadings: ReadingItem[] = [
       },
     ],
   }),
+  mockEntry(3, {
+    id: "reading-002",
+    deckId: "cutie-cat",
+    deckName: "Cutie Cat Tarot",
+    deckType: "Tarot",
+    cover: "/img/deck-cutie-cat.png",
+    title: "สิ่งที่ควรรู้เกี่ยวกับเส้นทางข้างหน้า",
+    cardCount: 1,
+    preview:
+      "แสงดาวส่องนำทาง ความหวังและการเยียวยากำลังมาถึง จงเชื่อในความฝันและมองไปข้างหน้าด้วยใจสงบ...",
+    isFavorite: false,
+    // จงใจไม่ใส่ image เลียนแบบแถวเก่าใน DB — modal ต้องหารูปจากชื่อไพ่เอง
+    cards: [
+      {
+        id: "cutie-cat-18",
+        title: "XVII · The Star",
+        subtitle: "ดวงดาว",
+        meaning:
+          "แมวน้อยมองดวงดาวระยิบระยับด้วยความหวัง เป็นตัวแทนของความหวัง การเยียวยา และแรงบันดาลใจหลังผ่านค่ำคืนที่ยากลำบาก",
+      },
+    ],
+  }),
   mockEntry(45, {
     id: "reading-004",
+    deckId: "moonlight",
     deckName: "Moonlight Oracle",
     deckType: "Oracle",
     cover: "/img/deck-cover.png",
