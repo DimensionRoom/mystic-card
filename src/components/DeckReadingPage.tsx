@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { Deck } from "../data/decks";
-import { getSampleCards } from "../data/readingCards";
+import { drawRandomCards, type OracleCard } from "../data/readingCards";
 import { useAuth } from "../auth/AuthContext";
 import { saveReading } from "../lib/db";
 import DeckHeader from "./DeckHeader";
@@ -41,13 +41,18 @@ export default function DeckReadingPage({
   )!.cardCount;
   // 1- and 3-card readings pick from a spread of 3; 5-card shows all 5
   const displayCount = requiredCount === 5 ? 5 : 3;
-  const deckSampleCards = useMemo(() => getSampleCards(deck.id), [deck.id]);
-  const drawnCards = deckSampleCards.slice(0, requiredCount);
+  // ไพ่ที่จั่วได้รอบนี้ — สุ่มใหม่ (Fisher–Yates) ทุกครั้งที่เริ่มเปิดไพ่/สับไพ่
+  // เดิมใช้ sampleCards.slice() ตายตัว ทำให้ได้ไพ่ชุดเดิมซ้ำทุกรอบ
+  const [drawnCards, setDrawnCards] = useState<OracleCard[]>(() =>
+    drawRandomCards(deck.id, requiredCount),
+  );
 
   const changeReadingType = (type: ReadingType) => {
     setReadingType(type);
     setSelectedCards([]);
     setMode("select");
+    const count = readingOptions.find((o) => o.id === type)!.cardCount;
+    setDrawnCards(drawRandomCards(deck.id, count));
   };
 
   const toggleCard = (index: number) => {
@@ -61,10 +66,13 @@ export default function DeckReadingPage({
   const shuffle = () => {
     setSelectedCards([]);
     setIsShuffling(true);
+    setDrawnCards(drawRandomCards(deck.id, requiredCount));
     window.setTimeout(() => setIsShuffling(false), 400);
   };
 
   const startReading = () => {
+    // จั่วสดใหม่ทุกรอบ ให้ผลไพ่ไม่ผูกกับรอบก่อนหน้า
+    setDrawnCards(drawRandomCards(deck.id, requiredCount));
     setMode("reveal");
     setRevealedCount(1);
     savedThisRound.current = false;
