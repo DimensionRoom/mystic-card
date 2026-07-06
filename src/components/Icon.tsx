@@ -32,7 +32,8 @@ export type IconName =
   | "globe"
   | "file-text"
   | "help"
-  | "logout";
+  | "logout"
+  | "trash";
 
 const paths: Record<IconName, React.ReactNode> = {
   home: (
@@ -235,6 +236,14 @@ const paths: Record<IconName, React.ReactNode> = {
     <>
       <path d="M9 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3" />
       <path d="M15 8.5 18.5 12 15 15.5M18.5 12H9.5" />
+    </>
+  ),
+  trash: (
+    <>
+      <path d="M4 6.5h16" />
+      <path d="M9 6.5V4.8A1.3 1.3 0 0 1 10.3 3.5h3.4A1.3 1.3 0 0 1 15 4.8v1.7" />
+      <path d="M6 6.5 6.8 19a2 2 0 0 0 2 1.9h6.4a2 2 0 0 0 2-1.9L18 6.5" />
+      <path d="M10 10.5v6M14 10.5v6" />
     </>
   ),
 };

@@ -85,29 +85,42 @@ export default function ReadingHistoryItem({
           <Icon name="book" className="h-4 w-4" />
           บันทึกโน้ต
         </button>
-        <button
-          type="button"
-          onClick={onToggleFavorite}
-          aria-pressed={isFavorite}
-          aria-label={
-            isFavorite
-              ? `เอา ${item.title} ออกจากรายการโปรด`
-              : `เพิ่ม ${item.title} ในรายการโปรด`
-          }
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-colors md:mx-auto ${
-            isFavorite
-              ? "border-mystic-pink-soft bg-mystic-pink-soft"
-              : "border-mystic-border bg-white hover:bg-mystic-pink-light"
-          }`}
-        >
-          <span key={String(isFavorite)} className="animate-heart-pop">
-            {isFavorite ? (
-              <span aria-hidden="true">💗</span>
-            ) : (
-              <Icon name="heart" className="h-[18px] w-[18px] text-mystic-muted" />
-            )}
-          </span>
-        </button>
+        <div className="flex shrink-0 items-center gap-2.5 md:justify-center">
+          <button
+            type="button"
+            onClick={onToggleFavorite}
+            aria-pressed={isFavorite}
+            aria-label={
+              isFavorite
+                ? `เอา ${item.title} ออกจากรายการโปรด`
+                : `เพิ่ม ${item.title} ในรายการโปรด`
+            }
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-colors ${
+              isFavorite
+                ? "border-mystic-pink-soft bg-mystic-pink-soft"
+                : "border-mystic-border bg-white hover:bg-mystic-pink-light"
+            }`}
+          >
+            <span key={String(isFavorite)} className="animate-heart-pop">
+              {isFavorite ? (
+                <span aria-hidden="true">💗</span>
+              ) : (
+                <Icon
+                  name="heart"
+                  className="h-[18px] w-[18px] text-mystic-muted"
+                />
+              )}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            aria-label={`ลบ ${item.title}`}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-mystic-border bg-white text-mystic-muted transition-colors hover:border-[#FFD9D9] hover:bg-[#FFF0F0] hover:text-[#FF6B6B]"
+          >
+            <Icon name="trash" className="h-[18px] w-[18px]" />
+          </button>
+        </div>
       </div>
 
       {/* more menu */}
