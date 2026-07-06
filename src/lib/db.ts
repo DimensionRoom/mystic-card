@@ -127,6 +127,12 @@ export async function deleteReading(readingId: string): Promise<void> {
   await supabase.from("readings").delete().eq("id", readingId);
 }
 
+/** ลบประวัติการอ่านทั้งหมดของผู้ใช้ (โน้ตไม่ถูกลบด้วย) */
+export async function deleteAllReadings(userId: string): Promise<void> {
+  if (!supabase) return;
+  await supabase.from("readings").delete().eq("user_id", userId);
+}
+
 /* ---------- โน้ต ---------- */
 
 export interface NoteRow {

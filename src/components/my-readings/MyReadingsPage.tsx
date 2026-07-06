@@ -8,6 +8,7 @@ import { decks } from "../../data/decks";
 import { getDeckCardSet } from "../../data/deckCards";
 import { useAuth } from "../../auth/AuthContext";
 import {
+  deleteAllReadings,
   deleteReading,
   fetchNotes,
   fetchReadings,
@@ -135,6 +136,10 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
   const [query, setQuery] = useState("");
   // การอ่านที่กำลังเปิดดูผลแบบเต็มใน modal
   const [resultFor, setResultFor] = useState<ReadingItem | null>(null);
+  // ยืนยันก่อนลบ: รายการเดียว หรือทั้งหมด
+  const [confirmDelete, setConfirmDelete] = useState<
+    { kind: "one"; item: ReadingItem } | { kind: "all" } | null
+  >(null);
   const [noteFor, setNoteFor] = useState<ReadingItem | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [noteDraft, setNoteDraft] = useState("");
@@ -267,6 +272,28 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
       return next;
     });
 
+  // ลบจริงหลังผู้ใช้กดยืนยันใน dialog
+  const performDelete = () => {
+    if (!confirmDelete) return;
+    if (confirmDelete.kind === "one") {
+      const id = confirmDelete.item.id;
+      setItems((prev) => prev.filter((r) => r.id !== id));
+      setFavorites((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      if (user) void deleteReading(id);
+      showToast("ลบรายการแล้ว 🗑️");
+    } else {
+      setItems([]);
+      setFavorites(new Set());
+      if (user) void deleteAllReadings(user.id);
+      showToast("ลบประวัติการอ่านทั้งหมดแล้ว 🗑️");
+    }
+    setConfirmDelete(null);
+  };
+
   const loadMore = () => {
     // mock pagination: append another batch of the sample readings
     setItems((prev) => [
@@ -300,7 +327,8 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
     showToast("บันทึกโน้ตแล้ว 💜");
   };
 
-  const latest = items[0] ?? (isConfigured ? undefined : myReadings[0]);
+  // ไม่ fallback ไป mock — ถ้าลบหมดแล้วแผง "อ่านล่าสุด" ต้องว่างจริง
+  const latest = items[0] as ReadingItem | undefined;
 
   // ต้องล็อกอินก่อนถึงจะดูประวัติการอ่านจริงได้ — กันไว้ตรงนี้จุดเดียว
   // ครอบคลุมทุกทางที่จะมาถึงหน้านี้ (เมนู, ปุ่ม "ดูทั้งหมด" จากหน้าอื่น ๆ)
@@ -450,9 +478,21 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
             </div>
           </div>
 
-          <h3 className="font-bold text-mystic-ink-deep">
-            ประวัติการอ่านของฉัน
-          </h3>
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="font-bold text-mystic-ink-deep">
+              ประวัติการอ่านของฉัน
+            </h3>
+            {items.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete({ kind: "all" })}
+                className="flex items-center gap-1.5 rounded-full border border-[#FFD9D9] bg-white px-4 py-1.5 text-xs font-semibold text-[#FF6B6B] transition-colors hover:bg-[#FFF0F0]"
+              >
+                <span aria-hidden="true">🗑️</span>
+                ลบทั้งหมด
+              </button>
+            )}
+          </div>
 
           {loadingReadings ? (
             <div className="flex flex-col items-center gap-2 py-14 text-center">
@@ -491,13 +531,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                     onNote={() => openNote(item)}
                     onShare={() => showToast("คัดลอกลิงก์แชร์แล้ว 🔗")}
                     onDownload={() => showToast("กำลังบันทึกเป็นรูปภาพ... 🖼️")}
-                    onDelete={() => {
-                      setItems((prev) =>
-                        prev.filter((r) => r.id !== item.id),
-                      );
-                      if (user) void deleteReading(item.id);
-                      showToast("ลบรายการแล้ว 🗑️");
-                    }}
+                    onDelete={() => setConfirmDelete({ kind: "one", item })}
                   />
                 </li>
               ))}
@@ -625,6 +659,60 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
           </section>
         </aside>
       </div>
+
+      {/* delete confirm dialog — ทั้งลบรายการเดียวและลบทั้งหมด */}
+      {confirmDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="ยืนยันการลบประวัติการอ่าน"
+        >
+          <button
+            type="button"
+            aria-label="ยกเลิกการลบ"
+            onClick={() => setConfirmDelete(null)}
+            className="absolute inset-0 bg-mystic-ink/40 backdrop-blur-sm"
+          />
+          <div className="animate-toast-in relative w-full max-w-sm rounded-bubble-lg bg-white p-6 text-center shadow-pastel-lg">
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#FFE7E7] text-2xl">
+              <span aria-hidden="true">🗑️</span>
+            </span>
+            <h3 className="mt-3 font-extrabold text-mystic-ink-deep">
+              {confirmDelete.kind === "all"
+                ? `ลบประวัติการอ่านทั้งหมด (${items.length} รายการ)?`
+                : "ลบการอ่านรายการนี้?"}
+            </h3>
+            <p className="mt-1.5 text-sm text-mystic-muted">
+              {confirmDelete.kind === "all" ? (
+                "ประวัติการอ่านทุกรายการจะถูกลบถาวร (โน้ตที่บันทึกไว้จะไม่ถูกลบ)"
+              ) : (
+                <>
+                  “{confirmDelete.item.title}”
+                  <br />
+                  จะถูกลบถาวรและกู้คืนไม่ได้
+                </>
+              )}
+            </p>
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
+              <button
+                type="button"
+                onClick={performDelete}
+                className="rounded-full bg-[#FF6B6B] px-7 py-2.5 font-bold text-white shadow-pastel transition-transform hover:scale-105 active:scale-95"
+              >
+                {confirmDelete.kind === "all" ? "ลบทั้งหมด" : "ลบรายการนี้"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(null)}
+                className="rounded-full border border-mystic-border px-7 py-2.5 font-semibold text-mystic-ink/70 transition-colors hover:bg-mystic-pink-light"
+              >
+                ยกเลิก
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* reading result modal — เปิดดูผลการอ่านย้อนหลังแบบเต็ม */}
       {resultFor && (
