@@ -4,6 +4,7 @@ import type { Deck } from "../../data/decks";
 import { getDeckCardSet } from "../../data/deckCards";
 import Icon, { type IconName } from "../Icon";
 import OracleCardImage from "./OracleCardImage";
+import CardFace from "./CardFace";
 
 const categories: {
   key: keyof Pick<OracleCardMeaning, "love" | "work" | "finance" | "advice">;
@@ -138,8 +139,9 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
                         : "border-transparent hover:bg-mystic-pink-light"
                     }`}
                   >
-                    <img
+                    <CardFace
                       src={card.thumb}
+                      fallback={deck.cardBack}
                       alt=""
                       className="h-[68px] w-[52px] shrink-0 rounded-lg border border-white object-cover shadow-pastel"
                     />
@@ -176,6 +178,7 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
         <div className="flex flex-col gap-5 sm:flex-row sm:gap-7">
           <OracleCardImage
             src={selected.image}
+            fallbackSrc={deck.cardBack}
             alt={`ภาพไพ่ ${selected.title}`}
             className="mx-auto aspect-[22/31] w-[190px] shrink-0 sm:mx-0 md:w-[220px]"
           />
@@ -307,8 +310,9 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
                         }}
                         className="flex w-full flex-col items-center gap-2 rounded-2xl border border-mystic-border/60 p-3 text-center transition-all hover:-translate-y-0.5 hover:shadow-pastel"
                       >
-                        <img
+                        <CardFace
                           src={card.thumb}
+                          fallback={deck.cardBack}
                           alt=""
                           className="h-16 w-12 rounded-lg object-cover"
                         />

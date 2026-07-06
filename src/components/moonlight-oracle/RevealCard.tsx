@@ -1,5 +1,6 @@
 import type { Deck } from "../../data/decks";
 import type { OracleCard } from "../../data/readingCards";
+import CardFace from "../deck/CardFace";
 
 export type RevealState = "revealed" | "revealing" | "waiting" | "dimmed";
 
@@ -33,8 +34,9 @@ export default function RevealCard({
       <div className="flex h-[240px] items-center justify-center md:h-[300px]">
         {state === "revealed" && card && (
           <div className="animate-card-flip-in rounded-[18px] border-4 border-[#6f58b8] bg-white p-1.5 shadow-[0_16px_32px_rgba(67,45,126,0.22)]">
-            <img
+            <CardFace
               src={card.image}
+              fallback={deck.cardBack}
               alt={`ไพ่ ${card.title}`}
               className="aspect-[19/28] w-[112px] rounded-[12px] object-cover md:w-[144px]"
             />

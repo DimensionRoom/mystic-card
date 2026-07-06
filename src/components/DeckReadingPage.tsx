@@ -13,6 +13,7 @@ import DeckRecentReadings from "./DeckRecentReadings";
 import ReadingBoard from "./moonlight-oracle/ReadingBoard";
 import CardMeaningTab from "./deck/CardMeaningTab";
 import AboutDeckTab from "./deck/AboutDeckTab";
+import CardFace from "./deck/CardFace";
 
 interface DeckReadingPageProps {
   deck: Deck;
@@ -171,8 +172,9 @@ export default function DeckReadingPage({
             <ul className="mt-5 flex flex-col gap-4">
               {drawnCards.map((card, i) => (
                 <li key={card.id} className="flex items-start gap-4">
-                  <img
+                  <CardFace
                     src={card.image}
+                    fallback={deck.cardBack}
                     alt={`ไพ่ ${card.title}`}
                     className="aspect-[19/28] w-16 shrink-0 rounded-lg border-2 border-mystic-border-purple object-cover shadow-pastel md:w-20"
                   />

@@ -4,6 +4,7 @@ import { getAboutInfo } from "../../data/aboutDeck";
 import { getDeckCardSet } from "../../data/deckCards";
 import type { DeckTab } from "../DeckTabs";
 import Icon from "../Icon";
+import CardFace from "./CardFace";
 
 interface AboutDeckTabProps {
   deck: Deck;
@@ -126,8 +127,9 @@ export default function AboutDeckTab({
                   key={p.name}
                   className="w-[96px] shrink-0 snap-start text-center md:w-auto"
                 >
-                  <img
+                  <CardFace
                     src={p.image}
+                    fallback={deck.cardBack}
                     alt={`ไพ่ตัวอย่าง ${p.name}`}
                     className="aspect-[0.65] w-full rounded-[14px] object-cover shadow-[0_10px_22px_rgba(109,80,180,0.18)]"
                   />
@@ -306,8 +308,9 @@ export default function AboutDeckTab({
                   className="rounded-2xl border border-[#F0E2F5] bg-[#FBF7FF] p-5"
                 >
                   <div className="flex items-center gap-3">
-                    <img
+                    <CardFace
                       src={card.thumb}
+                      fallback={deck.cardBack}
                       alt=""
                       className="h-14 w-11 rounded-lg object-cover"
                     />
