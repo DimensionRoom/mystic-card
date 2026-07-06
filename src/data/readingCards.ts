@@ -1,3 +1,5 @@
+import { cutieCatCards } from "./cutieCatCards";
+
 export interface OracleCard {
   id: string;
   title: string;
@@ -44,3 +46,20 @@ export const sampleCards: OracleCard[] = [
     meaning: "ความสำเร็จของคุณเกิดจากก้าวเล็ก ๆ ที่ทำด้วยหัวใจทุกวัน",
   },
 ];
+
+/** ไพ่ตัวอย่างที่จั่วได้ตอนเปิดไพ่ Cutie Cat Tarot (ภาพเป็น placeholder จนกว่าจะมีภาพจริง) */
+const cutieCatDraw: OracleCard[] = [1, 20, 37, 18, 74].map((id) => {
+  const c = cutieCatCards.find((card) => card.id === id)!;
+  return {
+    id: `cutie-${c.id}`,
+    title: c.title,
+    subtitle: c.thaiTitle,
+    image: c.image,
+    meaning: c.meaning,
+  };
+});
+
+/** เลือกชุดไพ่ที่จั่วได้ตาม deck id — Moonlight ใช้ sampleCards เดิม */
+export function getSampleCards(deckId: string): OracleCard[] {
+  return deckId === "cutie-cat" ? cutieCatDraw : sampleCards;
+}

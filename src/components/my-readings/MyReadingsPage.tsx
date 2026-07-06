@@ -21,6 +21,7 @@ import ReadingHistoryItem from "./ReadingHistoryItem";
 /** ภาพปกที่ใช้แสดงในรายการ อิงจาก deck_id ที่บันทึกไว้ */
 const readingCovers: Record<string, string> = {
   moonlight: "/img/deck-cover.png",
+  "cutie-cat": "/img/deck-cat.png",
 };
 
 function coverFor(deckId: string): string {

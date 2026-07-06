@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Deck } from "../../data/decks";
 import { getAboutInfo } from "../../data/aboutDeck";
-import { oracleCards } from "../../data/oracleCards";
+import { getDeckCardSet } from "../../data/deckCards";
 import type { DeckTab } from "../DeckTabs";
 import Icon from "../Icon";
 
@@ -17,6 +17,7 @@ export default function AboutDeckTab({
   onSwitchTab,
 }: AboutDeckTabProps) {
   const info = getAboutInfo(deck);
+  const previewCards = getDeckCardSet(deck.id).cards.slice(0, 2);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -299,7 +300,7 @@ export default function AboutDeckTab({
               ตัวอย่างจาก {info.ebook.title} <span aria-hidden="true">📖</span>
             </h3>
             <div className="mt-5 flex flex-col gap-4">
-              {oracleCards.slice(0, 2).map((card) => (
+              {previewCards.map((card) => (
                 <article
                   key={card.id}
                   className="rounded-2xl border border-[#F0E2F5] bg-[#FBF7FF] p-5"

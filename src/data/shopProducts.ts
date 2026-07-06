@@ -31,6 +31,18 @@ export const shopProducts: Product[] = [
     link: "/deck/moonlight",
     ebook: { price: 290, pages: "72 หน้า" },
   },
+  {
+    id: "cutie-cat-tarot-deck",
+    kind: "Tarot",
+    title: "Cutie Cat Tarot",
+    countLabel: "78 ใบ",
+    price: 690,
+    image: "/img/deck-cat.png",
+    badge: "ใหม่",
+    rating: 4.9,
+    link: "/deck/cutie-cat",
+    ebook: { price: 349, pages: "168 หน้า" },
+  },
 ];
 
 export interface BestSeller {
@@ -53,6 +65,14 @@ export const bestSellers: BestSeller[] = [
   },
   {
     rank: 2,
+    title: "Cutie Cat Tarot",
+    category: "Deck · Tarot",
+    price: 690,
+    rating: 4.9,
+    thumb: "/img/deck-cat.png",
+  },
+  {
+    rank: 3,
     title: "คู่มือ Moonlight Oracle",
     category: "E-book · คู่มือ",
     price: 290,

@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { Deck } from "../data/decks";
-import { sampleCards } from "../data/readingCards";
+import { getSampleCards } from "../data/readingCards";
 import { useAuth } from "../auth/AuthContext";
 import { saveReading } from "../lib/db";
 import DeckHeader from "./DeckHeader";
@@ -40,7 +40,8 @@ export default function DeckReadingPage({
   )!.cardCount;
   // 1- and 3-card readings pick from a spread of 3; 5-card shows all 5
   const displayCount = requiredCount === 5 ? 5 : 3;
-  const drawnCards = sampleCards.slice(0, requiredCount);
+  const deckSampleCards = useMemo(() => getSampleCards(deck.id), [deck.id]);
+  const drawnCards = deckSampleCards.slice(0, requiredCount);
 
   const changeReadingType = (type: ReadingType) => {
     setReadingType(type);
@@ -125,7 +126,7 @@ export default function DeckReadingPage({
             />
           )}
 
-          {activeTab === "meaning" && <CardMeaningTab />}
+          {activeTab === "meaning" && <CardMeaningTab deck={deck} />}
 
           {activeTab === "about" && (
             <AboutDeckTab
@@ -165,7 +166,7 @@ export default function DeckReadingPage({
           />
           <div className="animate-toast-in relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-bubble-lg bg-white p-6 shadow-pastel-lg md:p-8">
             <h3 className="text-center text-lg font-extrabold text-mystic-ink-deep">
-              คำทำนายจากแสงจันทร์ <span aria-hidden="true">🌙</span>
+              คำทำนายจาก {deck.name} <span aria-hidden="true">🔮</span>
             </h3>
             <ul className="mt-5 flex flex-col gap-4">
               {drawnCards.map((card, i) => (

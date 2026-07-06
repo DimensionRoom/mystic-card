@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  oracleCards,
-  TOTAL_DECK_CARDS,
-  type OracleCardMeaning,
-} from "../../data/oracleCards";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { OracleCardMeaning } from "../../data/oracleCards";
+import type { Deck } from "../../data/decks";
+import { getDeckCardSet } from "../../data/deckCards";
 import Icon, { type IconName } from "../Icon";
 import OracleCardImage from "./OracleCardImage";
 
@@ -44,7 +42,12 @@ const categories: {
   },
 ];
 
-export default function CardMeaningTab() {
+interface CardMeaningTabProps {
+  deck: Deck;
+}
+
+export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
+  const { cards, total } = useMemo(() => getDeckCardSet(deck.id), [deck.id]);
   const [selectedId, setSelectedId] = useState(1);
   const [query, setQuery] = useState("");
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
@@ -54,11 +57,18 @@ export default function CardMeaningTab() {
 
   useEffect(() => () => window.clearTimeout(toastTimer.current), []);
 
-  const selected = oracleCards.find((c) => c.id === selectedId)!;
-  const isFavorite = favorites.has(selectedId);
+  // เปลี่ยนสำรับ → รีเซ็ตไพ่ที่เลือกกลับใบแรกเสมอ กันเลือกค้าง id ที่ไม่มีในสำรับใหม่
+  useEffect(() => {
+    setSelectedId(1);
+    setQuery("");
+    setFavorites(new Set());
+  }, [deck.id]);
+
+  const selected = cards.find((c) => c.id === selectedId) ?? cards[0];
+  const isFavorite = favorites.has(selected.id);
 
   const q = query.trim().toLowerCase();
-  const filtered = oracleCards.filter(
+  const filtered = cards.filter(
     (c) =>
       c.title.toLowerCase().includes(q) || c.thaiTitle.toLowerCase().includes(q),
   );
@@ -66,8 +76,8 @@ export default function CardMeaningTab() {
   const toggleFavorite = () => {
     setFavorites((prev) => {
       const next = new Set(prev);
-      if (next.has(selectedId)) next.delete(selectedId);
-      else next.add(selectedId);
+      if (next.has(selected.id)) next.delete(selected.id);
+      else next.add(selected.id);
       return next;
     });
     if (!isFavorite) {
@@ -157,7 +167,7 @@ export default function CardMeaningTab() {
           onClick={() => setShowAll(true)}
           className="mt-auto h-[46px] w-full rounded-[14px] border border-mystic-border-purple bg-mystic-lavender/60 font-semibold text-mystic-purple transition-colors hover:bg-mystic-lavender"
         >
-          ดูความหมายทั้งหมด ({TOTAL_DECK_CARDS} ใบ)
+          ดูความหมายทั้งหมด ({total} ใบ)
         </button>
       </div>
 
@@ -271,7 +281,7 @@ export default function CardMeaningTab() {
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           role="dialog"
           aria-modal="true"
-          aria-label={`ความหมายไพ่ทั้งหมด ${TOTAL_DECK_CARDS} ใบ`}
+          aria-label={`ความหมายไพ่ทั้งหมด ${total} ใบ`}
         >
           <button
             type="button"
@@ -281,11 +291,11 @@ export default function CardMeaningTab() {
           />
           <div className="animate-toast-in relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-bubble-lg bg-white p-6 shadow-pastel-lg md:p-8">
             <h3 className="text-center text-lg font-extrabold text-mystic-ink-deep">
-              ความหมายไพ่ทั้งหมด {TOTAL_DECK_CARDS} ใบ
+              ความหมายไพ่ทั้งหมด {total} ใบ
             </h3>
             <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-              {Array.from({ length: TOTAL_DECK_CARDS }, (_, i) => {
-                const card = oracleCards[i];
+              {Array.from({ length: total }, (_, i) => {
+                const card = cards[i];
                 if (card) {
                   return (
                     <li key={card.id}>

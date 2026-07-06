@@ -29,6 +29,18 @@ export const decks: Deck[] = [
     about:
       "Moonlight Oracle คือไพ่ออราเคิล 44 ใบใต้แสงจันทร์สีพาสเทล ทุกใบส่งข้อความอ่อนโยนเหมือนแสงจันทร์ยามค่ำคืน เหมาะกับการถามหาคำปลอบใจ กำลังใจ และทิศทางของหัวใจ",
   },
+  {
+    id: "cutie-cat",
+    name: "Cutie Cat Tarot",
+    type: "Tarot",
+    cardCount: 78,
+    image: "/img/deck-cat.png",
+    tagline: "ไพ่ทาโรต์แมวน้อยแสนน่ารัก อ่านหัวใจได้ครบทุกมิติของชีวิต",
+    level: "เหมาะสำหรับทุกระดับ",
+    cardBack: "/img/card-back.png",
+    about:
+      "Cutie Cat Tarot คือไพ่ทาโรต์มาตรฐาน 78 ใบในธีมแมวน้อยแสนน่ารักโทนพาสเทล ครบทั้ง Major Arcana 22 ใบ และ Minor Arcana 56 ใบใน 4 ชุด เหมาะสำหรับทั้งผู้เริ่มต้นและผู้มีประสบการณ์ ให้คำตอบที่ครอบคลุมทุกด้านของชีวิตอย่างอ่อนโยน",
+  },
 ];
 
 export function getDeck(id: string): Deck | undefined {

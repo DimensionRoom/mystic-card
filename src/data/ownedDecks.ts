@@ -26,6 +26,17 @@ export const ownedDecks: OwnedDeck[] = [
     hasEbook: true,
     link: "/deck/moonlight",
   },
+  {
+    id: "cutie-cat",
+    title: "Cutie Cat Tarot",
+    type: "Tarot",
+    cards: 78,
+    cover: "/img/deck-cat.png",
+    favorite: false,
+    lastUsedAt: null,
+    hasEbook: true,
+    link: "/deck/cutie-cat",
+  },
 ];
 
 /** the deck shown in the "ใช้งานล่าสุด" side panel */
