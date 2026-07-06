@@ -34,10 +34,10 @@ export const decks: Deck[] = [
     name: "Cutie Cat Tarot",
     type: "Tarot",
     cardCount: 78,
-    image: "/img/deck-cat.png",
+    image: "/img/deck-cutie-cat.png",
     tagline: "ไพ่ทาโรต์แมวน้อยแสนน่ารัก อ่านหัวใจได้ครบทุกมิติของชีวิต",
     level: "เหมาะสำหรับทุกระดับ",
-    cardBack: "/img/card-back.png",
+    cardBack: "/img/card-back-cutie-cat.png",
     about:
       "Cutie Cat Tarot คือไพ่ทาโรต์มาตรฐาน 78 ใบในธีมแมวน้อยแสนน่ารักโทนพาสเทล ครบทั้ง Major Arcana 22 ใบ และ Minor Arcana 56 ใบใน 4 ชุด เหมาะสำหรับทั้งผู้เริ่มต้นและผู้มีประสบการณ์ ให้คำตอบที่ครอบคลุมทุกด้านของชีวิตอย่างอ่อนโยน",
   },

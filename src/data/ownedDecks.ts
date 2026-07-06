@@ -31,7 +31,7 @@ export const ownedDecks: OwnedDeck[] = [
     title: "Cutie Cat Tarot",
     type: "Tarot",
     cards: 78,
-    cover: "/img/deck-cat.png",
+    cover: "/img/deck-cutie-cat.png",
     favorite: false,
     lastUsedAt: null,
     hasEbook: true,

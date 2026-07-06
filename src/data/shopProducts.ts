@@ -37,7 +37,7 @@ export const shopProducts: Product[] = [
     title: "Cutie Cat Tarot",
     countLabel: "78 ใบ",
     price: 690,
-    image: "/img/deck-cat.png",
+    image: "/img/deck-cutie-cat.png",
     badge: "ใหม่",
     rating: 4.9,
     link: "/deck/cutie-cat",
@@ -69,7 +69,7 @@ export const bestSellers: BestSeller[] = [
     category: "Deck · Tarot",
     price: 690,
     rating: 4.9,
-    thumb: "/img/deck-cat.png",
+    thumb: "/img/deck-cutie-cat.png",
   },
   {
     rank: 3,

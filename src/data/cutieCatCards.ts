@@ -2,8 +2,9 @@ import type { OracleCardMeaning } from "./oracleCards";
 
 export const CUTIE_CAT_TOTAL = 78;
 
-/** placeholder art until the real Cutie Cat Tarot card images are added */
-const PH = "/img/card-back.png";
+/** placeholder art until the real Cutie Cat Tarot card face images are added —
+    ใช้หลังไพ่ของ Cutie Cat เป็น placeholder ให้เข้าธีมกว่าหลังไพ่ Moonlight */
+const PH = "/img/card-back-cutie-cat.png";
 
 /**
  * Cutie Cat Tarot — ไพ่ทาโรต์มาตรฐาน 78 ใบ (Major Arcana 22 + Minor Arcana 56)
