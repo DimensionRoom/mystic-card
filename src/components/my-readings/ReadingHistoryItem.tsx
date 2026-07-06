@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { ReadingItem } from "../../data/myReadings";
 import Icon from "../Icon";
 
@@ -9,8 +8,6 @@ interface ReadingHistoryItemProps {
   onView: () => void;
   onNote: () => void;
   onDelete: () => void;
-  onShare: () => void;
-  onDownload: () => void;
 }
 
 export default function ReadingHistoryItem({
@@ -20,16 +17,7 @@ export default function ReadingHistoryItem({
   onView,
   onNote,
   onDelete,
-  onShare,
-  onDownload,
 }: ReadingHistoryItemProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const menuAction = (fn: () => void) => () => {
-    setMenuOpen(false);
-    fn();
-  };
-
   return (
     <article className="relative grid grid-cols-[72px_minmax(0,1fr)] gap-4 rounded-[18px] border border-[#EFE1F4] bg-white p-3.5 shadow-[0_8px_22px_rgba(80,64,120,0.06)] md:grid-cols-[84px_minmax(0,1fr)_170px] md:p-4">
       <img
@@ -121,57 +109,6 @@ export default function ReadingHistoryItem({
             <Icon name="trash" className="h-[18px] w-[18px]" />
           </button>
         </div>
-      </div>
-
-      {/* more menu */}
-      <div className="absolute right-3 top-3">
-        <button
-          type="button"
-          onClick={() => setMenuOpen((o) => !o)}
-          aria-label={`ตัวเลือกเพิ่มเติมของ ${item.title}`}
-          aria-expanded={menuOpen}
-          className="rounded-full p-1.5 text-mystic-muted transition-colors hover:bg-mystic-lavender/60"
-        >
-          <Icon name="dots" className="h-[18px] w-[18px]" />
-        </button>
-        {menuOpen && (
-          <>
-            <button
-              type="button"
-              aria-label="ปิดเมนู"
-              onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 z-10 cursor-default"
-            />
-            <div className="absolute right-0 z-20 mt-1 w-48 overflow-hidden rounded-2xl border border-mystic-border bg-white py-1.5 shadow-pastel-lg">
-              {[
-                { label: "แชร์ผลการอ่าน", emoji: "🔗", action: onShare },
-                {
-                  label: "ดาวน์โหลดเป็นรูปภาพ",
-                  emoji: "🖼️",
-                  action: onDownload,
-                },
-              ].map((m) => (
-                <button
-                  key={m.label}
-                  type="button"
-                  onClick={menuAction(m.action)}
-                  className="flex w-full items-center gap-2.5 px-4 py-2 text-left text-sm text-mystic-ink/80 transition-colors hover:bg-mystic-lavender/50"
-                >
-                  <span aria-hidden="true">{m.emoji}</span>
-                  {m.label}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={menuAction(onDelete)}
-                className="flex w-full items-center gap-2.5 px-4 py-2 text-left text-sm text-rose-500 transition-colors hover:bg-rose-50"
-              >
-                <span aria-hidden="true">🗑️</span>
-                ลบรายการนี้
-              </button>
-            </div>
-          </>
-        )}
       </div>
     </article>
   );

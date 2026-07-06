@@ -529,8 +529,6 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                     onToggleFavorite={() => toggleFavorite(item.id)}
                     onView={() => setResultFor(item)}
                     onNote={() => openNote(item)}
-                    onShare={() => showToast("คัดลอกลิงก์แชร์แล้ว 🔗")}
-                    onDownload={() => showToast("กำลังบันทึกเป็นรูปภาพ... 🖼️")}
                     onDelete={() => setConfirmDelete({ kind: "one", item })}
                   />
                 </li>
