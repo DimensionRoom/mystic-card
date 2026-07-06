@@ -1,4 +1,4 @@
-import { formatThaiDateTime } from "../lib/db";
+import { formatThaiDateTime, type ReadingCardRow } from "../lib/db";
 
 export interface ReadingItem {
   id: string;
@@ -14,6 +14,8 @@ export interface ReadingItem {
   isFavorite: boolean;
   /** epoch ms — used for "ล่าสุด" sort and for the "อ่านเดือนนี้" stat */
   sortKey: number;
+  /** ไพ่ที่จั่วได้ในครั้งนั้น ใช้เปิดดูผลการอ่านย้อนหลัง (แถวเก่าอาจไม่มี) */
+  cards?: ReadingCardRow[];
 }
 
 /** สร้าง timestamp จริงย้อนไป N วันจากตอนนี้ ให้ mock data ดูสดใหม่เสมอไม่ว่าจะเปิดวันไหน */
@@ -41,6 +43,29 @@ export const myReadings: ReadingItem[] = [
     preview:
       "ไพ่แนะนำให้คุณหันมาใส่ใจความสงบภายใน ปล่อยวางสิ่งที่ควบคุมไม่ได้ และเชื่อมั่นในจังหวะของชีวิต...",
     isFavorite: true,
+    cards: [
+      {
+        id: "mock-2",
+        title: "2. Inner Peace",
+        subtitle: "ความสงบภายใน",
+        image: "/img/deck-moon.png",
+        meaning: "ช่วงเวลานี้เหมาะกับการฟังเสียงภายในและปล่อยให้ใจได้พัก",
+      },
+      {
+        id: "mock-3",
+        title: "3. Letting Go",
+        subtitle: "การปล่อยวาง",
+        image: "/img/deck-fairy.png",
+        meaning: "การปล่อยวางไม่ใช่การยอมแพ้ แต่คือการเปิดพื้นที่ให้สิ่งใหม่ที่ดีกว่าเข้ามา",
+      },
+      {
+        id: "mock-5",
+        title: "5. Trust the Journey",
+        subtitle: "เชื่อมั่นในเส้นทาง",
+        image: "/img/deck-cat.png",
+        meaning: "ทุกก้าวที่คุณเดินล้วนมีความหมาย เชื่อมั่นว่าเส้นทางนี้กำลังพาคุณไปยังที่ที่ใช่",
+      },
+    ],
   }),
   mockEntry(45, {
     id: "reading-004",
@@ -51,6 +76,15 @@ export const myReadings: ReadingItem[] = [
     cardCount: 1,
     preview: "จงเชื่อมั่นในตัวเองและแสงสว่างในหัวใจของคุณ คุณมีพลังมากกว่าที่คุณคิด...",
     isFavorite: false,
+    cards: [
+      {
+        id: "mock-7",
+        title: "7. Self Love",
+        subtitle: "รักตัวเอง",
+        image: "/img/deck-love.png",
+        meaning: "คุณมีค่ามากพอโดยไม่ต้องพิสูจน์อะไรกับใคร ความรักที่มั่นคงที่สุดเริ่มต้นจากข้างใน",
+      },
+    ],
   }),
 ];
 

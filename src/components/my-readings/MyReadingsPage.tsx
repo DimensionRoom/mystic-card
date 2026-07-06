@@ -116,6 +116,8 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
   );
   const [filter, setFilter] = useState<FilterId>("all");
   const [query, setQuery] = useState("");
+  // การอ่านที่กำลังเปิดดูผลแบบเต็มใน modal
+  const [resultFor, setResultFor] = useState<ReadingItem | null>(null);
   const [noteFor, setNoteFor] = useState<ReadingItem | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [noteDraft, setNoteDraft] = useState("");
@@ -147,6 +149,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
           preview: r.preview,
           isFavorite: r.is_favorite,
           sortKey: Date.parse(r.created_at),
+          cards: r.cards,
         };
       }),
     );
@@ -466,7 +469,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                     item={item}
                     isFavorite={favorites.has(item.id)}
                     onToggleFavorite={() => toggleFavorite(item.id)}
-                    onView={() => onNavigate(`/my-readings/${item.id}`)}
+                    onView={() => setResultFor(item)}
                     onNote={() => openNote(item)}
                     onShare={() => showToast("คัดลอกลิงก์แชร์แล้ว 🔗")}
                     onDownload={() => showToast("กำลังบันทึกเป็นรูปภาพ... 🖼️")}
@@ -537,7 +540,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                 </p>
                 <button
                   type="button"
-                  onClick={() => onNavigate(`/my-readings/${latest.id}`)}
+                  onClick={() => setResultFor(latest)}
                   className="mt-3 w-full rounded-xl border-t border-mystic-border/60 pt-3 text-center text-sm font-semibold text-mystic-purple transition-colors hover:text-mystic-pink"
                 >
                   ดูผลการอ่านล่าสุด →
@@ -604,6 +607,99 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
           </section>
         </aside>
       </div>
+
+      {/* reading result modal — เปิดดูผลการอ่านย้อนหลังแบบเต็ม */}
+      {resultFor && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`ผลการอ่าน ${resultFor.title}`}
+        >
+          <button
+            type="button"
+            aria-label="ปิดผลการอ่าน"
+            onClick={() => setResultFor(null)}
+            className="absolute inset-0 bg-mystic-ink/40 backdrop-blur-sm"
+          />
+          <div className="animate-toast-in relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-bubble-lg bg-white p-6 shadow-pastel-lg md:p-8">
+            <h3 className="text-center text-lg font-extrabold text-mystic-ink-deep">
+              ผลการอ่านของคุณ <span aria-hidden="true">🔮</span>
+            </h3>
+            <p className="mt-1 text-center font-semibold text-mystic-purple">
+              {resultFor.title}
+            </p>
+            <p className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-mystic-muted">
+              <span className="rounded-full bg-mystic-lavender px-2.5 py-0.5 font-bold text-mystic-purple">
+                {resultFor.deckName}
+              </span>
+              <Icon name="calendar" className="h-3.5 w-3.5" />
+              {resultFor.date} • {resultFor.time} •
+              <Icon name="cards" className="h-3.5 w-3.5" />
+              {resultFor.cardCount} ใบ
+            </p>
+
+            {resultFor.cards && resultFor.cards.length > 0 ? (
+              <ul className="mt-5 flex flex-col gap-4">
+                {resultFor.cards.map((card, i) => (
+                  <li key={card.id} className="flex items-start gap-4">
+                    <img
+                      src={card.image ?? resultFor.cover}
+                      alt={`ไพ่ ${card.title}`}
+                      className="aspect-[19/28] w-16 shrink-0 rounded-lg border-2 border-mystic-border-purple object-cover shadow-pastel md:w-20"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-mystic-muted">
+                        ใบที่ {i + 1}
+                      </p>
+                      <p className="font-bold text-mystic-ink-deep">
+                        {card.title}
+                      </p>
+                      {card.subtitle && (
+                        <p className="text-sm text-mystic-purple">
+                          {card.subtitle}
+                        </p>
+                      )}
+                      {card.meaning && (
+                        <p className="mt-1 text-sm leading-relaxed text-mystic-ink/75">
+                          {card.meaning}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              // การอ่านเก่าที่ยังไม่ได้เก็บรายละเอียดไพ่ไว้ — แสดงข้อความสรุปแทน
+              <div className="mt-5 rounded-2xl border border-[#F0E2F5] bg-[#FBF7FF] p-5">
+                <p className="text-sm leading-relaxed text-mystic-ink/80">
+                  {resultFor.preview}
+                </p>
+              </div>
+            )}
+
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setResultFor(null);
+                  openNote(resultFor);
+                }}
+                className="rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] px-6 py-2.5 font-bold text-white shadow-pastel transition-transform hover:scale-105"
+              >
+                บันทึกโน้ต 📖
+              </button>
+              <button
+                type="button"
+                onClick={() => setResultFor(null)}
+                className="rounded-full border border-mystic-border px-6 py-2.5 font-semibold text-mystic-ink/70 transition-colors hover:bg-mystic-pink-light"
+              >
+                ปิด
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* note modal */}
       {noteFor && (

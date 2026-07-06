@@ -42,6 +42,16 @@ export async function setDeckFavorite(
 
 /* ---------- ประวัติการอ่าน ---------- */
 
+/** ไพ่ที่จั่วได้ในการอ่านครั้งนั้น เก็บใน column cards (jsonb) —
+    แถวเก่าอาจมีแค่ id/title จึงให้ฟิลด์อื่นเป็น optional */
+export interface ReadingCardRow {
+  id: string;
+  title: string;
+  subtitle?: string;
+  image?: string;
+  meaning?: string;
+}
+
 export interface ReadingRow {
   id: string;
   deck_id: string;
@@ -51,6 +61,7 @@ export interface ReadingRow {
   title: string;
   preview: string;
   card_count: number;
+  cards: ReadingCardRow[];
   is_favorite: boolean;
   created_at: string;
 }
@@ -60,7 +71,7 @@ export async function fetchReadings(userId: string): Promise<ReadingRow[]> {
   const { data } = await supabase
     .from("readings")
     .select(
-      "id, deck_id, deck_name, deck_type, reading_type, title, preview, card_count, is_favorite, created_at",
+      "id, deck_id, deck_name, deck_type, reading_type, title, preview, card_count, cards, is_favorite, created_at",
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
@@ -89,7 +100,14 @@ export async function saveReading(
     title: first ? first.title : "การอ่านไพ่",
     preview: first ? first.meaning : "",
     card_count: input.cards.length,
-    cards: input.cards.map((c) => ({ id: c.id, title: c.title })),
+    // เก็บรายละเอียดไพ่ครบ เพื่อให้หน้า "การอ่านของฉัน" เปิดดูผลย้อนหลังได้
+    cards: input.cards.map((c) => ({
+      id: c.id,
+      title: c.title,
+      subtitle: c.subtitle,
+      image: c.image,
+      meaning: c.meaning,
+    })),
   });
 }
 
