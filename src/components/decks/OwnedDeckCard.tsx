@@ -38,7 +38,12 @@ export default function OwnedDeckCard({
         </span>
       </button>
 
-      <div className="overflow-hidden rounded-[14px]">
+      <div className="relative overflow-hidden rounded-[14px]">
+        {deck.access === "free" && (
+          <span className="absolute left-0 top-0 z-10 rounded-br-xl bg-emerald-500 px-3 py-1 text-xs font-bold text-white">
+            ฟรี
+          </span>
+        )}
         <img
           src={deck.cover}
           alt={`ปกไพ่ ${deck.title}`}

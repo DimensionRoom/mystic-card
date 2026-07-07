@@ -1,9 +1,13 @@
 export type DeckType = "Tarot" | "Oracle";
 
+/** ประเภทการเข้าถึง deck — ฟรีใช้ได้ทุกคน, paid ต้องซื้อก่อน */
+export type DeckAccess = "free" | "paid";
+
 export interface Deck {
   id: string;
   name: string;
   type: DeckType;
+  access: DeckAccess;
   cardCount: number;
   /** ปกด้านนอก (thumbnail) ที่โชว์ในชั้นวาง/ร้านค้า/รายการ Deck */
   image: string;
@@ -23,6 +27,7 @@ export const decks: Deck[] = [
     id: "cutie-cat",
     name: "Cutie Cat Tarot",
     type: "Tarot",
+    access: "free",
     cardCount: 78,
     image: "/img/deck-cutie-cat.png",
     cover: "/img/cover-cutie-cat.png",

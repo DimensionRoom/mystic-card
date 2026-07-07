@@ -4,6 +4,8 @@ export interface OwnedDeck {
   id: string;
   title: string;
   type: OwnedDeckType;
+  /** deck ฟรีแสดงในหน้า "เลือกไพ่" เสมอ ไม่ต้องซื้อก่อน */
+  access: "free" | "paid";
   cards: number;
   cover: string;
   favorite: boolean;
@@ -19,6 +21,7 @@ export const ownedDecks: OwnedDeck[] = [
     id: "cutie-cat",
     title: "Cutie Cat Tarot",
     type: "Tarot",
+    access: "free",
     cards: 78,
     cover: "/img/deck-cutie-cat.png",
     favorite: false,

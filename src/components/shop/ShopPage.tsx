@@ -302,7 +302,14 @@ export default function ShopPage({ onNavigate }: ShopPageProps) {
                         {item.title}
                       </span>
                       <span className="text-xs text-mystic-muted">
-                        {item.category} · ฿ {item.price}
+                        {item.category} ·{" "}
+                        {item.price === 0 ? (
+                          <span className="font-semibold text-emerald-500">
+                            ฟรี
+                          </span>
+                        ) : (
+                          <>฿ {item.price}</>
+                        )}
                       </span>
                     </span>
                     <span className="shrink-0 text-xs font-semibold text-amber-500">

@@ -12,6 +12,7 @@ import OwnedDeckCard from "./OwnedDeckCard";
 
 const filterPills: { id: string; label: string; icon?: IconName }[] = [
   { id: "all", label: "ทั้งหมด" },
+  { id: "free", label: "ฟรี", icon: "gift" },
   { id: "Oracle", label: "Oracle" },
   { id: "Tarot", label: "Tarot" },
   { id: "latest", label: "ล่าสุด", icon: "clock" },
@@ -86,8 +87,9 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
     })();
   }, [user]);
 
+  // deck ฟรีใช้ได้ทุกคนเสมอ ไม่ต้องมีใน owned_decks ที่ซื้อไว้
   const myDecks = ownedIds
-    ? ownedDecks.filter((d) => ownedIds.has(d.id))
+    ? ownedDecks.filter((d) => d.access === "free" || ownedIds.has(d.id))
     : ownedDecks;
 
   const q = query.trim().toLowerCase();
@@ -97,6 +99,7 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
   );
   if (filter === "Oracle" || filter === "Tarot")
     visible = visible.filter((d) => d.type === filter);
+  if (filter === "free") visible = visible.filter((d) => d.access === "free");
   if (filter === "favorite") visible = visible.filter((d) => favorites.has(d.id));
   if (filter === "latest")
     visible = [...visible].sort(

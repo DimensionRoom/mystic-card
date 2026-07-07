@@ -9,7 +9,12 @@ export default function DeckCard({ deck, onNavigate }: DeckCardProps) {
   return (
     <article className="group flex w-full flex-col overflow-hidden rounded-bubble border border-mystic-border/70 bg-white p-1.5 shadow-pastel transition-all duration-300 hover:-translate-y-1.5 hover:shadow-pastel-lg">
       {/* cover art from the reference design (ribbon is part of the art) */}
-      <div className="overflow-hidden rounded-[18px]">
+      <div className="relative overflow-hidden rounded-[18px]">
+        {deck.access === "free" && (
+          <span className="absolute left-0 top-0 z-10 rounded-br-xl bg-emerald-500 px-3 py-1 text-xs font-bold text-white">
+            ฟรี
+          </span>
+        )}
         <img
           src={deck.image}
           alt={`ภาพปกไพ่ ${deck.name} ${deck.type}`}

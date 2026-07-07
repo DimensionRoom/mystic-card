@@ -33,9 +33,13 @@ export default function ProductCard({ product, onNavigate }: ProductCardProps) {
         </span>
 
         <p className="mt-1.5 text-xs text-mystic-muted">{product.countLabel}</p>
-        <p className="mt-1.5 font-extrabold text-[#4C3AB8]">
-          ฿ {product.price.toLocaleString("th-TH")}
-        </p>
+        {product.access === "free" ? (
+          <p className="mt-1.5 font-extrabold text-emerald-500">ฟรี</p>
+        ) : (
+          <p className="mt-1.5 font-extrabold text-[#4C3AB8]">
+            ฿ {product.price.toLocaleString("th-TH")}
+          </p>
+        )}
 
         <button
           type="button"

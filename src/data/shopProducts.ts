@@ -5,6 +5,8 @@ export interface Product {
   kind: DeckKind;
   title: string;
   countLabel: string;
+  /** deck ฟรีใช้ได้เลยไม่ต้องซื้อ — ราคาแสดงเป็น "ฟรี" */
+  access: "free" | "paid";
   price: number;
   image: string;
   badge?: "ขายดี" | "ใหม่";
@@ -24,7 +26,8 @@ export const shopProducts: Product[] = [
     kind: "Tarot",
     title: "Cutie Cat Tarot",
     countLabel: "78 ใบ",
-    price: 690,
+    access: "free",
+    price: 0,
     image: "/img/deck-cutie-cat.png",
     badge: "ขายดี",
     rating: 4.9,
@@ -47,7 +50,7 @@ export const bestSellers: BestSeller[] = [
     rank: 1,
     title: "Cutie Cat Tarot",
     category: "Deck · Tarot",
-    price: 690,
+    price: 0,
     rating: 4.9,
     thumb: "/img/deck-cutie-cat.png",
   },
