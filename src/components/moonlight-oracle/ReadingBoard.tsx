@@ -125,9 +125,10 @@ export default function ReadingBoard({
         </p>
       </div>
 
-      {/* card row: cards stay in place; picked ones flip where they lie */}
+      {/* card row: cards stay in place; picked ones flip where they lie
+          mobile: ห่อบรรทัดให้เห็นครบทุกใบในจอเดียว (ไม่ต้องเลื่อนแนวนอน) */}
       <div
-        className="relative z-10 my-auto flex snap-x gap-5 overflow-x-auto px-2 py-6 md:justify-center md:gap-8 md:overflow-visible lg:gap-10"
+        className="relative z-10 my-auto flex flex-wrap justify-center gap-2.5 px-0.5 py-5 md:flex-nowrap md:gap-8 md:px-2 md:py-6 lg:gap-10"
         role="group"
         aria-label={
           mode === "select"
@@ -141,15 +142,15 @@ export default function ReadingBoard({
             return (
               <figure
                 key={i}
-                className="flex w-[160px] shrink-0 snap-center flex-col items-center md:w-auto md:shrink"
+                className="flex w-[88px] shrink-0 flex-col items-center md:w-auto md:shrink"
               >
-                <div className="flex h-[240px] items-center justify-center md:h-[300px]">
+                <div className="flex h-[156px] items-center justify-center md:h-[300px]">
                   <button
                     type="button"
                     onClick={() => onToggleCard(i)}
                     aria-pressed={selected}
                     aria-label={`ไพ่ใบที่ ${i + 1}${selected ? " (เลือกแล้ว)" : ""}`}
-                    className={`${isShuffling ? "animate-card-shake" : ""} overflow-hidden rounded-[18px] border-2 transition-all duration-300 ${
+                    className={`${isShuffling ? "animate-card-shake" : ""} overflow-hidden rounded-[14px] border-2 transition-all duration-300 md:rounded-[18px] ${
                       selected
                         ? "-translate-y-2 border-mystic-pink-deep shadow-[0_10px_30px_rgba(240,98,167,0.45)]"
                         : "border-transparent shadow-pastel hover:-translate-y-2 hover:shadow-pastel-lg"
@@ -159,16 +160,16 @@ export default function ReadingBoard({
                     <img
                       src={deck.cardBack}
                       alt=""
-                      className="aspect-[19/28] w-[126px] object-cover md:w-[160px]"
+                      className="aspect-[19/28] w-[84px] object-cover md:w-[160px]"
                     />
                   </button>
                 </div>
                 <figcaption
-                  className="invisible mt-3 text-center"
+                  className="invisible mt-2 text-center md:mt-3"
                   aria-hidden="true"
                 >
-                  <p className="font-bold">-</p>
-                  <p className="mt-0.5 text-sm">-</p>
+                  <p className="text-sm font-bold md:text-base">-</p>
+                  <p className="mt-0.5 text-xs md:text-sm">-</p>
                 </figcaption>
               </figure>
             );
