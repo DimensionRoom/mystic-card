@@ -556,7 +556,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
               src="/img/banner-witch.png"
               alt=""
               aria-hidden="true"
-              className="pointer-events-none absolute bottom-0 left-1/2 hidden w-32 -translate-x-1/2 mix-blend-multiply [mask-image:linear-gradient(to_top,black_65%,transparent_96%),linear-gradient(to_right,transparent_2%,black_18%,black_82%,transparent_98%)] [mask-composite:intersect] md:block"
+              className="pointer-events-none absolute -bottom-1 left-1/2 hidden w-48 -translate-x-1/2 mix-blend-multiply [mask-image:linear-gradient(to_top,black_78%,transparent_100%),linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)] [mask-composite:intersect] md:block"
             />
             <p className="relative z-10 text-sm text-mystic-ink/70">
               ทุกคำตอบ อยู่ในใจคุณเสมอ <span aria-hidden="true">✨</span>

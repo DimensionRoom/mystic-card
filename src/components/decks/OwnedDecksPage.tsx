@@ -263,7 +263,7 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
               src="/img/banner-witch.png"
               alt=""
               aria-hidden="true"
-              className="pointer-events-none absolute bottom-0 right-6 hidden w-52 mix-blend-multiply [mask-image:linear-gradient(to_top,black_65%,transparent_96%),linear-gradient(to_right,transparent_2%,black_18%,black_82%,transparent_98%)] [mask-composite:intersect] md:block"
+              className="pointer-events-none absolute -bottom-1 right-8 hidden w-64 mix-blend-multiply [mask-image:linear-gradient(to_top,black_78%,transparent_100%),linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)] [mask-composite:intersect] md:block lg:w-72"
             />
           </section>
         </div>

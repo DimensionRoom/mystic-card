@@ -154,7 +154,7 @@ export default function AboutDeckTab({
         {/* Bottom CTA banner */}
         <section
           aria-label={`เริ่มอ่านไพ่กับ ${deck.name}`}
-          className="relative flex flex-col gap-4 overflow-hidden rounded-[20px] bg-gradient-to-r from-[#E9DDF9] via-[#EFE3F8] to-[#E3D5F5] p-6 md:min-h-[120px] md:flex-row md:items-center md:justify-between md:pr-8"
+          className="relative flex flex-col gap-4 overflow-hidden rounded-[20px] bg-gradient-to-r from-[#E9DDF9] via-[#EFE3F8] to-[#E3D5F5] p-6 md:min-h-[120px] md:flex-row md:items-center md:justify-between md:pr-8 lg:pr-56 xl:pr-64"
         >
           <div className="relative z-10 max-w-sm">
             <h4 className="text-lg font-extrabold leading-snug text-mystic-ink-deep">
@@ -167,16 +167,17 @@ export default function AboutDeckTab({
               <span aria-hidden="true">✨</span>
             </p>
           </div>
+          {/* แม่มดอยู่พื้นที่ขวาที่กันไว้ด้วย padding — ไม่ทับข้อความและปุ่ม */}
           <img
             src="/img/banner-witch.png"
             alt=""
             aria-hidden="true"
-            className="pointer-events-none absolute bottom-0 right-56 hidden w-40 mix-blend-multiply [mask-image:linear-gradient(to_top,black_65%,transparent_96%),linear-gradient(to_right,transparent_2%,black_18%,black_82%,transparent_98%)] [mask-composite:intersect] lg:block"
+            className="pointer-events-none absolute -bottom-1 right-2 hidden w-52 mix-blend-multiply [mask-image:linear-gradient(to_top,black_78%,transparent_100%),linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)] [mask-composite:intersect] lg:block xl:w-60"
           />
           <button
             type="button"
             onClick={() => onSwitchTab("read")}
-            className="relative z-10 self-start rounded-full bg-gradient-to-r from-[#8B63EE] to-[#7B4BE8] px-7 py-3 font-bold text-white shadow-pastel transition-transform hover:scale-105 active:scale-95 md:self-auto"
+            className="relative z-10 shrink-0 self-start whitespace-nowrap rounded-full bg-gradient-to-r from-[#8B63EE] to-[#7B4BE8] px-7 py-3 font-bold text-white shadow-pastel transition-transform hover:scale-105 active:scale-95 md:self-auto"
           >
             เริ่มอ่านไพ่เลย →
           </button>
