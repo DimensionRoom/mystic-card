@@ -15,8 +15,29 @@ import OwnedDecksPage from "./components/decks/OwnedDecksPage";
 import SettingsPage from "./components/settings/SettingsPage";
 import { getDeck } from "./data/decks";
 
+const ROUTE_STORAGE_KEY = "mystic-card-route";
+
+// เส้นทางที่แอปมีหน้าจริงรองรับ (ตรงกับรายการใน navigate ด้านล่าง)
+function isValidRoute(path: string): boolean {
+  const deckMatch = path.match(/^\/deck\/([^/]+)$/);
+  return (
+    path === "/" ||
+    path === "/readings" ||
+    path === "/shop" ||
+    path === "/decks" ||
+    path === "/settings" ||
+    (!!deckMatch && !!getDeck(deckMatch[1]))
+  );
+}
+
+// เมื่อรีเฟรชหน้า ให้กลับมาที่หน้าเดิมแทนที่จะเด้งไปหน้าแรกเสมอ
+function getInitialRoute(): string {
+  const saved = sessionStorage.getItem(ROUTE_STORAGE_KEY);
+  return saved && isValidRoute(saved) ? saved : "/";
+}
+
 export default function App() {
-  const [route, setRoute] = useState("/");
+  const [route, setRoute] = useState(getInitialRoute);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<number | undefined>(undefined);
@@ -24,16 +45,9 @@ export default function App() {
   // tiny mock router: home, deck, my-readings, and shop pages are real, the rest shows a toast
   const navigate = useCallback((path: string) => {
     setDrawerOpen(false);
-    const deckMatch = path.match(/^\/deck\/([^/]+)$/);
-    if (
-      path === "/" ||
-      path === "/readings" ||
-      path === "/shop" ||
-      path === "/decks" ||
-      path === "/settings" ||
-      (deckMatch && getDeck(deckMatch[1]))
-    ) {
+    if (isValidRoute(path)) {
       setRoute(path);
+      sessionStorage.setItem(ROUTE_STORAGE_KEY, path);
       window.scrollTo({ top: 0 });
       return;
     }
