@@ -91,13 +91,18 @@ export async function saveReading(
 ): Promise<void> {
   if (!supabase) return;
   const first = input.cards[0];
+  // ชื่อประวัติ = ชื่อไพ่ทุกใบต่อกันด้วยคอมมา
+  const title =
+    input.cards.length > 0
+      ? input.cards.map((c) => c.title).join(", ")
+      : "การอ่านไพ่";
   await supabase.from("readings").insert({
     user_id: userId,
     deck_id: input.deckId,
     deck_name: input.deckName,
     deck_type: input.deckType,
     reading_type: input.readingType,
-    title: first ? first.title : "การอ่านไพ่",
+    title,
     preview: first ? first.meaning : "",
     card_count: input.cards.length,
     // เก็บรายละเอียดไพ่ครบ เพื่อให้หน้า "การอ่านของฉัน" เปิดดูผลย้อนหลังได้

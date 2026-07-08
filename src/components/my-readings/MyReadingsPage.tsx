@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   myReadings,
+  readingDisplayTitle,
   readingNotes,
   type ReadingItem,
 } from "../../data/myReadings";
@@ -250,7 +251,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
   const q = query.trim().toLowerCase();
   let visible = items.filter(
     (r) =>
-      r.title.toLowerCase().includes(q) ||
+      readingDisplayTitle(r).toLowerCase().includes(q) ||
       r.deckName.toLowerCase().includes(q) ||
       r.preview.toLowerCase().includes(q),
   );
@@ -578,8 +579,8 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                   alt={`ภาพการอ่านล่าสุดจาก ${latest.deckName}`}
                   className="mt-3 aspect-video w-full rounded-2xl object-cover"
                 />
-                <h5 className="mt-3 font-bold leading-snug text-mystic-ink-deep">
-                  {latest.title}
+                <h5 className="mt-3 line-clamp-2 font-bold leading-snug text-mystic-ink-deep">
+                  {readingDisplayTitle(latest)}
                 </h5>
                 <p className="mt-1.5 flex items-center gap-2 text-xs text-mystic-muted">
                   <Icon name="calendar" className="h-3.5 w-3.5" />
@@ -685,7 +686,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                 "ประวัติการอ่านทุกรายการจะถูกลบถาวร (โน้ตที่บันทึกไว้จะไม่ถูกลบ)"
               ) : (
                 <>
-                  “{confirmDelete.item.title}”
+                  “{readingDisplayTitle(confirmDelete.item)}”
                   <br />
                   จะถูกลบถาวรและกู้คืนไม่ได้
                 </>
@@ -730,7 +731,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
               ผลการอ่านของคุณ <span aria-hidden="true">🔮</span>
             </h3>
             <p className="mt-1 text-center font-semibold text-mystic-purple">
-              {resultFor.title}
+              {readingDisplayTitle(resultFor)}
             </p>
             <p className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-mystic-muted">
               <span className="rounded-full bg-mystic-lavender px-2.5 py-0.5 font-bold text-mystic-purple">
@@ -828,7 +829,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
               บันทึกโน้ต <span aria-hidden="true">📖</span>
             </h3>
             <p className="mt-1 truncate text-sm text-mystic-muted">
-              {noteFor.title}
+              {readingDisplayTitle(noteFor)}
             </p>
             <textarea
               value={noteDraft}

@@ -1,4 +1,4 @@
-import type { ReadingItem } from "../../data/myReadings";
+import { readingDisplayTitle, type ReadingItem } from "../../data/myReadings";
 import Icon from "../Icon";
 
 interface ReadingHistoryItemProps {
@@ -37,7 +37,7 @@ export default function ReadingHistoryItem({
           {item.deckType}
         </span>
         <h4 className="mt-1.5 truncate font-bold text-mystic-ink-deep md:text-[17px]">
-          {item.title}
+          {readingDisplayTitle(item)}
         </h4>
         <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-mystic-muted">
           <span className="flex items-center gap-1.5">

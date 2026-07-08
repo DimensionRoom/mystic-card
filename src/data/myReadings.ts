@@ -20,6 +20,21 @@ export interface ReadingItem {
   cards?: ReadingCardRow[];
 }
 
+/**
+ * ชื่อประวัติการอ่าน = ชื่อไพ่ทุกใบต่อกันด้วยคอมมา
+ * เช่น "Nine of Cups, Ten of Swords, II · The High Priestess"
+ * ถ้าไม่มีรายละเอียดไพ่ (แถวเก่า) ใช้ title เดิมที่บันทึกไว้
+ */
+export function readingDisplayTitle(item: {
+  title: string;
+  cards?: ReadingCardRow[];
+}): string {
+  if (item.cards && item.cards.length > 0) {
+    return item.cards.map((c) => c.title).join(", ");
+  }
+  return item.title;
+}
+
 /** สร้าง timestamp จริงย้อนไป N วันจากตอนนี้ ให้ mock data ดูสดใหม่เสมอไม่ว่าจะเปิดวันไหน */
 function daysAgo(n: number): number {
   return Date.now() - n * 24 * 60 * 60 * 1000;
