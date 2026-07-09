@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { decks } from "../data/decks";
+import { useLanguage } from "../i18n/LanguageContext";
 import DeckCard from "./DeckCard";
 
 interface DeckShelfProps {
@@ -8,23 +9,24 @@ interface DeckShelfProps {
 
 export default function DeckShelf({ onNavigate }: DeckShelfProps) {
   const rowRef = useRef<HTMLUListElement>(null);
+  const { t } = useLanguage();
 
   const scrollRight = () => {
     rowRef.current?.scrollBy({ left: 480, behavior: "smooth" });
   };
 
   return (
-    <section aria-label="เลือก Deck ที่คุณชอบ">
+    <section aria-label={t.home.deckShelfTitle}>
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-extrabold text-mystic-ink">
-          เลือก Deck ที่คุณชอบ
+          {t.home.deckShelfTitle}
         </h3>
         <button
           type="button"
           onClick={() => onNavigate("/decks")}
           className="font-semibold text-mystic-purple transition-colors hover:text-mystic-pink"
         >
-          ดูทั้งหมด →
+          {t.home.viewAll}
         </button>
       </div>
 
@@ -47,7 +49,7 @@ export default function DeckShelf({ onNavigate }: DeckShelfProps) {
         <button
           type="button"
           onClick={scrollRight}
-          aria-label="เลื่อนดู Deck ถัดไป"
+          aria-label={t.home.deckShelfNextAriaLabel}
           className="absolute -right-3 top-1/2 hidden -translate-y-1/2 rounded-full border border-mystic-border bg-white p-3 text-mystic-purple shadow-pastel-lg transition-transform hover:scale-110 md:block xl:hidden"
         >
           <span aria-hidden="true">›</span>

@@ -5,9 +5,11 @@ import RecentReadings from "../components/RecentReadings";
 import UniverseMessage from "../components/UniverseMessage";
 import RandomCard from "../components/RandomCard";
 import { useAppNavigate } from "../router/useAppNavigate";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function HomePage() {
   const navigate = useAppNavigate();
+  const { t } = useLanguage();
 
   return (
     <div className="flex flex-col gap-8">
@@ -19,7 +21,7 @@ export default function HomePage() {
       <DeckShelf onNavigate={navigate} />
 
       <section
-        aria-label="กิจกรรมและข้อความสำหรับคุณ"
+        aria-label={t.home.activitySectionAriaLabel}
         className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-[1.75fr_1.35fr_1fr]"
       >
         <RecentReadings onNavigate={navigate} />
