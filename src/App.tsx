@@ -101,7 +101,7 @@ export default function App() {
               <Route path="/shop" element={<ShopRoute />} />
               <Route path="/checkout/:productId?" element={<CheckoutRoute />} />
               <Route path="/decks" element={<DecksRoute />} />
-              <Route path="/settings" element={<SettingsRoute />} />
+              <Route path="/settings/:view?" element={<SettingsRoute />} />
               <Route path="/deck/:deckId/:tab?" element={<DeckRoute />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

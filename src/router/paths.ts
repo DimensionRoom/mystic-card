@@ -2,6 +2,10 @@ import { matchPath } from "react-router";
 import { getDeck } from "../data/decks";
 import { getProduct } from "../data/shopProducts";
 import type { DeckTab } from "../components/DeckTabs";
+import {
+  SETTINGS_SUB_VIEWS,
+  type SettingsSubView,
+} from "../components/settings/SettingsPage";
 
 // เส้นทางที่แอปมีหน้าจริงรองรับ (ตรงกับ Route table ใน App.tsx)
 const staticPaths = ["/", "/readings", "/shop", "/checkout", "/decks", "/settings"];
@@ -30,6 +34,13 @@ export function isImplementedPath(path: string): boolean {
   const checkoutMatch = matchPath("/checkout/:productId", path);
   if (checkoutMatch) {
     return !!getProduct(checkoutMatch.params.productId!);
+  }
+
+  const settingsMatch = matchPath("/settings/:view", path);
+  if (settingsMatch) {
+    return SETTINGS_SUB_VIEWS.includes(
+      settingsMatch.params.view as SettingsSubView,
+    );
   }
 
   return false;

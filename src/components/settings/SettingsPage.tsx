@@ -15,16 +15,21 @@ import {
   TermsOfService,
 } from "./views";
 
-type SettingsView =
-  | "main"
-  | "profile"
-  | "email"
-  | "password"
-  | "notifications"
-  | "reading-preferences"
-  | "help"
-  | "privacy"
-  | "terms";
+// sub-view id ทั้งหมด (ไม่รวม "main") — แชร์ให้ SettingsRoute + router/paths.ts
+// ใช้ตรวจสอบ param เดียวกัน กัน drift ของรายการ id
+export const SETTINGS_SUB_VIEWS = [
+  "profile",
+  "email",
+  "password",
+  "notifications",
+  "reading-preferences",
+  "help",
+  "privacy",
+  "terms",
+] as const;
+
+export type SettingsSubView = (typeof SETTINGS_SUB_VIEWS)[number];
+export type SettingsView = "main" | SettingsSubView;
 
 interface SettingsRow {
   id: string;
@@ -87,14 +92,14 @@ function SettingsSection({ title, rows, onRowClick }: SettingsSectionProps) {
 }
 
 interface SettingsPageProps {
+  view: SettingsView;
   onNavigate: (path: string) => void;
 }
 
-export default function SettingsPage({ onNavigate }: SettingsPageProps) {
+export default function SettingsPage({ view, onNavigate }: SettingsPageProps) {
   const { t, language } = useLanguage();
   const { isConfigured, user, displayName, signOut, signInWithGoogle } =
     useAuth();
-  const [view, setView] = useState<SettingsView>("main");
   const [showLogout, setShowLogout] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -241,20 +246,19 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
     await signOut();
     setLoggingOut(false);
     setShowLogout(false);
-    setView("main"); // don't leave a stale sub-page (e.g. profile) showing
     showToast(t.settings.logoutToast);
-    onNavigate("/"); // land back on Home like a fresh, signed-out visit
+    onNavigate("/"); // land back on Home like a fresh, signed-out visit — leaves the sub-view URL behind too
   };
 
   const handleRow = (row: SettingsRow) => {
     if (row.id === "logout") setShowLogout(true);
-    else setView(row.id as SettingsView);
+    else onNavigate(`/settings/${row.id}`);
   };
 
   // เมื่อคลิก avatar ใน UserActions ขณะอยู่หน้านี้แล้ว ให้เปิดข้อมูลส่วนตัว
   // ในหน้าเดิมเลยแทนที่จะ navigate ไป "/settings" ซ้ำ (ซึ่งไม่มีผลอะไร)
   const handleUserActionsNavigate = (path: string) => {
-    if (path === "/settings") setView("profile");
+    if (path === "/settings") onNavigate("/settings/profile");
     else onNavigate(path);
   };
 
@@ -299,7 +303,7 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
             title={activeRow.title}
             description={activeRow.description}
             backLabel={t.settings.backToSettings}
-            onBack={() => setView("main")}
+            onBack={() => onNavigate("/settings")}
           >
             {subViews[view]}
           </SubPage>
