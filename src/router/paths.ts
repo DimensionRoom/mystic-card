@@ -1,5 +1,6 @@
 import { matchPath } from "react-router";
 import { getDeck } from "../data/decks";
+import { getProduct } from "../data/shopProducts";
 import type { DeckTab } from "../components/DeckTabs";
 
 // เส้นทางที่แอปมีหน้าจริงรองรับ (ตรงกับ Route table ใน App.tsx)
@@ -24,6 +25,11 @@ export function isImplementedPath(path: string): boolean {
   if (deckTabMatch) {
     const { deckId, tab } = deckTabMatch.params;
     return !!getDeck(deckId!) && deckTabs.includes(tab as DeckTab);
+  }
+
+  const checkoutMatch = matchPath("/checkout/:productId", path);
+  if (checkoutMatch) {
+    return !!getProduct(checkoutMatch.params.productId!);
   }
 
   return false;

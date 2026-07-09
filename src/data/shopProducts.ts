@@ -25,7 +25,7 @@ export function productDeckId(product: Product): string {
   return product.link?.match(/^\/deck\/(.+)$/)?.[1] ?? product.id;
 }
 
-/** ค้นหาสินค้าจาก id — ใช้ในหน้าชำระเงินที่รับ id ผ่าน sessionStorage */
+/** ค้นหาสินค้าจาก id — ใช้ในหน้าชำระเงินที่รับ id ผ่าน URL param */
 export function getProduct(id: string): Product | undefined {
   return shopProducts.find((p) => p.id === id);
 }

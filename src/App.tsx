@@ -99,7 +99,7 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/readings" element={<ReadingsRoute />} />
               <Route path="/shop" element={<ShopRoute />} />
-              <Route path="/checkout" element={<CheckoutRoute />} />
+              <Route path="/checkout/:productId?" element={<CheckoutRoute />} />
               <Route path="/decks" element={<DecksRoute />} />
               <Route path="/settings" element={<SettingsRoute />} />
               <Route path="/deck/:deckId/:tab?" element={<DeckRoute />} />

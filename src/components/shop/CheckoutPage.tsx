@@ -1,17 +1,14 @@
 import { useState } from "react";
-import {
-  getProduct,
-  productDeckId,
-  type Product,
-} from "../../data/shopProducts";
+import { useNavigate } from "react-router";
+import { productDeckId, type Product } from "../../data/shopProducts";
 import { addLocalOwnedDeck } from "../../data/ownedDeckStore";
 import { useAuth } from "../../auth/AuthContext";
 import { addOwnedDeck } from "../../lib/db";
 import Icon, { type IconName } from "../Icon";
 import UserActions from "../UserActions";
-import { CHECKOUT_PRODUCT_KEY } from "./ShopPage";
 
 interface CheckoutPageProps {
+  product?: Product;
   onNavigate: (path: string) => void;
 }
 
@@ -21,13 +18,12 @@ const payMethods: { id: string; label: string; icon: IconName }[] = [
   { id: "wallet", label: "TrueMoney Wallet", icon: "coins" },
 ];
 
-export default function CheckoutPage({ onNavigate }: CheckoutPageProps) {
+export default function CheckoutPage({
+  product,
+  onNavigate,
+}: CheckoutPageProps) {
   const { user } = useAuth();
-  // อ่านสินค้าที่ส่งต่อมาจากหน้าร้านค้า (ยังคงอยู่แม้ reload)
-  const [product] = useState<Product | undefined>(() => {
-    const id = sessionStorage.getItem(CHECKOUT_PRODUCT_KEY);
-    return id ? getProduct(id) : undefined;
-  });
+  const navigate = useNavigate();
   const [method, setMethod] = useState("card");
   const [paying, setPaying] = useState(false);
 
@@ -63,8 +59,9 @@ export default function CheckoutPage({ onNavigate }: CheckoutPageProps) {
       const deckId = productDeckId(product);
       if (user) void addOwnedDeck(user.id, deckId);
       else addLocalOwnedDeck(deckId);
-      sessionStorage.removeItem(CHECKOUT_PRODUCT_KEY);
-      onNavigate("/decks");
+      // path นี้ valid เสมอ ไม่ต้องผ่าน toast-guard; ใช้ replace กัน Back
+      // กลับมาหน้าจ่ายเงินที่ซื้อไปแล้ว
+      navigate("/decks", { replace: true });
     }, 1100);
   };
 
