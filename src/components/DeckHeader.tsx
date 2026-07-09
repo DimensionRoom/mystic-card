@@ -22,9 +22,6 @@ export default function DeckHeader({ deck, onNavigate }: DeckHeaderProps) {
 
         <h2 className="mt-3 text-2xl font-extrabold text-mystic-ink-deep md:text-[30px]">
           {deck.name}{" "}
-          <span className="text-mystic-pink" aria-hidden="true">
-            💗
-          </span>
         </h2>
         <p className="mt-1.5 text-mystic-ink/70">{deck.tagline}</p>
 

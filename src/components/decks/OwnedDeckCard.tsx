@@ -68,7 +68,7 @@ export default function OwnedDeckCard({
           aria-label={`เปิดไพ่ ${deck.title}`}
           className="mt-2.5 min-h-10 w-full rounded-xl bg-gradient-to-r from-[#FF6FAE] to-[#F75FA2] text-sm font-bold text-white shadow-[0_8px_18px_rgba(247,95,162,0.25)] transition hover:brightness-105 active:scale-95"
         >
-          เปิดไพ่ ✨
+          เปิดไพ่
         </button>
         {deck.hasEbook ? (
           <button
@@ -77,7 +77,7 @@ export default function OwnedDeckCard({
             aria-label={`เปิด E-book ของ ${deck.title}`}
             className="mt-2 min-h-10 w-full rounded-xl border border-mystic-border-purple bg-white text-sm font-semibold text-mystic-purple transition-all hover:bg-mystic-lavender active:scale-95"
           >
-            📖 E-book
+            E-book
           </button>
         ) : (
           <button

@@ -43,7 +43,7 @@ export default function DeckCard({ deck, onNavigate }: DeckCardProps) {
           aria-label={`ซื้อ E-book ของไพ่ ${deck.name}`}
           className="mt-1.5 min-h-10 w-full rounded-full border border-mystic-border-purple bg-white text-[15px] font-semibold text-mystic-purple transition-all hover:bg-mystic-lavender active:scale-95"
         >
-          📖 E-book
+          E-book
         </button>
       </div>
     </article>

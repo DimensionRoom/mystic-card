@@ -76,7 +76,7 @@ export default function Sidebar({ activePath, onNavigate }: SidebarProps) {
         className="rounded-bubble border border-mystic-border bg-mystic-pink-light p-5"
       >
         <h2 className="flex items-center gap-2 text-[15px] font-bold text-mystic-pink">
-          <span aria-hidden="true">👑</span> {t.sidebar.premiumTitle}
+          {t.sidebar.premiumTitle}
         </h2>
         <ul className="mt-3 space-y-1.5 text-sm text-mystic-ink/80">
           {[
