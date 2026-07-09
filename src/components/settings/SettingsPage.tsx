@@ -14,21 +14,8 @@ import {
   ReadingSettings,
   TermsOfService,
 } from "./views";
+import type { SettingsSubView } from "../../router/settingsViews";
 
-// sub-view id ทั้งหมด (ไม่รวม "main") — แชร์ให้ SettingsRoute + router/paths.ts
-// ใช้ตรวจสอบ param เดียวกัน กัน drift ของรายการ id
-export const SETTINGS_SUB_VIEWS = [
-  "profile",
-  "email",
-  "password",
-  "notifications",
-  "reading-preferences",
-  "help",
-  "privacy",
-  "terms",
-] as const;
-
-export type SettingsSubView = (typeof SETTINGS_SUB_VIEWS)[number];
 export type SettingsView = "main" | SettingsSubView;
 
 interface SettingsRow {

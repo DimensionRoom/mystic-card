@@ -2,10 +2,7 @@ import { matchPath } from "react-router";
 import { getDeck } from "../data/decks";
 import { getProduct } from "../data/shopProducts";
 import type { DeckTab } from "../components/DeckTabs";
-import {
-  SETTINGS_SUB_VIEWS,
-  type SettingsSubView,
-} from "../components/settings/SettingsPage";
+import { SETTINGS_SUB_VIEWS, type SettingsSubView } from "./settingsViews";
 
 // เส้นทางที่แอปมีหน้าจริงรองรับ (ตรงกับ Route table ใน App.tsx)
 const staticPaths = ["/", "/readings", "/shop", "/checkout", "/decks", "/settings"];

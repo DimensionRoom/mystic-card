@@ -1,10 +1,9 @@
 import { useParams } from "react-router";
 import SettingsPage, {
-  SETTINGS_SUB_VIEWS,
-  type SettingsSubView,
   type SettingsView,
 } from "../components/settings/SettingsPage";
 import { useAppNavigate } from "../router/useAppNavigate";
+import { SETTINGS_SUB_VIEWS, type SettingsSubView } from "../router/settingsViews";
 import NotFoundPage from "./NotFoundPage";
 
 export default function SettingsRoute() {
