@@ -1,4 +1,6 @@
 import type { Deck } from "../data/decks";
+import { useLanguage } from "../i18n/LanguageContext";
+import type { translations } from "../i18n/translations";
 import Icon, { type IconName } from "./Icon";
 
 export type ReadingType = "one-card" | "three-card" | "five-card";
@@ -11,29 +13,33 @@ export interface ReadingOption {
   icon: IconName;
 }
 
-export const readingOptions: ReadingOption[] = [
-  {
-    id: "one-card",
-    title: "คำแนะนำจากจักรวาล",
-    cardCount: 1,
-    description: "รับข้อความและคำแนะนำสั้นๆ จากจักรวาล",
-    icon: "moon",
-  },
-  {
-    id: "three-card",
-    title: "มุมมองในปัจจุบัน",
-    cardCount: 3,
-    description: "มองเห็นสถานการณ์ปัจจุบัน อดีต - ปัจจุบัน - แนวทาง",
-    icon: "grid",
-  },
-  {
-    id: "five-card",
-    title: "เส้นทางของฉัน",
-    cardCount: 5,
-    description: "สำรวจเส้นทางและคำแนะนำอย่างลึกซึ้ง",
-    icon: "cards",
-  },
-];
+export function getReadingOptions(
+  t: (typeof translations)["th"],
+): ReadingOption[] {
+  return [
+    {
+      id: "one-card",
+      title: t.deckReading.option1Title,
+      cardCount: 1,
+      description: t.deckReading.option1Desc,
+      icon: "moon",
+    },
+    {
+      id: "three-card",
+      title: t.deckReading.option2Title,
+      cardCount: 3,
+      description: t.deckReading.option2Desc,
+      icon: "grid",
+    },
+    {
+      id: "five-card",
+      title: t.deckReading.option3Title,
+      cardCount: 5,
+      description: t.deckReading.option3Desc,
+      icon: "cards",
+    },
+  ];
+}
 
 interface ReadingTypePanelProps {
   deck: Deck;
@@ -48,17 +54,22 @@ export default function ReadingTypePanel({
   onChangeType,
   onNavigate,
 }: ReadingTypePanelProps) {
+  const { t } = useLanguage();
+  const readingOptions = getReadingOptions(t);
   return (
     <div className="flex flex-col gap-5">
       {/* Deck info */}
       <section
-        aria-label={`ข้อมูล Deck ${deck.name}`}
+        aria-label={t.deckReading.deckInfoWithNameAriaLabel.replace(
+          "{name}",
+          deck.name,
+        )}
         className="rounded-bubble border border-mystic-border bg-[#FFF8FC] p-5 shadow-pastel"
       >
         <div className="flex items-start gap-4">
           <img
             src={deck.cardBack}
-            alt={`ภาพไพ่ ${deck.name}`}
+            alt={t.deckReading.deckImageAlt.replace("{name}", deck.name)}
             className="h-28 w-[88px] shrink-0 rounded-xl object-cover shadow-pastel"
           />
           <div className="min-w-0">
@@ -67,7 +78,7 @@ export default function ReadingTypePanel({
               {deck.tagline.split(" ")[0]}
             </p>
             <p className="mt-2 text-sm text-mystic-ink/70">
-              {deck.cardCount} ใบ
+              {deck.cardCount} {t.deckReading.cardsUnit}
             </p>
           </div>
         </div>
@@ -76,16 +87,19 @@ export default function ReadingTypePanel({
           onClick={() => onNavigate("/favorites")}
           className="mt-4 w-full rounded-2xl border border-mystic-border-purple bg-white/80 py-2.5 text-sm font-semibold text-mystic-ink/75 transition-colors hover:bg-mystic-lavender"
         >
-          เพิ่มในรายการโปรด <span aria-hidden="true">🤍</span>
+          {t.deckReading.favoriteAddButton}{" "}
+          <span aria-hidden="true">🤍</span>
         </button>
       </section>
 
       {/* Reading types */}
       <section
-        aria-label="รูปแบบการอ่าน"
+        aria-label={t.deckReading.readingTypeTitle}
         className="rounded-bubble border border-mystic-border bg-white p-5 shadow-pastel"
       >
-        <h4 className="font-bold text-mystic-ink-deep">รูปแบบการอ่าน</h4>
+        <h4 className="font-bold text-mystic-ink-deep">
+          {t.deckReading.readingTypeTitle}
+        </h4>
 
         <div className="mt-4 flex flex-col gap-3" role="radiogroup">
           {readingOptions.map((option) => {
@@ -124,7 +138,7 @@ export default function ReadingTypePanel({
                           : "bg-mystic-lavender text-mystic-purple"
                       }`}
                     >
-                      {option.cardCount} ใบ
+                      {option.cardCount} {t.deckReading.cardsUnit}
                     </span>
                     <span className="mt-1 block text-sm leading-snug text-mystic-muted">
                       {option.description}

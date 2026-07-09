@@ -1,5 +1,6 @@
 import type { Deck } from "../../data/decks";
 import type { OracleCard } from "../../data/readingCards";
+import { useLanguage } from "../../i18n/LanguageContext";
 import RevealCard, { type RevealState } from "./RevealCard";
 import RevealProgress from "./RevealProgress";
 import ReadingActionBar from "./ReadingActionBar";
@@ -64,6 +65,7 @@ export default function ReadingBoard({
   onRevealNext,
   onViewFullReading,
 }: ReadingBoardProps) {
+  const { t } = useLanguage();
   const ready = selectedCards.length === requiredCount;
   const allRevealed = revealedCount >= requiredCount;
 
@@ -78,7 +80,7 @@ export default function ReadingBoard({
 
   return (
     <section
-      aria-label="กระดานเปิดไพ่"
+      aria-label={t.deckReading.boardAriaLabel}
       className="relative flex grow flex-col overflow-hidden rounded-[28px] border border-[#eadff8] bg-gradient-to-br from-[#dcd2ff] via-[#f7d9ee] to-[#fff4e7] p-5 shadow-[0_18px_50px_rgba(113,76,169,0.12)] md:min-h-[560px] lg:px-7 lg:pb-6 lg:pt-8"
     >
       {/* decorations (identical in both modes) */}
@@ -109,19 +111,19 @@ export default function ReadingBoard({
         <h3 className="text-xl font-bold text-mystic-ink-deep md:text-2xl">
           {mode === "select" ? (
             <>
-              ตั้งสมาธิและถามคำถามในใจ <span aria-hidden="true">✨</span>
+              {t.deckReading.selectHeader} <span aria-hidden="true">✨</span>
             </>
           ) : (
             <>
-              <span aria-hidden="true">🌙</span> เริ่มคำทำนายแล้ว{" "}
+              <span aria-hidden="true">🌙</span> {t.deckReading.revealHeader}{" "}
               <span aria-hidden="true">🌙</span>
             </>
           )}
         </h3>
         <p className="mx-auto mt-2 w-fit rounded-full bg-white/60 px-5 py-1.5 text-sm font-medium text-mystic-ink-deep shadow-[0_0_18px_rgba(255,255,255,0.8)] backdrop-blur md:text-base">
           {mode === "select"
-            ? "จากนั้นเลือกไพ่ที่ใช่สำหรับคุณ"
-            : "เปิดไพ่ทีละใบเพื่อรับข้อความจากแสงจันทร์"}
+            ? t.deckReading.selectSubtitle
+            : t.deckReading.revealSubtitle}
         </p>
       </div>
 
@@ -132,8 +134,11 @@ export default function ReadingBoard({
         role="group"
         aria-label={
           mode === "select"
-            ? `เลือกไพ่ ${requiredCount} ใบจากไพ่ที่คว่ำอยู่`
-            : "ไพ่ที่กำลังเปิด"
+            ? t.deckReading.selectGroupAriaLabel.replace(
+                "{count}",
+                String(requiredCount),
+              )
+            : t.deckReading.revealGroupAriaLabel
         }
       >
         {Array.from({ length: displayCount }, (_, i) => {
@@ -149,7 +154,12 @@ export default function ReadingBoard({
                     type="button"
                     onClick={() => onToggleCard(i)}
                     aria-pressed={selected}
-                    aria-label={`ไพ่ใบที่ ${i + 1}${selected ? " (เลือกแล้ว)" : ""}`}
+                    aria-label={
+                      t.deckReading.cardAriaLabel.replace(
+                        "{index}",
+                        String(i + 1),
+                      ) + (selected ? t.deckReading.cardSelectedSuffix : "")
+                    }
                     className={`${isShuffling ? "animate-card-shake" : ""} overflow-hidden rounded-[14px] border-2 transition-all duration-300 md:rounded-[18px] ${
                       selected
                         ? "-translate-y-2 border-mystic-pink-deep shadow-[0_10px_30px_rgba(240,98,167,0.45)]"
@@ -193,8 +203,12 @@ export default function ReadingBoard({
         <RevealProgress
           label={
             mode === "select"
-              ? `เลือกแล้ว ${selectedCards.length} จาก ${requiredCount}`
-              : `ใบที่ ${revealedCount} จาก ${requiredCount}`
+              ? t.deckReading.selectedProgressLabel
+                  .replace("{count}", String(selectedCards.length))
+                  .replace("{total}", String(requiredCount))
+              : t.deckReading.revealProgressLabel
+                  .replace("{count}", String(revealedCount))
+                  .replace("{total}", String(requiredCount))
           }
           filledCount={mode === "select" ? selectedCards.length : revealedCount}
           totalCount={requiredCount}
@@ -204,10 +218,10 @@ export default function ReadingBoard({
         <ReadingActionBar
           primaryLabel={
             mode === "select"
-              ? "เริ่มอ่านไพ่ →"
+              ? t.deckReading.startButton
               : allRevealed
-                ? "ดูคำทำนายเต็ม →"
-                : "เปิดไพ่ใบถัดไป ✨"
+                ? t.deckReading.viewFullButton
+                : t.deckReading.nextCardButton
           }
           primaryDisabled={mode === "select" && !ready}
           onPrimary={
@@ -217,14 +231,21 @@ export default function ReadingBoard({
                 ? onViewFullReading
                 : onRevealNext
           }
-          secondaryLabel={mode === "select" ? "สับไพ่ใหม่" : "สับใหม่"}
+          secondaryLabel={
+            mode === "select"
+              ? t.deckReading.reshuffleSelectButton
+              : t.deckReading.reshuffleRevealButton
+          }
           onSecondary={onShuffle}
           hint={
             mode === "select"
               ? ready
-                ? "ครบแล้ว! กดเริ่มอ่านไพ่ได้เลย 💗"
-                : `ตั้งสมาธิ แล้วเลือกไพ่ ${requiredCount} ใบที่เรียกหาคุณ`
-              : "ตั้งสติ หายใจลึก ๆ แล้วเปิดไพ่ทีละใบด้วยใจที่เปิดกว้าง 💗"
+                ? t.deckReading.readyHint
+                : t.deckReading.selectHint.replace(
+                    "{count}",
+                    String(requiredCount),
+                  )
+              : t.deckReading.revealHint
           }
         />
       </div>

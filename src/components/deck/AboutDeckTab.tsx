@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Deck } from "../../data/decks";
 import { getAboutInfo } from "../../data/aboutDeck";
 import { getDeckCardSet } from "../../data/deckCards";
+import { useLanguage } from "../../i18n/LanguageContext";
 import type { DeckTab } from "../DeckTabs";
 import Icon from "../Icon";
 import CardFace from "./CardFace";
@@ -17,6 +18,7 @@ export default function AboutDeckTab({
   onNavigate,
   onSwitchTab,
 }: AboutDeckTabProps) {
+  const { t } = useLanguage();
   const info = getAboutInfo(deck);
   const previewCards = getDeckCardSet(deck.id).cards.slice(0, 2);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -28,14 +30,17 @@ export default function AboutDeckTab({
       <div className="flex min-w-0 flex-col gap-5">
         {/* Hero: cover + about text + features */}
         <section
-          aria-label={`เกี่ยวกับ ${deck.name}`}
+          aria-label={t.deckReading.aboutAriaLabel.replace(
+            "{name}",
+            deck.name,
+          )}
           className="rounded-[24px] border border-[#F0E2F5] bg-white p-6 md:p-7"
         >
           <div className="grid grid-cols-1 gap-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-8">
             <div className="mx-auto w-[200px] md:mx-0 md:w-[220px]">
               <img
                 src={info.cover}
-                alt={`ปกไพ่ ${deck.name}`}
+                alt={t.deckReading.deckCoverAlt.replace("{name}", deck.name)}
                 className="w-full rounded-[18px] object-cover shadow-[0_18px_40px_rgba(118,74,190,0.22)]"
               />
               <button
@@ -53,13 +58,15 @@ export default function AboutDeckTab({
                 ) : (
                   <Icon name="heart" className="h-4 w-4" />
                 )}
-                {isFavorite ? "เพิ่มในรายการโปรดแล้ว" : "เพิ่มในรายการโปรด"}
+                {isFavorite
+                  ? t.deckReading.favoriteAddedButton
+                  : t.deckReading.favoriteAddButton}
               </button>
             </div>
 
             <div className="min-w-0">
               <h3 className="text-lg font-extrabold text-mystic-ink-deep">
-                เกี่ยวกับ Deck
+                {t.deckReading.aboutTitle}
               </h3>
               <p className="mt-3 leading-[1.75] text-[#5D5A7A]">
                 {info.description}
@@ -89,7 +96,7 @@ export default function AboutDeckTab({
         {/* Details + preview carousel */}
         <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[250px_minmax(0,1fr)]">
           <section
-            aria-label="รายละเอียด Deck"
+            aria-label={t.deckReading.detailsAriaLabel}
             className="rounded-[18px] border border-[#F1E5F4] bg-white p-6"
           >
             <dl className="flex flex-col gap-3.5 text-sm">
@@ -105,19 +112,22 @@ export default function AboutDeckTab({
           </section>
 
           <section
-            aria-label="ตัวอย่างไพ่ใน Deck"
+            aria-label={t.deckReading.previewTitle}
             className="relative rounded-[18px] border border-[#F1E5F4] bg-white p-6"
           >
             <div className="flex items-center justify-between gap-3">
               <h4 className="font-bold text-mystic-ink-deep">
-                ตัวอย่างไพ่ใน Deck
+                {t.deckReading.previewTitle}
               </h4>
               <button
                 type="button"
                 onClick={() => onSwitchTab("meaning")}
                 className="text-sm font-semibold text-mystic-purple transition-colors hover:text-mystic-pink"
               >
-                ดูไพ่ทั้งหมด ({deck.cardCount} ใบ)
+                {t.deckReading.viewAllCardsButton.replace(
+                  "{count}",
+                  String(deck.cardCount),
+                )}
               </button>
             </div>
 
@@ -130,7 +140,10 @@ export default function AboutDeckTab({
                   <CardFace
                     src={p.image}
                     fallback={deck.cardBack}
-                    alt={`ไพ่ตัวอย่าง ${p.name}`}
+                    alt={t.deckReading.previewCardAlt.replace(
+                      "{name}",
+                      p.name,
+                    )}
                     className="aspect-[0.65] w-full rounded-[14px] object-cover shadow-[0_10px_22px_rgba(109,80,180,0.18)]"
                   />
                   <p className="mt-2 text-xs font-bold text-mystic-ink-deep">
@@ -143,7 +156,7 @@ export default function AboutDeckTab({
             <button
               type="button"
               onClick={() => onSwitchTab("meaning")}
-              aria-label="ดูไพ่ใบอื่น ๆ"
+              aria-label={t.deckReading.otherCardsAriaLabel}
               className="absolute -right-3 top-1/2 hidden -translate-y-1/2 rounded-full border border-mystic-border bg-white px-3 py-2 text-mystic-purple shadow-pastel-lg transition-transform hover:scale-110 md:block"
             >
               <span aria-hidden="true">›</span>
@@ -153,18 +166,17 @@ export default function AboutDeckTab({
 
         {/* Bottom CTA banner */}
         <section
-          aria-label={`เริ่มอ่านไพ่กับ ${deck.name}`}
+          aria-label={t.deckReading.ctaAriaLabel.replace("{name}", deck.name)}
           className="relative flex flex-col gap-4 overflow-hidden rounded-[20px] bg-gradient-to-r from-[#E9DDF9] via-[#EFE3F8] to-[#E3D5F5] p-6 md:min-h-[120px] md:flex-row md:items-center md:justify-between md:pr-8 lg:pr-56 xl:pr-64"
         >
           <div className="relative z-10 max-w-sm">
             <h4 className="text-lg font-extrabold leading-snug text-mystic-ink-deep">
-              เริ่มต้นการเดินทาง
+              {t.deckReading.journeyTitle}
               <br />
-              ไปกับ {deck.name}
+              {t.deckReading.journeyWith.replace("{name}", deck.name)}
             </h4>
             <p className="mt-1.5 text-sm text-mystic-ink/65">
-              ให้แสงจันทร์นำพาคุณไปพบคำตอบที่หัวใจกำลังตามหา{" "}
-              <span aria-hidden="true">✨</span>
+              {t.deckReading.journeyBody} <span aria-hidden="true">✨</span>
             </p>
           </div>
           {/* แม่มดอยู่พื้นที่ขวาที่กันไว้ด้วย padding — ไม่ทับข้อความและปุ่ม */}
@@ -179,19 +191,19 @@ export default function AboutDeckTab({
             onClick={() => onSwitchTab("read")}
             className="relative z-10 shrink-0 self-start whitespace-nowrap rounded-full bg-gradient-to-r from-[#8B63EE] to-[#7B4BE8] px-7 py-3 font-bold text-white shadow-pastel transition-transform hover:scale-105 active:scale-95 md:self-auto"
           >
-            เริ่มอ่านไพ่เลย →
+            {t.deckReading.startReadingButton}
           </button>
         </section>
       </div>
 
       {/* ---- Right: E-book purchase panel ---- */}
       <aside
-        aria-label="E-book ประจำ Deck"
+        aria-label={t.deckReading.ebookTitle}
         className="flex flex-col overflow-hidden rounded-[24px] border border-[#F0E2F5] bg-white xl:sticky xl:top-6"
       >
         <h4 className="flex items-center gap-2.5 border-b border-[#F0E2F5] bg-[#FBF7FF] px-5 py-4 font-bold text-mystic-purple">
           <Icon name="book" className="h-5 w-5" />
-          E-book ประจำ Deck
+          {t.deckReading.ebookTitle}
         </h4>
 
         <div className="flex flex-col gap-4 p-5">
@@ -199,7 +211,10 @@ export default function AboutDeckTab({
             <div className="relative shrink-0">
               <img
                 src={info.ebook.cover}
-                alt={`ปก E-book ${info.ebook.title}`}
+                alt={t.deckReading.ebookCoverAlt.replace(
+                  "{title}",
+                  info.ebook.title,
+                )}
                 className="w-[120px] rounded-xl object-cover shadow-pastel"
               />
               <span className="absolute -right-2 -top-2 rounded-full bg-mystic-purple px-2.5 py-0.5 text-xs font-bold text-white shadow-pastel">
@@ -229,14 +244,14 @@ export default function AboutDeckTab({
           {/* details box */}
           <div className="rounded-2xl border border-[#F0E2F5] bg-[#FBF7FF] p-4">
             <h6 className="text-sm font-bold text-mystic-ink-deep">
-              รายละเอียด
+              {t.deckReading.detailsHeading}
             </h6>
             <dl className="mt-2.5 flex flex-col gap-2 text-sm">
               {(
                 [
-                  ["รูปแบบไฟล์", info.ebook.format],
-                  ["จำนวนหน้า", info.ebook.pages],
-                  ["ภาษา", info.ebook.language],
+                  [t.deckReading.formatLabel, info.ebook.format],
+                  [t.deckReading.pagesLabel, info.ebook.pages],
+                  [t.deckReading.languageLabel, info.ebook.language],
                 ] as const
               ).map(([k, v]) => (
                 <div key={k} className="grid grid-cols-[96px_1fr] gap-2">
@@ -251,21 +266,23 @@ export default function AboutDeckTab({
               className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-xl border border-mystic-border-purple bg-white py-2.5 text-sm font-semibold text-mystic-ink/75 transition-colors hover:bg-mystic-lavender/60"
             >
               <Icon name="book" className="h-4 w-4" />
-              ดูตัวอย่างบางส่วน
+              {t.deckReading.previewSomeButton}
             </button>
           </div>
 
           {/* price box */}
           <div className="rounded-2xl border border-[#F0E2F5] bg-[#FBF7FF] p-4 text-center">
-            <p className="text-sm text-mystic-muted">ราคา</p>
+            <p className="text-sm text-mystic-muted">
+              {t.deckReading.priceLabel}
+            </p>
             <p className="text-4xl font-extrabold text-mystic-purple">
               {info.ebook.price}
               <span className="ml-1.5 text-sm font-semibold text-mystic-muted">
-                บาท
+                {t.deckReading.currencyBaht}
               </span>
             </p>
             <p className="mt-1 text-xs text-emerald-500">
-              ✓ รับทันทีหลังชำระเงิน
+              {t.deckReading.instantAccess}
             </p>
           </div>
 
@@ -275,11 +292,11 @@ export default function AboutDeckTab({
             className="flex h-[52px] w-full items-center justify-center gap-2.5 rounded-[14px] bg-gradient-to-r from-[#7B4BE8] to-[#9B6DFF] font-bold text-white shadow-pastel transition-all hover:-translate-y-0.5 hover:shadow-pastel-lg active:scale-95"
           >
             <Icon name="cart" className="h-5 w-5" />
-            ซื้อ E-book
+            {t.deckReading.buyEbookButton}
           </button>
           <p className="flex items-center justify-center gap-1.5 text-xs text-mystic-muted">
             <Icon name="shield-check" className="h-4 w-4" />
-            ชำระเงินปลอดภัย 100%
+            {t.deckReading.securePayment}
           </p>
         </div>
       </aside>
@@ -290,17 +307,23 @@ export default function AboutDeckTab({
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           role="dialog"
           aria-modal="true"
-          aria-label={`ตัวอย่าง ${info.ebook.title}`}
+          aria-label={t.deckReading.previewModalAriaLabel.replace(
+            "{title}",
+            info.ebook.title,
+          )}
         >
           <button
             type="button"
-            aria-label="ปิดตัวอย่าง E-book"
+            aria-label={t.deckReading.closePreviewAriaLabel}
             onClick={() => setShowPreview(false)}
             className="absolute inset-0 bg-mystic-ink/40 backdrop-blur-sm"
           />
           <div className="animate-toast-in relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-bubble-lg bg-white p-6 shadow-pastel-lg md:p-8">
             <h3 className="text-center text-lg font-extrabold text-mystic-ink-deep">
-              ตัวอย่างจาก {info.ebook.title}
+              {t.deckReading.previewModalTitle.replace(
+                "{title}",
+                info.ebook.title,
+              )}
             </h3>
             <div className="mt-5 flex flex-col gap-4">
               {previewCards.map((card) => (
@@ -330,8 +353,10 @@ export default function AboutDeckTab({
                 </article>
               ))}
               <p className="text-center text-xs text-mystic-muted">
-                ...และความหมายครบทั้ง {deck.cardCount} ใบ พร้อมเทคนิคการอ่าน
-                รอคุณอยู่ในเล่มเต็ม
+                {t.deckReading.previewFooter.replace(
+                  "{count}",
+                  String(deck.cardCount),
+                )}
               </p>
             </div>
             <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
@@ -340,14 +365,14 @@ export default function AboutDeckTab({
                 onClick={() => onNavigate(`/deck/${deck.id}/ebook`)}
                 className="rounded-full bg-gradient-to-r from-[#7B4BE8] to-[#9B6DFF] px-7 py-2.5 font-bold text-white shadow-pastel transition-transform hover:scale-105"
               >
-                ซื้อ E-book เลย
+                {t.deckReading.buyEbookNowButton}
               </button>
               <button
                 type="button"
                 onClick={() => setShowPreview(false)}
                 className="rounded-full border border-mystic-border px-7 py-2.5 font-semibold text-mystic-ink/70 transition-colors hover:bg-mystic-pink-light"
               >
-                ปิด
+                {t.deckReading.close}
               </button>
             </div>
           </div>

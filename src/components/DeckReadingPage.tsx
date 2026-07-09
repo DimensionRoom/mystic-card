@@ -2,11 +2,12 @@ import { useRef, useState } from "react";
 import type { Deck } from "../data/decks";
 import { drawRandomCards, type OracleCard } from "../data/readingCards";
 import { useAuth } from "../auth/AuthContext";
+import { useLanguage } from "../i18n/LanguageContext";
 import { saveReading } from "../lib/db";
 import DeckHeader from "./DeckHeader";
 import DeckTabs, { type DeckTab } from "./DeckTabs";
 import ReadingTypePanel, {
-  readingOptions,
+  getReadingOptions,
   type ReadingType,
 } from "./ReadingTypePanel";
 import DeckRecentReadings from "./DeckRecentReadings";
@@ -36,6 +37,8 @@ export default function DeckReadingPage({
   const [revealedCount, setRevealedCount] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const { user } = useAuth();
+  const { t } = useLanguage();
+  const readingOptions = getReadingOptions(t);
   // กันบันทึกซ้ำ: เก็บผลลง Supabase ครั้งเดียวต่อการเปิดไพ่หนึ่งรอบ
   const savedThisRound = useRef(false);
 
@@ -168,17 +171,18 @@ export default function DeckReadingPage({
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           role="dialog"
           aria-modal="true"
-          aria-label="คำทำนายเต็ม"
+          aria-label={t.deckReading.fullResultAriaLabel}
         >
           <button
             type="button"
-            aria-label="ปิดคำทำนาย"
+            aria-label={t.deckReading.closeResultAriaLabel}
             onClick={() => setShowResult(false)}
             className="absolute inset-0 bg-mystic-ink/40 backdrop-blur-sm"
           />
           <div className="animate-toast-in relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-bubble-lg bg-white p-6 shadow-pastel-lg md:p-8">
             <h3 className="text-center text-lg font-extrabold text-mystic-ink-deep">
-              คำทำนายจาก {deck.name} <span aria-hidden="true">🔮</span>
+              {t.deckReading.resultTitle.replace("{deckName}", deck.name)}{" "}
+              <span aria-hidden="true">🔮</span>
             </h3>
             <ul className="mt-5 flex flex-col gap-4">
               {drawnCards.map((card, i) => (
@@ -186,12 +190,15 @@ export default function DeckReadingPage({
                   <CardFace
                     src={card.image}
                     fallback={deck.cardBack}
-                    alt={`ไพ่ ${card.title}`}
+                    alt={t.deckReading.cardAlt.replace("{title}", card.title)}
                     className="aspect-[19/28] w-16 shrink-0 rounded-lg border-2 border-mystic-border-purple object-cover shadow-pastel md:w-20"
                   />
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-mystic-muted">
-                      ใบที่ {i + 1}
+                      {t.deckReading.cardIndexLabel.replace(
+                        "{index}",
+                        String(i + 1),
+                      )}
                     </p>
                     <p className="font-bold text-mystic-ink-deep">
                       {card.title}
@@ -212,14 +219,14 @@ export default function DeckReadingPage({
                 }}
                 className="rounded-full bg-gradient-to-r from-mystic-pink to-mystic-purple-soft px-6 py-2.5 font-bold text-white shadow-pastel transition-transform hover:scale-105"
               >
-                อ่านอีกครั้ง ✨
+                {t.deckReading.readAgainButton}
               </button>
               <button
                 type="button"
                 onClick={() => setShowResult(false)}
                 className="rounded-full border border-mystic-border px-6 py-2.5 font-semibold text-mystic-ink/70 transition-colors hover:bg-mystic-pink-light"
               >
-                ปิด
+                {t.deckReading.close}
               </button>
             </div>
           </div>

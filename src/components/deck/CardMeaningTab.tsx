@@ -2,52 +2,58 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { OracleCardMeaning } from "../../data/oracleCards";
 import type { Deck } from "../../data/decks";
 import { getDeckCardSet } from "../../data/deckCards";
+import { useLanguage } from "../../i18n/LanguageContext";
+import type { translations } from "../../i18n/translations";
 import Icon, { type IconName } from "../Icon";
 import OracleCardImage from "./OracleCardImage";
 import CardFace from "./CardFace";
 
-const categories: {
+function getCategories(t: (typeof translations)["th"]): {
   key: keyof Pick<OracleCardMeaning, "love" | "work" | "finance" | "advice">;
   title: string;
   icon: IconName;
   iconClass: string;
   titleClass: string;
-}[] = [
-  {
-    key: "love",
-    title: "ความรัก",
-    icon: "heart",
-    iconClass: "bg-emerald-50 text-emerald-500",
-    titleClass: "text-emerald-500",
-  },
-  {
-    key: "work",
-    title: "การงาน",
-    icon: "briefcase",
-    iconClass: "bg-sky-50 text-sky-500",
-    titleClass: "text-sky-500",
-  },
-  {
-    key: "finance",
-    title: "การเงิน",
-    icon: "coins",
-    iconClass: "bg-mystic-lavender text-mystic-purple",
-    titleClass: "text-mystic-purple",
-  },
-  {
-    key: "advice",
-    title: "คำแนะนำ",
-    icon: "sparkles",
-    iconClass: "bg-amber-50 text-amber-500",
-    titleClass: "text-amber-500",
-  },
-];
+}[] {
+  return [
+    {
+      key: "love",
+      title: t.deckReading.categoryLove,
+      icon: "heart",
+      iconClass: "bg-emerald-50 text-emerald-500",
+      titleClass: "text-emerald-500",
+    },
+    {
+      key: "work",
+      title: t.deckReading.categoryWork,
+      icon: "briefcase",
+      iconClass: "bg-sky-50 text-sky-500",
+      titleClass: "text-sky-500",
+    },
+    {
+      key: "finance",
+      title: t.deckReading.categoryFinance,
+      icon: "coins",
+      iconClass: "bg-mystic-lavender text-mystic-purple",
+      titleClass: "text-mystic-purple",
+    },
+    {
+      key: "advice",
+      title: t.deckReading.categoryAdvice,
+      icon: "sparkles",
+      iconClass: "bg-amber-50 text-amber-500",
+      titleClass: "text-amber-500",
+    },
+  ];
+}
 
 interface CardMeaningTabProps {
   deck: Deck;
 }
 
 export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
+  const { t } = useLanguage();
+  const categories = getCategories(t);
   const { cards, total } = useMemo(() => getDeckCardSet(deck.id), [deck.id]);
   const [selectedId, setSelectedId] = useState(1);
   const [query, setQuery] = useState("");
@@ -82,7 +88,7 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
       return next;
     });
     if (!isFavorite) {
-      setToast("บันทึกไพ่ไว้ในรายการโปรดแล้ว 💗");
+      setToast(t.deckReading.favoriteSavedToast);
       window.clearTimeout(toastTimer.current);
       toastTimer.current = window.setTimeout(() => setToast(null), 2200);
     }
@@ -94,7 +100,7 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
       <div className="flex flex-col gap-3 p-4">
         <div className="flex gap-2">
           <label className="relative flex-1">
-            <span className="sr-only">ค้นหาไพ่</span>
+            <span className="sr-only">{t.deckReading.searchCardsAriaLabel}</span>
             <Icon
               name="search"
               className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-mystic-muted"
@@ -103,13 +109,13 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="ค้นหาไพ่..."
+              placeholder={t.deckReading.searchCardsPlaceholder}
               className="h-12 w-full rounded-2xl border border-mystic-border-purple/70 bg-white pl-11 pr-4 text-[15px] text-mystic-ink placeholder:text-mystic-muted focus:border-mystic-purple focus:outline-none"
             />
           </label>
           <button
             type="button"
-            aria-label="ตัวกรองการค้นหา"
+            aria-label={t.deckReading.filterAriaLabel}
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-mystic-border-purple/70 bg-white text-mystic-ink/70 transition-colors hover:bg-mystic-lavender"
           >
             <Icon name="sliders" className="h-5 w-5" />
@@ -121,7 +127,7 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
             <span className="text-3xl" aria-hidden="true">
               🔍
             </span>
-            <p className="text-mystic-muted">ไม่พบไพ่ที่ค้นหา</p>
+            <p className="text-mystic-muted">{t.deckReading.noResultsText}</p>
           </div>
         ) : (
           <ul className="no-scrollbar flex flex-col gap-1.5 lg:max-h-[760px] lg:overflow-y-auto">
@@ -169,7 +175,10 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
           onClick={() => setShowAll(true)}
           className="mt-auto h-[46px] w-full rounded-[14px] border border-mystic-border-purple bg-mystic-lavender/60 font-semibold text-mystic-purple transition-colors hover:bg-mystic-lavender"
         >
-          ดูความหมายทั้งหมด ({total} ใบ)
+          {t.deckReading.viewAllMeaningsButton.replace(
+            "{count}",
+            String(total),
+          )}
         </button>
       </div>
 
@@ -179,7 +188,10 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
           <OracleCardImage
             src={selected.image}
             fallbackSrc={deck.cardBack}
-            alt={`ภาพไพ่ ${selected.title}`}
+            alt={t.deckReading.cardImageAlt.replace(
+              "{title}",
+              selected.title,
+            )}
             className="mx-auto aspect-[22/31] w-[190px] shrink-0 sm:mx-0 md:w-[220px]"
           />
           <div className="min-w-0">
@@ -203,12 +215,12 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
 
         {/* overall meaning */}
         <section
-          aria-label="ความหมายโดยรวม"
+          aria-label={t.deckReading.overallTitle}
           className="rounded-[18px] border border-mystic-border bg-[#FFF9FC] p-6"
         >
           <h4 className="flex items-center gap-2 font-bold text-mystic-ink-deep">
             <Icon name="heart" className="h-[18px] w-[18px] text-mystic-pink" />
-            ความหมายโดยรวม
+            {t.deckReading.overallTitle}
           </h4>
           <p className="mt-3 leading-relaxed text-mystic-ink/75">
             {selected.overall}
@@ -238,13 +250,13 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
 
         {/* universe message */}
         <section
-          aria-label="ข้อความจากจักรวาล"
+          aria-label={t.deckReading.universeTitle}
           className="flex items-center gap-4 rounded-[20px] border border-mystic-border-purple/70 bg-gradient-to-r from-[#FFF7FB] to-[#F5ECFF] p-6"
         >
           <div className="min-w-0 flex-1">
             <h4 className="flex items-center gap-2 font-bold text-mystic-purple">
               <Icon name="moon" className="h-[18px] w-[18px]" />
-              ข้อความจากจักรวาล
+              {t.deckReading.universeTitle}
             </h4>
             <blockquote className="mt-3 leading-relaxed text-mystic-ink/80">
               “{selected.universeMessage}”
@@ -274,7 +286,9 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
           ) : (
             <Icon name="heart" className="h-5 w-5" />
           )}
-          {isFavorite ? "เพิ่มในรายการโปรดแล้ว" : "เพิ่มในรายการโปรด"}
+          {isFavorite
+            ? t.deckReading.favoriteAddedButton
+            : t.deckReading.favoriteAddButton}
         </button>
       </article>
 
@@ -284,17 +298,23 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           role="dialog"
           aria-modal="true"
-          aria-label={`ความหมายไพ่ทั้งหมด ${total} ใบ`}
+          aria-label={t.deckReading.allCardsAriaLabel.replace(
+            "{count}",
+            String(total),
+          )}
         >
           <button
             type="button"
-            aria-label="ปิดรายการไพ่"
+            aria-label={t.deckReading.closeCardsListAriaLabel}
             onClick={() => setShowAll(false)}
             className="absolute inset-0 bg-mystic-ink/40 backdrop-blur-sm"
           />
           <div className="animate-toast-in relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-bubble-lg bg-white p-6 shadow-pastel-lg md:p-8">
             <h3 className="text-center text-lg font-extrabold text-mystic-ink-deep">
-              ความหมายไพ่ทั้งหมด {total} ใบ
+              {t.deckReading.allCardsAriaLabel.replace(
+                "{count}",
+                String(total),
+              )}
             </h3>
             <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {Array.from({ length: total }, (_, i) => {
@@ -332,7 +352,10 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
                       ?
                     </span>
                     <span className="text-xs leading-tight text-mystic-muted">
-                      ใบที่ {i + 1} · อ่านใน E-book
+                      {t.deckReading.lockedCardLabel.replace(
+                        "{index}",
+                        String(i + 1),
+                      )}
                     </span>
                   </li>
                 );
@@ -344,7 +367,7 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
                 onClick={() => setShowAll(false)}
                 className="rounded-full border border-mystic-border px-8 py-2.5 font-semibold text-mystic-ink/70 transition-colors hover:bg-mystic-pink-light"
               >
-                ปิด
+                {t.deckReading.close}
               </button>
             </div>
           </div>

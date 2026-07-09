@@ -1,12 +1,7 @@
+import { useLanguage } from "../i18n/LanguageContext";
 import Icon, { type IconName } from "./Icon";
 
 export type DeckTab = "read" | "meaning" | "about";
-
-const tabs: { id: DeckTab; label: string; icon: IconName }[] = [
-  { id: "read", label: "อ่านไพ่", icon: "cards" },
-  { id: "meaning", label: "ความหมายไพ่", icon: "sparkles" },
-  { id: "about", label: "เกี่ยวกับ Deck", icon: "info" },
-];
 
 interface DeckTabsProps {
   active: DeckTab;
@@ -14,10 +9,16 @@ interface DeckTabsProps {
 }
 
 export default function DeckTabs({ active, onChange }: DeckTabsProps) {
+  const { t } = useLanguage();
+  const tabs: { id: DeckTab; label: string; icon: IconName }[] = [
+    { id: "read", label: t.deckReading.tabRead, icon: "cards" },
+    { id: "meaning", label: t.deckReading.tabMeaning, icon: "sparkles" },
+    { id: "about", label: t.deckReading.tabAbout, icon: "info" },
+  ];
   return (
     <div
       role="tablist"
-      aria-label="เมนูของ Deck"
+      aria-label={t.deckReading.tabsAriaLabel}
       className="no-scrollbar flex shrink-0 gap-2 overflow-x-auto rounded-[18px] border border-mystic-border bg-[#FFF9FD] p-2"
     >
       {tabs.map((tab) => {

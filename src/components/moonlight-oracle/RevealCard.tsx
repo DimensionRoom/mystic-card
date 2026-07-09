@@ -1,5 +1,6 @@
 import type { Deck } from "../../data/decks";
 import type { OracleCard } from "../../data/readingCards";
+import { useLanguage } from "../../i18n/LanguageContext";
 import CardFace from "../deck/CardFace";
 
 export type RevealState = "revealed" | "revealing" | "waiting" | "dimmed";
@@ -29,6 +30,7 @@ export default function RevealCard({
   position,
   deck,
 }: RevealCardProps) {
+  const { t } = useLanguage();
   return (
     <figure className="flex w-[88px] shrink-0 flex-col items-center md:w-auto md:shrink">
       <div className="flex h-[156px] items-center justify-center md:h-[300px]">
@@ -37,7 +39,7 @@ export default function RevealCard({
             <CardFace
               src={card.image}
               fallback={deck.cardBack}
-              alt={`ไพ่ ${card.title}`}
+              alt={t.deckReading.cardAlt.replace("{title}", card.title)}
               className="aspect-[19/28] w-[72px] rounded-[10px] object-cover md:w-[144px] md:rounded-[12px]"
             />
           </div>
@@ -102,20 +104,26 @@ export default function RevealCard({
         {state === "revealing" && (
           <>
             <p className="text-sm font-bold text-mystic-ink-deep md:text-base">
-              กำลังเปิดไพ่...
+              {t.deckReading.revealingTitle}
             </p>
             <p className="mt-0.5 text-xs text-mystic-ink/60 md:text-sm">
-              เปิดไพ่ใบที่ {position}
+              {t.deckReading.revealPositionLabel.replace(
+                "{position}",
+                String(position),
+              )}
             </p>
           </>
         )}
         {state === "waiting" && (
           <>
             <p className="text-sm font-bold text-mystic-ink-deep/80 md:text-base">
-              รอเปิดไพ่
+              {t.deckReading.waitingTitle}
             </p>
             <p className="mt-0.5 text-xs text-mystic-ink/60 md:text-sm">
-              เปิดไพ่ใบที่ {position}
+              {t.deckReading.revealPositionLabel.replace(
+                "{position}",
+                String(position),
+              )}
             </p>
           </>
         )}
