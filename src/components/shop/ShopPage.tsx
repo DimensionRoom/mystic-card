@@ -12,9 +12,6 @@ import Icon from "../Icon";
 import UserActions from "../UserActions";
 import ProductCard from "./ProductCard";
 
-/** sessionStorage key ส่งต่อสินค้าที่กำลังจะชำระเงินไปหน้า checkout */
-export const CHECKOUT_PRODUCT_KEY = "mystic-card-checkout-product";
-
 const filterChips = ["ทั้งหมด", "Oracle", "Tarot"] as const;
 type FilterChip = (typeof filterChips)[number];
 
@@ -91,8 +88,7 @@ export default function ShopPage({ onNavigate }: ShopPageProps) {
       else addLocalOwnedDeck(deckId);
       onNavigate("/decks");
     } else {
-      sessionStorage.setItem(CHECKOUT_PRODUCT_KEY, product.id);
-      onNavigate("/checkout");
+      onNavigate(`/checkout/${product.id}`);
     }
   };
 

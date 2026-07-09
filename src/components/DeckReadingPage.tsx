@@ -18,13 +18,16 @@ import CardFace from "./deck/CardFace";
 interface DeckReadingPageProps {
   deck: Deck;
   onNavigate: (path: string) => void;
+  activeTab: DeckTab;
+  onTabChange: (tab: DeckTab) => void;
 }
 
 export default function DeckReadingPage({
   deck,
   onNavigate,
+  activeTab,
+  onTabChange,
 }: DeckReadingPageProps) {
-  const [activeTab, setActiveTab] = useState<DeckTab>("read");
   const [readingType, setReadingType] = useState<ReadingType>("one-card");
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
   const [isShuffling, setIsShuffling] = useState(false);
@@ -115,7 +118,7 @@ export default function DeckReadingPage({
       >
         {/* Main column */}
         <div className="flex min-w-0 flex-col gap-4 rounded-bubble-lg border border-[#F1DDF4] bg-[#FFF9FD] p-3 md:p-4">
-          <DeckTabs active={activeTab} onChange={setActiveTab} />
+          <DeckTabs active={activeTab} onChange={onTabChange} />
 
           {activeTab === "read" && (
             <ReadingBoard
@@ -141,7 +144,7 @@ export default function DeckReadingPage({
             <AboutDeckTab
               deck={deck}
               onNavigate={onNavigate}
-              onSwitchTab={setActiveTab}
+              onSwitchTab={onTabChange}
             />
           )}
         </div>

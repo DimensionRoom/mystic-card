@@ -17,7 +17,7 @@ export default function DeckShelf({ onNavigate }: DeckShelfProps) {
     <section aria-label="เลือก Deck ที่คุณชอบ">
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-extrabold text-mystic-ink">
-          เลือก Deck ที่คุณชอบ <span aria-hidden="true">💜</span>
+          เลือก Deck ที่คุณชอบ
         </h3>
         <button
           type="button"

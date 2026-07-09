@@ -14,7 +14,7 @@ export default function OwnedDeckCard({
   onToggleFavorite,
   onNavigate,
 }: OwnedDeckCardProps) {
-  const deckPath = deck.link ?? `/decks/${deck.id}/reading`;
+  const deckPath = deck.link ?? `/deck/${deck.id}`;
 
   return (
     <article className="group relative flex flex-col rounded-[20px] border border-[#EADFF7] bg-white p-2.5 shadow-[0_8px_24px_rgba(124,92,250,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(124,92,250,0.14)]">
@@ -68,16 +68,16 @@ export default function OwnedDeckCard({
           aria-label={`เปิดไพ่ ${deck.title}`}
           className="mt-2.5 min-h-10 w-full rounded-xl bg-gradient-to-r from-[#FF6FAE] to-[#F75FA2] text-sm font-bold text-white shadow-[0_8px_18px_rgba(247,95,162,0.25)] transition hover:brightness-105 active:scale-95"
         >
-          เปิดไพ่ ✨
+          เปิดไพ่
         </button>
         {deck.hasEbook ? (
           <button
             type="button"
-            onClick={() => onNavigate(`${deckPath.replace(/\/reading$/, "")}/ebook`)}
+            onClick={() => onNavigate(`/deck/${deck.id}/ebook`)}
             aria-label={`เปิด E-book ของ ${deck.title}`}
             className="mt-2 min-h-10 w-full rounded-xl border border-mystic-border-purple bg-white text-sm font-semibold text-mystic-purple transition-all hover:bg-mystic-lavender active:scale-95"
           >
-            📖 E-book
+            E-book
           </button>
         ) : (
           <button

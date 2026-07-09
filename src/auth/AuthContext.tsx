@@ -120,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         googleMeta?.name ??
         user.email?.split("@")[0] ??
         "นักเดินทาง")
-      : "น้องดาว");
+      : "นักเดินทาง");
   const avatarUrl =
     profile?.avatar_url ??
     (user

@@ -112,7 +112,7 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
   // deck ที่ใช้ล่าสุดในบรรดาที่ผู้ใช้มีจริง (ถ้าไม่มี deck เลย = undefined)
   const lastUsed = myDecks.find((d) => d.lastUsedAt) ?? myDecks[0];
   const lastUsedPath = lastUsed
-    ? (lastUsed.link ?? `/decks/${lastUsed.id}/reading`)
+    ? (lastUsed.link ?? `/deck/${lastUsed.id}`)
     : "/shop";
 
   return (

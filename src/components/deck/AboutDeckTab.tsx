@@ -300,7 +300,7 @@ export default function AboutDeckTab({
           />
           <div className="animate-toast-in relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-bubble-lg bg-white p-6 shadow-pastel-lg md:p-8">
             <h3 className="text-center text-lg font-extrabold text-mystic-ink-deep">
-              ตัวอย่างจาก {info.ebook.title} <span aria-hidden="true">📖</span>
+              ตัวอย่างจาก {info.ebook.title}
             </h3>
             <div className="mt-5 flex flex-col gap-4">
               {previewCards.map((card) => (
@@ -340,7 +340,7 @@ export default function AboutDeckTab({
                 onClick={() => onNavigate(`/deck/${deck.id}/ebook`)}
                 className="rounded-full bg-gradient-to-r from-[#7B4BE8] to-[#9B6DFF] px-7 py-2.5 font-bold text-white shadow-pastel transition-transform hover:scale-105"
               >
-                ซื้อ E-book เลย 🛍️
+                ซื้อ E-book เลย
               </button>
               <button
                 type="button"

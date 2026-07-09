@@ -332,7 +332,7 @@ export default function CardMeaningTab({ deck }: CardMeaningTabProps) {
                       ?
                     </span>
                     <span className="text-xs leading-tight text-mystic-muted">
-                      ใบที่ {i + 1} · อ่านใน E-book 📖
+                      ใบที่ {i + 1} · อ่านใน E-book
                     </span>
                   </li>
                 );
