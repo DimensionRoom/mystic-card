@@ -27,6 +27,12 @@ export default function App() {
     setDrawerOpen(false);
   }, [pathname]);
 
+  // ปิด drawer เมื่อกดลิงก์ (แม้ที่ปลายทางเป็นแค่ toast)
+  const handleDrawerNavigate = (path: string) => {
+    setDrawerOpen(false);
+    navigate(path);
+  };
+
   useEffect(() => {
     if (!drawerOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -56,7 +62,7 @@ export default function App() {
             className="absolute inset-0 bg-mystic-ink/30 backdrop-blur-sm"
           />
           <div className="absolute inset-y-0 left-0 w-[280px] max-w-[85vw] shadow-pastel-lg">
-            <Sidebar activePath={activePath} onNavigate={navigate} />
+            <Sidebar activePath={activePath} onNavigate={handleDrawerNavigate} />
           </div>
         </div>
       )}
