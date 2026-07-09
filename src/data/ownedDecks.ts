@@ -25,11 +25,8 @@ export const ownedDecks: OwnedDeck[] = [
     cards: 78,
     cover: "/img/deck-cutie-cat.png",
     favorite: false,
-    lastUsedAt: "วันนี้ เวลา 10:24 น.",
+    lastUsedAt: null,
     hasEbook: true,
     link: "/deck/cutie-cat",
   },
 ];
-
-/** the deck shown in the "ใช้งานล่าสุด" side panel */
-export const lastUsedDeck = ownedDecks.find((d) => d.id === "cutie-cat")!;

@@ -2,11 +2,18 @@ import type { Product } from "../../data/shopProducts";
 
 interface ProductCardProps {
   product: Product;
+  /** เปิด modal ยืนยันการซื้อ/รับ deck */
+  onSelect: (product: Product) => void;
   onNavigate: (path: string) => void;
 }
 
-export default function ProductCard({ product, onNavigate }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  onSelect,
+  onNavigate,
+}: ProductCardProps) {
   const deckPath = product.link ?? `/shop/deck/${product.id}`;
+  const isFree = product.access === "free";
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-[18px] border border-[#EFE6F8] bg-white shadow-[0_12px_28px_rgba(106,76,180,0.06)] transition hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(106,76,180,0.12)]">
@@ -33,21 +40,23 @@ export default function ProductCard({ product, onNavigate }: ProductCardProps) {
         </span>
 
         <p className="mt-1.5 text-xs text-mystic-muted">{product.countLabel}</p>
-        {product.access === "free" ? (
-          <p className="mt-1.5 font-extrabold text-emerald-500">ฟรี</p>
-        ) : (
-          <p className="mt-1.5 font-extrabold text-[#4C3AB8]">
-            ฿ {product.price.toLocaleString("th-TH")}
-          </p>
-        )}
 
+        {/* ปุ่มหลัก: ฟรี → "ฟรี" (เขียว), เสียเงิน → แสดงราคา */}
         <button
           type="button"
-          onClick={() => onNavigate(deckPath)}
-          aria-label={`เลือกไพ่ ${product.title}`}
-          className="mt-2.5 min-h-10 w-full rounded-full bg-mystic-pink-soft text-sm font-semibold text-mystic-pink transition-all hover:bg-mystic-pink hover:text-white active:scale-95"
+          onClick={() => onSelect(product)}
+          aria-label={
+            isFree
+              ? `รับฟรี ${product.title}`
+              : `ซื้อ ${product.title} ราคา ${product.price} บาท`
+          }
+          className={`mt-2.5 min-h-10 w-full rounded-full text-sm font-bold transition-all active:scale-95 ${
+            isFree
+              ? "bg-emerald-500 text-white hover:bg-emerald-600"
+              : "bg-mystic-pink-soft text-mystic-pink hover:bg-mystic-pink hover:text-white"
+          }`}
         >
-          เลือก
+          {isFree ? "ฟรี" : `฿ ${product.price.toLocaleString("th-TH")}`}
         </button>
         {product.ebook && (
           <button
@@ -56,7 +65,7 @@ export default function ProductCard({ product, onNavigate }: ProductCardProps) {
             aria-label={`ซื้อ E-book ของไพ่ ${product.title} ราคา ${product.ebook.price} บาท`}
             className="mt-1.5 min-h-10 w-full rounded-full border border-mystic-border-purple bg-white text-sm font-semibold text-mystic-purple transition-all hover:bg-mystic-lavender active:scale-95"
           >
-            📖 E-book · ฿{product.ebook.price}
+            E-book · ฿{product.ebook.price}
           </button>
         )}
       </div>

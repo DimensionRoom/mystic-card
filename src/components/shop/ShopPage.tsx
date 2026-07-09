@@ -1,12 +1,19 @@
 import { useState } from "react";
 import {
   bestSellers,
+  productDeckId,
   shopProducts,
   type Product,
 } from "../../data/shopProducts";
+import { addLocalOwnedDeck } from "../../data/ownedDeckStore";
+import { useAuth } from "../../auth/AuthContext";
+import { addOwnedDeck } from "../../lib/db";
 import Icon from "../Icon";
 import UserActions from "../UserActions";
 import ProductCard from "./ProductCard";
+
+/** sessionStorage key ส่งต่อสินค้าที่กำลังจะชำระเงินไปหน้า checkout */
+export const CHECKOUT_PRODUCT_KEY = "mystic-card-checkout-product";
 
 const filterChips = ["ทั้งหมด", "Oracle", "Tarot"] as const;
 type FilterChip = (typeof filterChips)[number];
@@ -60,14 +67,34 @@ interface ShopPageProps {
 }
 
 export default function ShopPage({ onNavigate }: ShopPageProps) {
+  const { user } = useAuth();
   const [filter, setFilter] = useState<FilterChip>("ทั้งหมด");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("ล่าสุด");
+  // สินค้าที่กำลังยืนยันการซื้อ/รับใน modal
+  const [buying, setBuying] = useState<Product | null>(null);
 
   const products = sortProducts(
     filterProducts(shopProducts, filter, search),
     sort,
   );
+
+  // ยืนยันแล้ว: ฟรี → เพิ่มเข้ารายการที่มีทันทีแล้วไปหน้าเลือกไพ่,
+  // เสียเงิน → ส่งต่อไปหน้าชำระเงิน (mock)
+  const confirmPurchase = () => {
+    if (!buying) return;
+    const product = buying;
+    setBuying(null);
+    if (product.access === "free") {
+      const deckId = productDeckId(product);
+      if (user) void addOwnedDeck(user.id, deckId);
+      else addLocalOwnedDeck(deckId);
+      onNavigate("/decks");
+    } else {
+      sessionStorage.setItem(CHECKOUT_PRODUCT_KEY, product.id);
+      onNavigate("/checkout");
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -75,12 +102,10 @@ export default function ShopPage({ onNavigate }: ShopPageProps) {
       <header className="relative z-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <h2 className="flex items-center gap-2 text-2xl font-extrabold text-mystic-ink-deep md:text-[30px]">
-            ร้านค้า <span aria-hidden="true">🛍️</span>{" "}
-            <span aria-hidden="true">✨</span>
+            ร้านค้า{" "}
           </h2>
           <p className="mt-1.5 text-mystic-muted">
             เลือกซื้อ Deck และ E-book เพื่อเสริมพลังและเพิ่มแรงบันดาลใจให้กับคุณ{" "}
-            <span aria-hidden="true">✨</span>
           </p>
         </div>
         <UserActions onNavigate={onNavigate} />
@@ -173,6 +198,7 @@ export default function ShopPage({ onNavigate }: ShopPageProps) {
                 <ProductCard
                   key={product.id}
                   product={product}
+                  onSelect={setBuying}
                   onNavigate={onNavigate}
                 />
               ))}
@@ -215,18 +241,12 @@ export default function ShopPage({ onNavigate }: ShopPageProps) {
                 </div>
               </div>
             </div>
-            <img
-              src="/img/shop-cat-banner.png"
-              alt=""
-              aria-hidden="true"
-              className="pointer-events-none absolute bottom-0 right-40 hidden w-20 mix-blend-multiply [mask-image:linear-gradient(to_top,black_70%,transparent)] xl:block"
-            />
             <button
               type="button"
               onClick={() => onNavigate("/premium")}
               className="relative z-10 self-start rounded-xl bg-[#FF5C9D] px-7 py-3 text-sm font-bold text-white shadow-[0_8px_18px_rgba(255,92,157,0.3)] transition hover:scale-[1.02] active:scale-95 lg:self-auto"
             >
-              สมัคร Premium 👑
+              สมัคร Premium
             </button>
           </section>
         </div>
@@ -266,7 +286,7 @@ export default function ShopPage({ onNavigate }: ShopPageProps) {
           >
             <div className="flex items-center justify-between">
               <h4 className="flex items-center gap-1.5 font-bold text-mystic-ink-deep">
-                <span aria-hidden="true">👑</span> ขายดีประจำสัปดาห์
+                <span aria-hidden="true"></span> ขายดีประจำสัปดาห์
               </h4>
               <button
                 type="button"
@@ -381,6 +401,73 @@ export default function ShopPage({ onNavigate }: ShopPageProps) {
           </section>
         </aside>
       </div>
+
+      {/* purchase confirm modal */}
+      {buying && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`ยืนยันการซื้อ ${buying.title}`}
+        >
+          <button
+            type="button"
+            aria-label="ยกเลิก"
+            onClick={() => setBuying(null)}
+            className="absolute inset-0 bg-mystic-ink/40 backdrop-blur-sm"
+          />
+          <div className="animate-toast-in relative w-full max-w-sm rounded-bubble-lg bg-white p-6 text-center shadow-pastel-lg">
+            <h3 className="font-extrabold text-mystic-ink-deep">
+              ยืนยันการซื้อ <span aria-hidden="true">🛍️</span>
+            </h3>
+            <img
+              src={buying.image}
+              alt={`ปกไพ่ ${buying.title}`}
+              className="mx-auto mt-4 aspect-[4/5] w-32 rounded-2xl object-cover shadow-pastel"
+            />
+            <h4 className="mt-3 font-bold text-mystic-ink-deep">
+              {buying.title}
+            </h4>
+            <p className="mt-0.5 text-sm text-mystic-muted">
+              {buying.kind} · {buying.countLabel}
+            </p>
+
+            <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-[#FBF7FF] py-3">
+              <span className="text-sm text-mystic-muted">ราคา</span>
+              {buying.access === "free" ? (
+                <span className="text-2xl font-extrabold text-emerald-500">
+                  ฟรี
+                </span>
+              ) : (
+                <span className="text-2xl font-extrabold text-mystic-purple">
+                  ฿ {buying.price.toLocaleString("th-TH")}
+                </span>
+              )}
+            </div>
+
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
+              <button
+                type="button"
+                onClick={confirmPurchase}
+                className={`rounded-full px-7 py-2.5 font-bold text-white shadow-pastel transition-transform hover:scale-105 active:scale-95 ${
+                  buying.access === "free"
+                    ? "bg-emerald-500 hover:bg-emerald-600"
+                    : "bg-gradient-to-r from-[#8B63EE] to-[#7B4BE8]"
+                }`}
+              >
+                {buying.access === "free" ? "รับฟรีเลย 🎁" : "ไปชำระเงิน →"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setBuying(null)}
+                className="rounded-full border border-mystic-border px-7 py-2.5 font-semibold text-mystic-ink/70 transition-colors hover:bg-mystic-pink-light"
+              >
+                ยกเลิก
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

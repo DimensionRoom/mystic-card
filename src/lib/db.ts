@@ -12,6 +12,17 @@ export async function fetchOwnedDeckIds(userId: string): Promise<string[]> {
   return (data ?? []).map((r) => r.deck_id as string);
 }
 
+/** เพิ่ม deck เข้ารายการที่ผู้ใช้มี (หลังรับฟรี/ชำระเงินสำเร็จ) */
+export async function addOwnedDeck(
+  userId: string,
+  deckId: string,
+): Promise<void> {
+  if (!supabase) return;
+  await supabase
+    .from("owned_decks")
+    .upsert({ user_id: userId, deck_id: deckId });
+}
+
 export async function fetchFavoriteDeckIds(userId: string): Promise<string[]> {
   if (!supabase) return [];
   const { data } = await supabase

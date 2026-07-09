@@ -20,6 +20,16 @@ export interface Product {
   };
 }
 
+/** deck id ที่ผูกกับสินค้า (ดึงจาก link "/deck/<id>") ใช้ตอนเพิ่มเข้ารายการที่มี */
+export function productDeckId(product: Product): string {
+  return product.link?.match(/^\/deck\/(.+)$/)?.[1] ?? product.id;
+}
+
+/** ค้นหาสินค้าจาก id — ใช้ในหน้าชำระเงินที่รับ id ผ่าน sessionStorage */
+export function getProduct(id: string): Product | undefined {
+  return shopProducts.find((p) => p.id === id);
+}
+
 export const shopProducts: Product[] = [
   {
     id: "cutie-cat-tarot-deck",

@@ -11,6 +11,7 @@ import BottomNav from "./components/BottomNav";
 import DeckReadingPage from "./components/DeckReadingPage";
 import MyReadingsPage from "./components/my-readings/MyReadingsPage";
 import ShopPage from "./components/shop/ShopPage";
+import CheckoutPage from "./components/shop/CheckoutPage";
 import OwnedDecksPage from "./components/decks/OwnedDecksPage";
 import SettingsPage from "./components/settings/SettingsPage";
 import { getDeck } from "./data/decks";
@@ -24,6 +25,7 @@ function isValidRoute(path: string): boolean {
     path === "/" ||
     path === "/readings" ||
     path === "/shop" ||
+    path === "/checkout" ||
     path === "/decks" ||
     path === "/settings" ||
     (!!deckMatch && !!getDeck(deckMatch[1]))
@@ -69,8 +71,12 @@ export default function App() {
 
   const deckMatch = route.match(/^\/deck\/([^/]+)$/);
   const currentDeck = deckMatch ? getDeck(deckMatch[1]) : undefined;
-  // on a deck page the "เลือกไพ่" menu item is highlighted
-  const activePath = currentDeck ? "/decks" : route;
+  // deck page → เลือกไพ่, หน้าชำระเงิน → ร้านค้า
+  const activePath = currentDeck
+    ? "/decks"
+    : route === "/checkout"
+      ? "/shop"
+      : route;
 
   return (
     <div className="min-h-screen">
@@ -121,6 +127,8 @@ export default function App() {
             <MyReadingsPage onNavigate={navigate} />
           ) : route === "/shop" ? (
             <ShopPage onNavigate={navigate} />
+          ) : route === "/checkout" ? (
+            <CheckoutPage onNavigate={navigate} />
           ) : route === "/decks" ? (
             <OwnedDecksPage onNavigate={navigate} />
           ) : route === "/settings" ? (
