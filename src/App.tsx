@@ -1,64 +1,31 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { Route, Routes, useLocation } from "react-router";
 import CursorSparkles from "./components/CursorSparkles";
 import Sidebar from "./components/Sidebar";
-import Header from "./components/Header";
-import HeroBanner from "./components/HeroBanner";
-import DeckShelf from "./components/DeckShelf";
-import RecentReadings from "./components/RecentReadings";
-import UniverseMessage from "./components/UniverseMessage";
-import RandomCard from "./components/RandomCard";
 import BottomNav from "./components/BottomNav";
-import DeckReadingPage from "./components/DeckReadingPage";
-import MyReadingsPage from "./components/my-readings/MyReadingsPage";
-import ShopPage from "./components/shop/ShopPage";
-import CheckoutPage from "./components/shop/CheckoutPage";
-import OwnedDecksPage from "./components/decks/OwnedDecksPage";
-import SettingsPage from "./components/settings/SettingsPage";
-import { getDeck } from "./data/decks";
+import ScrollToTop from "./router/ScrollToTop";
+import { useAppNavigate } from "./router/useAppNavigate";
+import { useActivePath } from "./router/useActivePath";
 
-const ROUTE_STORAGE_KEY = "mystic-card-route";
-
-// เส้นทางที่แอปมีหน้าจริงรองรับ (ตรงกับรายการใน navigate ด้านล่าง)
-function isValidRoute(path: string): boolean {
-  const deckMatch = path.match(/^\/deck\/([^/]+)$/);
-  return (
-    path === "/" ||
-    path === "/readings" ||
-    path === "/shop" ||
-    path === "/checkout" ||
-    path === "/decks" ||
-    path === "/settings" ||
-    (!!deckMatch && !!getDeck(deckMatch[1]))
-  );
-}
-
-// เมื่อรีเฟรชหน้า ให้กลับมาที่หน้าเดิมแทนที่จะเด้งไปหน้าแรกเสมอ
-function getInitialRoute(): string {
-  const saved = sessionStorage.getItem(ROUTE_STORAGE_KEY);
-  return saved && isValidRoute(saved) ? saved : "/";
-}
+const HomePage = lazy(() => import("./pages/HomePage"));
+const ReadingsRoute = lazy(() => import("./pages/ReadingsRoute"));
+const ShopRoute = lazy(() => import("./pages/ShopRoute"));
+const CheckoutRoute = lazy(() => import("./pages/CheckoutRoute"));
+const DecksRoute = lazy(() => import("./pages/DecksRoute"));
+const SettingsRoute = lazy(() => import("./pages/SettingsRoute"));
+const DeckRoute = lazy(() => import("./pages/DeckRoute"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 export default function App() {
-  const [route, setRoute] = useState(getInitialRoute);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
-  const toastTimer = useRef<number | undefined>(undefined);
+  const { pathname } = useLocation();
+  const navigate = useAppNavigate();
+  const activePath = useActivePath();
 
-  // tiny mock router: home, deck, my-readings, and shop pages are real, the rest shows a toast
-  const navigate = useCallback((path: string) => {
+  // ปิด drawer อัตโนมัติเมื่อเปลี่ยนหน้า
+  useEffect(() => {
     setDrawerOpen(false);
-    if (isValidRoute(path)) {
-      setRoute(path);
-      sessionStorage.setItem(ROUTE_STORAGE_KEY, path);
-      window.scrollTo({ top: 0 });
-      return;
-    }
-    setToast(`กำลังพาไปที่ ${path} ✨`);
-    window.clearTimeout(toastTimer.current);
-    toastTimer.current = window.setTimeout(() => setToast(null), 2200);
-  }, []);
-
-  useEffect(() => () => window.clearTimeout(toastTimer.current), []);
+  }, [pathname]);
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -69,18 +36,10 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [drawerOpen]);
 
-  const deckMatch = route.match(/^\/deck\/([^/]+)$/);
-  const currentDeck = deckMatch ? getDeck(deckMatch[1]) : undefined;
-  // deck page → เลือกไพ่, หน้าชำระเงิน → ร้านค้า
-  const activePath = currentDeck
-    ? "/decks"
-    : route === "/checkout"
-      ? "/shop"
-      : route;
-
   return (
     <div className="min-h-screen">
       <CursorSparkles />
+      <ScrollToTop />
 
       {/* Fixed sidebar: desktop only */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] border-r border-mystic-border xl:block">
@@ -123,57 +82,28 @@ export default function App() {
       {/* Main content: fills the area right of the sidebar, centered on wide screens */}
       <div className="xl:pl-[260px]">
         <main className="mx-auto w-full max-w-[1480px] px-4 pb-24 pt-6 md:px-8 md:pb-12 md:pt-8">
-          {route === "/readings" ? (
-            <MyReadingsPage onNavigate={navigate} />
-          ) : route === "/shop" ? (
-            <ShopPage onNavigate={navigate} />
-          ) : route === "/checkout" ? (
-            <CheckoutPage onNavigate={navigate} />
-          ) : route === "/decks" ? (
-            <OwnedDecksPage onNavigate={navigate} />
-          ) : route === "/settings" ? (
-            <SettingsPage onNavigate={navigate} />
-          ) : currentDeck ? (
-            <DeckReadingPage
-              key={currentDeck.id}
-              deck={currentDeck}
-              onNavigate={navigate}
-            />
-          ) : (
-            <div className="flex flex-col gap-8">
-              {/* keep header above the hero illustration's witch-hat overflow */}
-              <div className="relative z-10">
-                <Header onNavigate={navigate} />
+          <Suspense
+            fallback={
+              <div className="flex min-h-[50vh] items-center justify-center text-mystic-muted">
+                กำลังโหลด… ✨
               </div>
-              <HeroBanner onNavigate={navigate} />
-              <DeckShelf onNavigate={navigate} />
-
-              <section
-                aria-label="กิจกรรมและข้อความสำหรับคุณ"
-                className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-[1.75fr_1.35fr_1fr]"
-              >
-                <RecentReadings onNavigate={navigate} />
-                <UniverseMessage />
-                <div className="md:col-span-2 xl:col-span-1">
-                  <RandomCard onNavigate={navigate} />
-                </div>
-              </section>
-            </div>
-          )}
+            }
+          >
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/readings" element={<ReadingsRoute />} />
+              <Route path="/shop" element={<ShopRoute />} />
+              <Route path="/checkout" element={<CheckoutRoute />} />
+              <Route path="/decks" element={<DecksRoute />} />
+              <Route path="/settings" element={<SettingsRoute />} />
+              <Route path="/deck/:deckId" element={<DeckRoute />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
 
       <BottomNav activePath={activePath} onNavigate={navigate} />
-
-      {/* Navigation toast */}
-      {toast && (
-        <div
-          role="status"
-          className="animate-toast-in fixed bottom-20 left-1/2 z-[60] -translate-x-1/2 rounded-full bg-mystic-ink px-5 py-2.5 text-sm font-semibold text-white shadow-pastel-lg md:bottom-8"
-        >
-          {toast}
-        </div>
-      )}
     </div>
   );
 }
