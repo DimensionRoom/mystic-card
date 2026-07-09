@@ -102,7 +102,7 @@ export default function App() {
               <Route path="/checkout" element={<CheckoutRoute />} />
               <Route path="/decks" element={<DecksRoute />} />
               <Route path="/settings" element={<SettingsRoute />} />
-              <Route path="/deck/:deckId" element={<DeckRoute />} />
+              <Route path="/deck/:deckId/:tab?" element={<DeckRoute />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>

@@ -5,7 +5,8 @@ import { getDeck } from "../data/decks";
 export function useActivePath(): string {
   const { pathname } = useLocation();
   if (pathname.startsWith("/deck/")) {
-    const deckId = pathname.slice(6); // extract id after "/deck/"
+    // extract id after "/deck/" เท่านั้น ตัด sub-path ของแท็บ (เช่น /meaning, /about) ทิ้ง
+    const deckId = pathname.slice(6).split("/")[0];
     if (getDeck(deckId)) return "/decks";
     return pathname; // invalid deck: no highlight
   }
