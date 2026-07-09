@@ -6,8 +6,10 @@ import BottomNav from "./components/BottomNav";
 import ScrollToTop from "./router/ScrollToTop";
 import { useAppNavigate } from "./router/useAppNavigate";
 import { useActivePath } from "./router/useActivePath";
+// หน้าแรกเป็นปลายทาง landing ที่พบบ่อยสุด โหลดตรง ๆ เพื่อไม่ให้เห็น Suspense
+// fallback วูบตอนเปิดแอปครั้งแรก ส่วนหน้าอื่นยัง lazy เพื่อแยก bundle
+import HomePage from "./pages/HomePage";
 
-const HomePage = lazy(() => import("./pages/HomePage"));
 const ReadingsRoute = lazy(() => import("./pages/ReadingsRoute"));
 const ShopRoute = lazy(() => import("./pages/ShopRoute"));
 const CheckoutRoute = lazy(() => import("./pages/CheckoutRoute"));
