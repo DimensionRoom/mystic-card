@@ -1,4 +1,5 @@
 import type { Product } from "../../data/shopProducts";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface ProductCardProps {
   product: Product;
@@ -12,6 +13,7 @@ export default function ProductCard({
   onSelect,
   onNavigate,
 }: ProductCardProps) {
+  const { t } = useLanguage();
   const deckPath = product.link ?? `/shop/deck/${product.id}`;
   const isFree = product.access === "free";
 
@@ -47,8 +49,10 @@ export default function ProductCard({
           onClick={() => onSelect(product)}
           aria-label={
             isFree
-              ? `รับฟรี ${product.title}`
-              : `ซื้อ ${product.title} ราคา ${product.price} บาท`
+              ? t.shop.claimFreeAriaLabel.replace("{title}", product.title)
+              : t.shop.buyAriaLabel
+                  .replace("{title}", product.title)
+                  .replace("{price}", String(product.price))
           }
           className={`mt-2.5 min-h-10 w-full rounded-full text-sm font-bold transition-all active:scale-95 ${
             isFree
@@ -56,13 +60,17 @@ export default function ProductCard({
               : "bg-mystic-pink-soft text-mystic-pink hover:bg-mystic-pink hover:text-white"
           }`}
         >
-          {isFree ? "ฟรี" : `฿ ${product.price.toLocaleString("th-TH")}`}
+          {isFree
+            ? t.shop.freeLabel
+            : `฿ ${product.price.toLocaleString("th-TH")}`}
         </button>
         {product.ebook && (
           <button
             type="button"
             onClick={() => onNavigate(`${deckPath}/ebook`)}
-            aria-label={`ซื้อ E-book ของไพ่ ${product.title} ราคา ${product.ebook.price} บาท`}
+            aria-label={t.shop.buyEbookAriaLabel
+              .replace("{title}", product.title)
+              .replace("{price}", String(product.ebook.price))}
             className="mt-1.5 min-h-10 w-full rounded-full border border-mystic-border-purple bg-white text-sm font-semibold text-mystic-purple transition-all hover:bg-mystic-lavender active:scale-95"
           >
             E-book · ฿{product.ebook.price}

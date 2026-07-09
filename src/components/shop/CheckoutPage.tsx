@@ -3,6 +3,8 @@ import { useNavigate } from "react-router";
 import { productDeckId, type Product } from "../../data/shopProducts";
 import { addLocalOwnedDeck } from "../../data/ownedDeckStore";
 import { useAuth } from "../../auth/AuthContext";
+import { useLanguage } from "../../i18n/LanguageContext";
+import type { translations } from "../../i18n/translations";
 import { addOwnedDeck } from "../../lib/db";
 import Icon, { type IconName } from "../Icon";
 import UserActions from "../UserActions";
@@ -12,17 +14,23 @@ interface CheckoutPageProps {
   onNavigate: (path: string) => void;
 }
 
-const payMethods: { id: string; label: string; icon: IconName }[] = [
-  { id: "card", label: "บัตรเครดิต / เดบิต", icon: "cart" },
-  { id: "promptpay", label: "พร้อมเพย์ / QR", icon: "sparkles" },
-  { id: "wallet", label: "TrueMoney Wallet", icon: "coins" },
-];
+function getPayMethods(
+  t: (typeof translations)["th"],
+): { id: string; label: string; icon: IconName }[] {
+  return [
+    { id: "card", label: t.shop.payMethodCard, icon: "cart" },
+    { id: "promptpay", label: t.shop.payMethodPromptpay, icon: "sparkles" },
+    { id: "wallet", label: "TrueMoney Wallet", icon: "coins" },
+  ];
+}
 
 export default function CheckoutPage({
   product,
   onNavigate,
 }: CheckoutPageProps) {
   const { user } = useAuth();
+  const { t } = useLanguage();
+  const payMethods = getPayMethods(t);
   const navigate = useNavigate();
   const [method, setMethod] = useState("card");
   const [paying, setPaying] = useState(false);
@@ -36,14 +44,14 @@ export default function CheckoutPage({
             🛒
           </span>
           <h3 className="text-lg font-bold text-mystic-ink-deep">
-            ไม่พบรายการที่ต้องชำระเงิน
+            {t.shop.checkoutEmptyTitle}
           </h3>
           <button
             type="button"
             onClick={() => onNavigate("/shop")}
             className="rounded-full bg-gradient-to-r from-[#FF6FAE] to-[#F75FA2] px-7 py-2.5 font-bold text-white shadow-pastel transition hover:scale-[1.03] active:scale-95"
           >
-            กลับไปร้านค้า
+            {t.shop.backToShopButton}
           </button>
         </div>
       </div>
@@ -76,13 +84,13 @@ export default function CheckoutPage({
             className="mb-1.5 flex items-center gap-1.5 text-sm font-semibold text-mystic-purple transition-colors hover:text-mystic-pink"
           >
             <Icon name="arrow-left" className="h-4 w-4" />
-            กลับไปร้านค้า
+            {t.shop.backToShopButton}
           </button>
           <h2 className="flex items-center gap-2 text-2xl font-extrabold text-mystic-ink-deep md:text-[30px]">
-            ชำระเงิน <span aria-hidden="true">💳</span>
+            {t.shop.checkoutTitle} <span aria-hidden="true">💳</span>
           </h2>
           <p className="mt-1.5 text-mystic-muted">
-            ตรวจสอบรายการและเลือกวิธีชำระเงินของคุณ
+            {t.shop.checkoutSubtitle}
           </p>
         </div>
         <UserActions onNavigate={onNavigate} />
@@ -91,10 +99,12 @@ export default function CheckoutPage({
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
         {/* ---- payment methods ---- */}
         <section
-          aria-label="วิธีชำระเงิน"
+          aria-label={t.shop.paymentMethodsAriaLabel}
           className="flex flex-col gap-4 rounded-[24px] border border-[#EFE6F8] bg-white p-6"
         >
-          <h3 className="font-bold text-mystic-ink-deep">เลือกวิธีชำระเงิน</h3>
+          <h3 className="font-bold text-mystic-ink-deep">
+            {t.shop.choosePaymentMethodTitle}
+          </h3>
           <div className="flex flex-col gap-3" role="radiogroup">
             {payMethods.map((m) => {
               const active = m.id === method;
@@ -140,17 +150,19 @@ export default function CheckoutPage({
 
           <p className="mt-1 flex items-center gap-2 text-xs text-mystic-muted">
             <Icon name="shield-check" className="h-4 w-4" />
-            นี่เป็นหน้าชำระเงินตัวอย่าง (mock) — ยังไม่มีการเรียกเก็บเงินจริง
+            {t.shop.mockNotice}
           </p>
         </section>
 
         {/* ---- order summary ---- */}
         <aside className="flex flex-col gap-4 rounded-[24px] border border-[#EFE6F8] bg-white p-6 lg:sticky lg:top-6">
-          <h3 className="font-bold text-mystic-ink-deep">สรุปคำสั่งซื้อ</h3>
+          <h3 className="font-bold text-mystic-ink-deep">
+            {t.shop.orderSummaryTitle}
+          </h3>
           <div className="flex gap-4">
             <img
               src={product.image}
-              alt={`ปกไพ่ ${product.title}`}
+              alt={t.shop.deckCoverAlt.replace("{title}", product.title)}
               className="w-24 shrink-0 rounded-xl object-cover shadow-pastel"
             />
             <div className="min-w-0">
@@ -165,13 +177,15 @@ export default function CheckoutPage({
 
           <dl className="flex flex-col gap-2 border-t border-mystic-border/60 pt-4 text-sm">
             <div className="flex justify-between">
-              <dt className="text-mystic-muted">ราคา Deck</dt>
+              <dt className="text-mystic-muted">{t.shop.deckPriceLabel}</dt>
               <dd className="font-medium text-mystic-ink-deep">
                 ฿ {product.price.toLocaleString("th-TH")}
               </dd>
             </div>
             <div className="flex justify-between border-t border-mystic-border/60 pt-2">
-              <dt className="font-bold text-mystic-ink-deep">รวมทั้งสิ้น</dt>
+              <dt className="font-bold text-mystic-ink-deep">
+                {t.shop.totalLabel}
+              </dt>
               <dd className="text-lg font-extrabold text-mystic-purple">
                 ฿ {total.toLocaleString("th-TH")}
               </dd>
@@ -192,12 +206,15 @@ export default function CheckoutPage({
               />
             )}
             {paying
-              ? "กำลังชำระเงิน..."
-              : `ชำระเงิน ฿ ${total.toLocaleString("th-TH")}`}
+              ? t.shop.payingButton
+              : t.shop.payButton.replace(
+                  "{total}",
+                  total.toLocaleString("th-TH"),
+                )}
           </button>
           <p className="flex items-center justify-center gap-1.5 text-xs text-mystic-muted">
             <Icon name="lock" className="h-4 w-4" />
-            ชำระเงินปลอดภัย 100%
+            {t.shop.securePayment}
           </p>
         </aside>
       </div>
