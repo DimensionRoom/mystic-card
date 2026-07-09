@@ -1,4 +1,5 @@
 import type { OwnedDeck } from "../../data/ownedDecks";
+import { useLanguage } from "../../i18n/LanguageContext";
 import Icon from "../Icon";
 
 interface OwnedDeckCardProps {
@@ -14,6 +15,7 @@ export default function OwnedDeckCard({
   onToggleFavorite,
   onNavigate,
 }: OwnedDeckCardProps) {
+  const { t } = useLanguage();
   const deckPath = deck.link ?? `/deck/${deck.id}`;
 
   return (
@@ -24,8 +26,8 @@ export default function OwnedDeckCard({
         aria-pressed={isFavorite}
         aria-label={
           isFavorite
-            ? `เอา ${deck.title} ออกจากรายการโปรด`
-            : `เพิ่ม ${deck.title} ในรายการโปรด`
+            ? t.decks.removeFavoriteAriaLabel.replace("{title}", deck.title)
+            : t.decks.addFavoriteAriaLabel.replace("{title}", deck.title)
         }
         className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-pastel backdrop-blur transition-transform hover:scale-110"
       >
@@ -41,12 +43,12 @@ export default function OwnedDeckCard({
       <div className="relative overflow-hidden rounded-[14px]">
         {deck.access === "free" && (
           <span className="absolute left-0 top-0 z-10 rounded-br-xl bg-emerald-500 px-3 py-1 text-xs font-bold text-white">
-            ฟรี
+            {t.decks.freeBadge}
           </span>
         )}
         <img
           src={deck.cover}
-          alt={`ปกไพ่ ${deck.title}`}
+          alt={t.decks.deckCoverAlt.replace("{title}", deck.title)}
           className="aspect-[4/5] w-full object-cover transition duration-300 group-hover:scale-105"
         />
       </div>
@@ -59,22 +61,27 @@ export default function OwnedDeckCard({
           <span className="rounded-full bg-mystic-lavender px-2.5 py-0.5 font-bold text-mystic-purple">
             {deck.type}
           </span>
-          <span className="text-mystic-muted">{deck.cards} ใบ</span>
+          <span className="text-mystic-muted">
+            {deck.cards} {t.decks.cardsUnit}
+          </span>
         </p>
 
         <button
           type="button"
           onClick={() => onNavigate(deckPath)}
-          aria-label={`เปิดไพ่ ${deck.title}`}
+          aria-label={t.decks.openDeckAriaLabel.replace("{title}", deck.title)}
           className="mt-2.5 min-h-10 w-full rounded-xl bg-gradient-to-r from-[#FF6FAE] to-[#F75FA2] text-sm font-bold text-white shadow-[0_8px_18px_rgba(247,95,162,0.25)] transition hover:brightness-105 active:scale-95"
         >
-          เปิดไพ่
+          {t.decks.openDeckButton}
         </button>
         {deck.hasEbook ? (
           <button
             type="button"
             onClick={() => onNavigate(`/deck/${deck.id}/ebook`)}
-            aria-label={`เปิด E-book ของ ${deck.title}`}
+            aria-label={t.decks.openEbookAriaLabel.replace(
+              "{title}",
+              deck.title,
+            )}
             className="mt-2 min-h-10 w-full rounded-xl border border-mystic-border-purple bg-white text-sm font-semibold text-mystic-purple transition-all hover:bg-mystic-lavender active:scale-95"
           >
             E-book
@@ -85,7 +92,7 @@ export default function OwnedDeckCard({
             disabled
             className="mt-2 min-h-10 w-full cursor-not-allowed rounded-xl border border-mystic-border bg-white text-sm font-semibold text-mystic-muted opacity-60"
           >
-            📖 เร็ว ๆ นี้
+            {t.decks.ebookComingSoon}
           </button>
         )}
       </div>

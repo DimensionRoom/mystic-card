@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { ownedDecks } from "../../data/ownedDecks";
 import { getLocalOwnedDeckIds } from "../../data/ownedDeckStore";
 import { useAuth } from "../../auth/AuthContext";
+import { useLanguage } from "../../i18n/LanguageContext";
+import type { translations } from "../../i18n/translations";
 import {
   fetchFavoriteDeckIds,
   fetchOwnedDeckIds,
@@ -11,41 +13,29 @@ import Icon, { type IconName } from "../Icon";
 import UserActions from "../UserActions";
 import OwnedDeckCard from "./OwnedDeckCard";
 
-const filterPills: { id: string; label: string; icon?: IconName }[] = [
-  { id: "all", label: "ทั้งหมด" },
-  { id: "free", label: "ฟรี", icon: "gift" },
-  { id: "Oracle", label: "Oracle" },
-  { id: "Tarot", label: "Tarot" },
-  { id: "latest", label: "ล่าสุด", icon: "clock" },
-  { id: "favorite", label: "รายการโปรด", icon: "heart" },
-];
+function getFilterPills(t: (typeof translations)["th"]) {
+  return [
+    { id: "all", label: t.decks.filterAll },
+    { id: "free", label: t.decks.filterFree, icon: "gift" as IconName },
+    { id: "Oracle", label: "Oracle" },
+    { id: "Tarot", label: "Tarot" },
+    { id: "latest", label: t.decks.filterLatest, icon: "clock" as IconName },
+    {
+      id: "favorite",
+      label: t.decks.filterFavorite,
+      icon: "heart" as IconName,
+    },
+  ];
+}
 
-const premiumBenefits: {
-  icon: IconName;
-  title: string;
-  text: string;
-}[] = [
-  {
-    icon: "cards",
-    title: "อ่านไพ่ไม่จำกัด",
-    text: "เปิดไพ่ได้ทุกเมื่อที่ต้องการ",
-  },
-  {
-    icon: "book",
-    title: "E-book พิเศษ",
-    text: "เข้าถึงเนื้อหาเชิงลึกและเพิ่มเติม",
-  },
-  {
-    icon: "clock",
-    title: "ไม่ต้องรอโฆษณา",
-    text: "ประสบการณ์ที่ลื่นไหล ไม่มีขั้นตอนกวน",
-  },
-  {
-    icon: "gift",
-    title: "สิทธิพิเศษรายเดือน",
-    text: "ของขวัญพิเศษและรายการใหม่ก่อนใคร",
-  },
-];
+function getPremiumBenefits(t: (typeof translations)["th"]) {
+  return [
+    { icon: "cards" as IconName, title: t.decks.benefit1Title, text: t.decks.benefit1Text },
+    { icon: "book" as IconName, title: t.decks.benefit2Title, text: t.decks.benefit2Text },
+    { icon: "clock" as IconName, title: t.decks.benefit3Title, text: t.decks.benefit3Text },
+    { icon: "gift" as IconName, title: t.decks.benefit4Title, text: t.decks.benefit4Text },
+  ];
+}
 
 interface OwnedDecksPageProps {
   onNavigate: (path: string) => void;
@@ -53,6 +43,9 @@ interface OwnedDecksPageProps {
 
 export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
   const { user } = useAuth();
+  const { t } = useLanguage();
+  const filterPills = getFilterPills(t);
+  const premiumBenefits = getPremiumBenefits(t);
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -121,7 +114,7 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
       <header className="relative z-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <h2 className="flex items-center gap-2.5 text-2xl font-extrabold text-mystic-ink-deep md:text-[30px]">
-            เลือกไพ่
+            {t.decks.pageTitle}
             <span
               className="flex h-10 w-10 items-center justify-center rounded-xl bg-mystic-lavender text-mystic-purple"
               aria-hidden="true"
@@ -130,8 +123,7 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
             </span>
           </h2>
           <p className="mt-1.5 text-mystic-muted">
-            Deck ที่คุณซื้อแล้ว พร้อมให้คุณเปิดไพ่ อ่านความหมาย และใช้งาน
-            E-book ได้ทันที <span aria-hidden="true">✨</span>
+            {t.decks.pageSubtitle} <span aria-hidden="true">✨</span>
           </p>
         </div>
         <UserActions onNavigate={onNavigate} />
@@ -139,7 +131,7 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
 
       {/* filter pills + search */}
       <section
-        aria-label="ค้นหาและกรอง Deck"
+        aria-label={t.decks.searchFilterAriaLabel}
         className="flex flex-wrap items-center gap-3"
       >
         <div className="no-scrollbar flex gap-2.5 overflow-x-auto">
@@ -165,12 +157,12 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
         </div>
 
         <label className="relative w-full lg:ml-auto lg:w-[300px]">
-          <span className="sr-only">ค้นหา Deck ของคุณ</span>
+          <span className="sr-only">{t.decks.searchAriaLabel}</span>
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="ค้นหา Deck ของคุณ..."
+            placeholder={t.decks.searchPlaceholder}
             className="h-12 w-full rounded-[14px] border border-[#EADFF7] bg-white px-4 pr-11 text-sm text-mystic-ink outline-none placeholder:text-mystic-muted focus:border-[#B89CFF]"
           />
           <Icon
@@ -189,7 +181,7 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
                 🔮
               </span>
               <p className="font-semibold text-mystic-ink/75">
-                กำลังโหลด Deck ของคุณ...
+                {t.decks.loadingDecks}
               </p>
             </div>
           ) : visible.length === 0 ? (
@@ -199,13 +191,13 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
               </span>
               <p className="font-semibold text-mystic-ink/75">
                 {myDecks.length === 0
-                  ? "คุณยังไม่มี Deck ที่ซื้อไว้"
-                  : "ไม่พบ Deck ที่ตรงกับคำค้นหา"}
+                  ? t.decks.emptyTitleNoDecks
+                  : t.decks.emptyTitleNoResults}
               </p>
               <p className="text-sm text-mystic-muted">
                 {myDecks.length === 0
-                  ? "ไปที่ร้านค้าเพื่อรับ/เลือก Deck ที่คุณชอบได้เลย ✨"
-                  : "ลองเปลี่ยนคำค้นหรือเลือกตัวกรองอื่นดูนะ ✨"}
+                  ? t.decks.emptyBodyNoDecks
+                  : t.decks.emptyBodyNoResults}
               </p>
               {myDecks.length === 0 ? (
                 <button
@@ -213,7 +205,7 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
                   onClick={() => onNavigate("/shop")}
                   className="mt-2 rounded-full bg-gradient-to-r from-[#FF6FAE] to-[#F75FA2] px-7 py-2.5 text-sm font-bold text-white shadow-pastel transition hover:scale-[1.03] active:scale-95"
                 >
-                  ไปที่ร้านค้า 🛍️
+                  {t.decks.goToShopButton}
                 </button>
               ) : (
                 <button
@@ -224,7 +216,7 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
                   }}
                   className="mt-2 rounded-full border border-mystic-border-purple px-6 py-2 text-sm font-semibold text-mystic-purple transition-colors hover:bg-mystic-lavender/60"
                 >
-                  ล้างตัวกรอง
+                  {t.decks.clearFiltersButton}
                 </button>
               )}
             </div>
@@ -244,22 +236,22 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
 
           {/* bottom CTA banner */}
           <section
-            aria-label="เริ่มเปิดไพ่ของคุณ"
+            aria-label={t.decks.startReadingAriaLabel}
             className="relative flex flex-col gap-4 overflow-hidden rounded-[22px] border border-[#F5D9EF] bg-[linear-gradient(135deg,#FFF1FA_0%,#EEE3FF_55%,#FFEEF7_100%)] px-6 py-6 md:min-h-[130px] md:pr-64"
           >
             <div className="relative z-10">
               <h3 className="text-lg font-extrabold text-mystic-ink-deep md:text-xl">
-                เส้นทางแห่งการค้นพบ.. เริ่มต้นทุกครั้งที่คุณเปิดไพ่{" "}
+                {t.decks.ctaTitle}{" "}
               </h3>
               <p className="mt-1.5 text-sm text-mystic-ink/65">
-                ให้ไพ่เป็นเพื่อนนำทางหัวใจของคุณในทุกช่วงเวลา
+                {t.decks.ctaBody}
               </p>
               <button
                 type="button"
                 onClick={() => onNavigate(lastUsedPath)}
                 className="mt-4 rounded-xl bg-gradient-to-r from-[#8B63EE] to-[#7B4BE8] px-6 py-3 text-sm font-bold text-white shadow-pastel transition hover:scale-[1.02] active:scale-95"
               >
-                เปิดไพ่ของฉันเลย ✨
+                {t.decks.ctaButton}
               </button>
             </div>
             <img
@@ -276,18 +268,18 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
           {/* last used — โชว์เฉพาะเมื่อมี deck จริงอย่างน้อยหนึ่งชุด */}
           {lastUsed && (
             <section
-              aria-label="ใช้งานล่าสุด"
+              aria-label={t.decks.lastUsedTitle}
               className="rounded-[24px] border border-[#EADFF7] bg-gradient-to-b from-[#FDF8FF] to-white p-4 shadow-[0_8px_24px_rgba(124,92,250,0.08)]"
             >
               <h4 className="flex items-center gap-2 font-bold text-mystic-ink-deep">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-mystic-lavender text-mystic-purple">
                   <Icon name="clock" className="h-4 w-4" />
                 </span>
-                ใช้งานล่าสุด
+                {t.decks.lastUsedTitle}
               </h4>
               <img
                 src={lastUsed.cover}
-                alt={`ปกไพ่ ${lastUsed.title}`}
+                alt={t.decks.deckCoverAlt.replace("{title}", lastUsed.title)}
                 className="mt-3 aspect-square w-full rounded-2xl object-cover shadow-pastel"
               />
               <h5 className="mt-3 text-center text-lg font-extrabold text-mystic-ink-deep">
@@ -297,11 +289,16 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
                 <span className="rounded-full bg-mystic-lavender px-2.5 py-0.5 font-bold text-mystic-purple">
                   {lastUsed.type}
                 </span>
-                <span className="text-mystic-muted">{lastUsed.cards} ใบ</span>
+                <span className="text-mystic-muted">
+                  {lastUsed.cards} {t.decks.cardsUnit}
+                </span>
               </p>
               {lastUsed.lastUsedAt && (
                 <p className="mt-2 text-center text-xs text-mystic-muted">
-                  อ่านล่าสุด: {lastUsed.lastUsedAt}
+                  {t.decks.lastReadLabel.replace(
+                    "{date}",
+                    lastUsed.lastUsedAt,
+                  )}
                 </p>
               )}
               <button
@@ -309,18 +306,18 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
                 onClick={() => onNavigate(lastUsedPath)}
                 className="mt-4 h-12 w-full rounded-[14px] bg-gradient-to-r from-[#8B63EE] to-[#7B4BE8] font-bold text-white shadow-pastel transition hover:scale-[1.02] active:scale-95"
               >
-                ต่อจากเดิม ✨
+                {t.decks.continueButton}
               </button>
             </section>
           )}
 
           {/* premium benefits */}
           <section
-            aria-label="สิทธิพิเศษสำหรับสมาชิก Premium"
+            aria-label={t.decks.premiumAriaLabel}
             className="rounded-[24px] border border-[#F5D9EF] bg-gradient-to-b from-[#FFF5FB] to-[#F8F1FF] p-5"
           >
             <h4 className="flex items-start gap-2.5 font-bold leading-snug text-mystic-ink-deep">
-              สิทธิพิเศษสำหรับสมาชิก{" "}
+              {t.decks.premiumTitle}{" "}
               <span className="text-mystic-pink">Premium</span>
             </h4>
 
@@ -347,7 +344,7 @@ export default function OwnedDecksPage({ onNavigate }: OwnedDecksPageProps) {
               onClick={() => onNavigate("/premium")}
               className="mt-5 h-12 w-full rounded-[14px] bg-gradient-to-r from-[#FF6FAE] to-[#F75FA2] font-bold text-white shadow-[0_8px_18px_rgba(247,95,162,0.25)] transition hover:scale-[1.02] active:scale-95"
             >
-              ดูสิทธิพิเศษทั้งหมด
+              {t.decks.viewAllPerksButton}
             </button>
           </section>
         </aside>
