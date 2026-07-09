@@ -116,11 +116,10 @@ export default function SettingsPage({ view, onNavigate }: SettingsPageProps) {
             🔮
           </span>
           <h3 className="text-lg font-bold text-mystic-ink-deep">
-            เข้าสู่ระบบเพื่อจัดการบัญชีและการตั้งค่าของคุณ
+            {t.settings.signInPromptTitle}
           </h3>
           <p className="max-w-sm text-sm text-mystic-muted">
-            ล็อกอินด้วย Google เพื่อดูและแก้ไขข้อมูลโปรไฟล์ การแจ้งเตือน
-            และการตั้งค่าอื่น ๆ ของบัญชีคุณ
+            {t.settings.signInPromptBody}
           </p>
           <button
             type="button"

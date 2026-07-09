@@ -8,6 +8,7 @@ import {
 import { decks } from "../../data/decks";
 import { getDeckCardSet } from "../../data/deckCards";
 import { useAuth } from "../../auth/AuthContext";
+import { useLanguage } from "../../i18n/LanguageContext";
 import {
   deleteAllReadings,
   deleteReading,
@@ -66,36 +67,29 @@ function isSameMonth(epochMs: number, reference: Date): boolean {
   );
 }
 
-/** ค่าคงที่เฉพาะหน้าตา (ไอคอน/สี) ส่วนตัวเลขคำนวณจากข้อมูลจริงเสมอ ไม่ hardcode */
+/** ค่าคงที่เฉพาะหน้าตา (ไอคอน/สี) ส่วนตัวเลขคำนวณจากข้อมูลจริงเสมอ ไม่ hardcode
+ *  label/unit/caption มาจาก i18n เสมอ ดูใน useMemo `stats` ในคอมโพเนนต์ */
 const statMeta = [
   {
     key: "total" as const,
-    label: "อ่านทั้งหมด",
-    unit: "ครั้ง",
     icon: "/img/stat-book.png",
     valueClass: "text-mystic-purple",
     bgClass: "from-white to-[#FBF7FF]",
   },
   {
     key: "thisMonth" as const,
-    label: "อ่านเดือนนี้",
-    unit: "ครั้ง",
     icon: "/img/stat-calendar.png",
     valueClass: "text-mystic-pink-deep",
     bgClass: "from-white to-[#FFF5FA]",
   },
   {
     key: "favorites" as const,
-    label: "รายการโปรด",
-    unit: "รายการ",
     icon: "/img/stat-heart.png",
     valueClass: "text-mystic-pink-deep",
     bgClass: "from-white to-[#FFF7F3]",
   },
   {
     key: "notes" as const,
-    label: "บันทึกไว้",
-    unit: "โน้ต",
     icon: "/img/stat-notebook.png",
     valueClass: "text-mystic-purple",
     bgClass: "from-white to-[#FBF7FF]",
@@ -104,20 +98,21 @@ const statMeta = [
 
 type FilterId = "all" | "latest" | "Oracle" | "Tarot" | "favorite";
 
-const filters: { id: FilterId; label: string }[] = [
-  { id: "all", label: "ทั้งหมด" },
-  { id: "latest", label: "ล่าสุด" },
-  { id: "Oracle", label: "Oracle" },
-  { id: "Tarot", label: "Tarot" },
-  { id: "favorite", label: "🤍 รายการโปรด" },
-];
-
 interface MyReadingsPageProps {
   onNavigate: (path: string) => void;
 }
 
 export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
   const { isConfigured, user, signInWithGoogle } = useAuth();
+  const { t } = useLanguage();
+  // Oracle/Tarot เป็นชื่อประเภท deck ใช้เหมือนกันทั้งสองภาษาโดยตั้งใจ
+  const filters: { id: FilterId; label: string }[] = [
+    { id: "all", label: t.myReadings.filterAll },
+    { id: "latest", label: t.myReadings.filterLatest },
+    { id: "Oracle", label: "Oracle" },
+    { id: "Tarot", label: "Tarot" },
+    { id: "favorite", label: t.myReadings.filterFavorite },
+  ];
   // เมื่อต่อ Supabase จริง ห้ามเริ่มด้วยข้อมูล mock เพราะจะโชว์ตัวเลข/รายการ
   // ปลอมวูบหนึ่งก่อนข้อมูลจริงโหลดเสร็จ — ต้องเริ่มจากค่าว่าง (0) เสมอ
   const [items, setItems] = useState<ReadingItem[]>(
@@ -223,10 +218,13 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
     const diff = thisMonthCount - lastMonthCount;
     const monthCaption =
       diff > 0
-        ? `↑ ${diff} จากเดือนที่แล้ว`
+        ? t.myReadings.monthCaptionUp.replace("{diff}", String(diff))
         : diff < 0
-          ? `↓ ${Math.abs(diff)} จากเดือนที่แล้ว`
-          : "เท่ากับเดือนที่แล้ว";
+          ? t.myReadings.monthCaptionDown.replace(
+              "{diff}",
+              String(Math.abs(diff)),
+            )
+          : t.myReadings.monthCaptionEqual;
 
     const values: Record<(typeof statMeta)[number]["key"], string> = {
       total: String(items.length),
@@ -234,19 +232,33 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
       favorites: String(favorites.size),
       notes: String(sideNotes.length),
     };
+    const labels: Record<(typeof statMeta)[number]["key"], string> = {
+      total: t.myReadings.statTotalLabel,
+      thisMonth: t.myReadings.statThisMonthLabel,
+      favorites: t.myReadings.statFavoritesLabel,
+      notes: t.myReadings.statNotesLabel,
+    };
+    const units: Record<(typeof statMeta)[number]["key"], string> = {
+      total: t.myReadings.statTotalUnit,
+      thisMonth: t.myReadings.statThisMonthUnit,
+      favorites: t.myReadings.statFavoritesUnit,
+      notes: t.myReadings.statNotesUnit,
+    };
     const captions: Record<(typeof statMeta)[number]["key"], string> = {
-      total: "ตั้งแต่เข้าร่วม",
+      total: t.myReadings.statTotalCaption,
       thisMonth: monthCaption,
-      favorites: "ไพ่ที่คุณชื่นชอบ",
-      notes: "ข้อความที่คุณเซฟไว้",
+      favorites: t.myReadings.statFavoritesCaption,
+      notes: t.myReadings.statNotesCaption,
     };
 
     return statMeta.map((meta) => ({
       ...meta,
+      label: labels[meta.key],
+      unit: units[meta.key],
       value: values[meta.key],
       caption: captions[meta.key],
     }));
-  }, [items, favorites, sideNotes]);
+  }, [items, favorites, sideNotes, t]);
 
   const q = query.trim().toLowerCase();
   let visible = items.filter(
@@ -284,12 +296,12 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
         return next;
       });
       if (user) void deleteReading(id);
-      showToast("ลบรายการแล้ว 🗑️");
+      showToast(t.myReadings.deletedOneToast);
     } else {
       setItems([]);
       setFavorites(new Set());
       if (user) void deleteAllReadings(user.id);
-      showToast("ลบประวัติการอ่านทั้งหมดแล้ว 🗑️");
+      showToast(t.myReadings.deletedAllToast);
     }
     setConfirmDelete(null);
   };
@@ -324,7 +336,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
       void loadFromDb(user.id);
     }
     setNoteFor(null);
-    showToast("บันทึกโน้ตแล้ว 💜");
+    showToast(t.myReadings.savedNoteToast);
   };
 
   // ไม่ fallback ไป mock — ถ้าลบหมดแล้วแผง "อ่านล่าสุด" ต้องว่างจริง
@@ -338,11 +350,9 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
         <header className="relative z-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <h2 className="text-2xl font-extrabold text-mystic-ink-deep md:text-[28px]">
-              การอ่านของฉัน <span aria-hidden="true">✨</span>
+              {t.myReadings.title} <span aria-hidden="true">✨</span>
             </h2>
-            <p className="mt-1.5 text-mystic-muted">
-              ดูผลการอ่านที่ผ่านมาและบันทึกที่คุณเก็บไว้
-            </p>
+            <p className="mt-1.5 text-mystic-muted">{t.myReadings.subtitle}</p>
           </div>
           <UserActions onNavigate={onNavigate} />
         </header>
@@ -352,11 +362,10 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
             🔮
           </span>
           <h3 className="text-lg font-bold text-mystic-ink-deep">
-            เข้าสู่ระบบเพื่อดูประวัติการอ่านของคุณ
+            {t.myReadings.signInPromptTitle}
           </h3>
           <p className="max-w-sm text-sm text-mystic-muted">
-            ล็อกอินด้วย Google เพื่อบันทึกผลการอ่านไพ่ โน้ต และรายการโปรด
-            ให้พร้อมกลับมาดูได้ทุกเมื่อ
+            {t.myReadings.signInPromptBody}
           </p>
           <button
             type="button"
@@ -381,7 +390,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                 d="M12 4.7c2.2 0 3.7 1 4.5 1.8l3.3-3.2C17.9 1.2 15.2 0 12 0 7.3 0 3.3 2.6 1.3 6.6l3.9 3c1-2.9 3.7-4.9 6.8-4.9z"
               />
             </svg>
-            เข้าสู่ระบบด้วย Google
+            {t.myReadings.signInWithGoogle}
           </button>
         </div>
       </div>
@@ -394,18 +403,16 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
       <header className="relative z-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <h2 className="text-2xl font-extrabold text-mystic-ink-deep md:text-[28px]">
-            การอ่านของฉัน <span aria-hidden="true">✨</span>
+            {t.myReadings.title} <span aria-hidden="true">✨</span>
           </h2>
-          <p className="mt-1.5 text-mystic-muted">
-            ดูผลการอ่านที่ผ่านมาและบันทึกที่คุณเก็บไว้
-          </p>
+          <p className="mt-1.5 text-mystic-muted">{t.myReadings.subtitle}</p>
         </div>
         <UserActions onNavigate={onNavigate} />
       </header>
 
       {/* summary stats */}
       <section
-        aria-label="สรุปการอ่านของคุณ"
+        aria-label={t.myReadings.statsAriaLabel}
         className="grid grid-cols-2 gap-4 xl:grid-cols-4"
       >
         {stats.map((s) => (
@@ -437,13 +444,13 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
       <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         {/* ---- main card ---- */}
         <section
-          aria-label="ประวัติการอ่านของฉัน"
+          aria-label={t.myReadings.historyTitle}
           className="flex flex-col gap-4 rounded-[24px] border border-[#F0DFF3] bg-white/90 p-4 shadow-[0_12px_32px_rgba(139,92,246,0.08)] md:p-5"
         >
           {/* search + filter chips */}
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             <label className="relative lg:w-72">
-              <span className="sr-only">ค้นหาการอ่านของคุณ</span>
+              <span className="sr-only">{t.myReadings.searchAriaLabel}</span>
               <Icon
                 name="search"
                 className="pointer-events-none absolute left-4 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-mystic-muted"
@@ -452,7 +459,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="ค้นหาการอ่านของคุณ..."
+                placeholder={t.myReadings.searchPlaceholder}
                 className="h-[46px] w-full rounded-[14px] border border-[#EADCF4] bg-white pl-11 pr-4 text-[15px] text-mystic-ink placeholder:text-mystic-muted focus:border-mystic-purple focus:outline-none"
               />
             </label>
@@ -480,7 +487,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
 
           <div className="flex items-center justify-between gap-3">
             <h3 className="font-bold text-mystic-ink-deep">
-              ประวัติการอ่านของฉัน
+              {t.myReadings.historyTitle}
             </h3>
             {items.length > 0 && (
               <button
@@ -489,7 +496,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                 className="flex items-center gap-1.5 rounded-full border border-[#FFD9D9] bg-white px-4 py-1.5 text-xs font-semibold text-[#FF6B6B] transition-colors hover:bg-[#FFF0F0]"
               >
                 <span aria-hidden="true">🗑️</span>
-                ลบทั้งหมด
+                {t.myReadings.deleteAllButton}
               </button>
             )}
           </div>
@@ -500,7 +507,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                 🔮
               </span>
               <p className="font-semibold text-mystic-ink/75">
-                กำลังโหลดประวัติการอ่านของคุณ...
+                {t.myReadings.loadingReadings}
               </p>
             </div>
           ) : visible.length === 0 ? (
@@ -510,13 +517,13 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
               </span>
               <p className="font-semibold text-mystic-ink/75">
                 {items.length === 0
-                  ? "ยังไม่มีประวัติการอ่านของคุณ"
-                  : "ยังไม่พบการอ่านที่ตรงกับคำค้นหา"}
+                  ? t.myReadings.emptyTitleNoReadings
+                  : t.myReadings.emptyTitleNoResults}
               </p>
               <p className="text-sm text-mystic-muted">
                 {items.length === 0
-                  ? "เริ่มเปิดไพ่ครั้งแรกเพื่อเก็บบันทึกไว้ที่นี่ ✨"
-                  : "ลองเปลี่ยนคำค้นหรือเลือกตัวกรองอื่นดูนะ ✨"}
+                  ? t.myReadings.emptyBodyNoReadings
+                  : t.myReadings.emptyBodyNoResults}
               </p>
             </div>
           ) : (
@@ -542,16 +549,16 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
               onClick={loadMore}
               className="mx-auto rounded-full border border-mystic-border-purple bg-white px-8 py-2.5 text-sm font-semibold text-mystic-purple transition-colors hover:bg-mystic-lavender/60"
             >
-              โหลดเพิ่มเติม ↓
+              {t.myReadings.loadMore}
             </button>
           )}
 
           {/* pastel banner */}
           <div className="relative flex min-h-[96px] flex-col justify-center gap-2 overflow-hidden rounded-[18px] border border-[#F5D9EF] bg-[linear-gradient(135deg,#FFF1FA_0%,#EEE3FF_50%,#FFEEF7_100%)] px-6 py-4 md:flex-row md:items-center md:justify-between">
             <p className="relative z-10 font-bold leading-relaxed text-mystic-ink-deep">
-              ให้ไพ่และบันทึกของคุณ
+              {t.myReadings.bannerLine1}
               <br />
-              เป็นเพื่อนร่วมทางของหัวใจ <span aria-hidden="true">💜</span>
+              {t.myReadings.bannerLine2} <span aria-hidden="true">💜</span>
             </p>
             <img
               src="/img/banner-witch.png"
@@ -560,7 +567,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
               className="pointer-events-none absolute -bottom-1 left-1/2 hidden w-48 -translate-x-1/2 mix-blend-multiply [mask-image:linear-gradient(to_top,black_78%,transparent_100%),linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)] [mask-composite:intersect] md:block"
             />
             <p className="relative z-10 text-sm text-mystic-ink/70">
-              ทุกคำตอบ อยู่ในใจคุณเสมอ <span aria-hidden="true">✨</span>
+              {t.myReadings.bannerCaption} <span aria-hidden="true">✨</span>
             </p>
           </div>
         </section>
@@ -568,15 +575,20 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
         {/* ---- right panel ---- */}
         <aside className="flex flex-col gap-5">
           <section
-            aria-label="อ่านล่าสุด"
+            aria-label={t.myReadings.latestAriaLabel}
             className="rounded-[20px] border border-[#F1DDF2] bg-white p-4 shadow-[0_8px_22px_rgba(80,64,120,0.06)]"
           >
-            <h4 className="font-bold text-mystic-ink-deep">อ่านล่าสุด</h4>
+            <h4 className="font-bold text-mystic-ink-deep">
+              {t.myReadings.latestAriaLabel}
+            </h4>
             {latest ? (
               <>
                 <img
                   src="/img/latest-reading.png"
-                  alt={`ภาพการอ่านล่าสุดจาก ${latest.deckName}`}
+                  alt={t.myReadings.latestImageAlt.replace(
+                    "{deckName}",
+                    latest.deckName,
+                  )}
                   className="mt-3 aspect-video w-full rounded-2xl object-cover"
                 />
                 <h5 className="mt-3 line-clamp-2 font-bold leading-snug text-mystic-ink-deep">
@@ -586,37 +598,39 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                   <Icon name="calendar" className="h-3.5 w-3.5" />
                   {latest.date} • {latest.time} •
                   <Icon name="cards" className="h-3.5 w-3.5" />
-                  {latest.cardCount} ใบ
+                  {latest.cardCount} {t.myReadings.cardCountUnit}
                 </p>
                 <button
                   type="button"
                   onClick={() => setResultFor(latest)}
                   className="mt-3 w-full rounded-xl border-t border-mystic-border/60 pt-3 text-center text-sm font-semibold text-mystic-purple transition-colors hover:text-mystic-pink"
                 >
-                  ดูผลการอ่านล่าสุด →
+                  {t.myReadings.viewLatestButton}
                 </button>
               </>
             ) : (
               <p className="mt-3 text-sm text-mystic-muted">
                 {loadingReadings
-                  ? "กำลังโหลด..."
-                  : "ยังไม่มีประวัติการอ่านของคุณ"}
+                  ? t.myReadings.loadingShort
+                  : t.myReadings.emptyTitleNoReadings}
               </p>
             )}
           </section>
 
           <section
-            aria-label="บันทึกของฉัน"
+            aria-label={t.myReadings.notesAriaLabel}
             className="rounded-[20px] border border-[#F1DDF2] bg-white p-4 shadow-[0_8px_22px_rgba(80,64,120,0.06)]"
           >
             <div className="flex items-center justify-between">
-              <h4 className="font-bold text-mystic-ink-deep">บันทึกของฉัน</h4>
+              <h4 className="font-bold text-mystic-ink-deep">
+                {t.myReadings.notesAriaLabel}
+              </h4>
               <button
                 type="button"
                 onClick={() => onNavigate("/notes")}
                 className="text-xs font-semibold text-mystic-purple transition-colors hover:text-mystic-pink"
               >
-                ดูทั้งหมด
+                {t.myReadings.viewAllNotes}
               </button>
             </div>
 
@@ -652,7 +666,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
               onClick={() => onNavigate("/notes")}
               className="mt-3 w-full rounded-xl border-t border-mystic-border/60 pt-3 text-center text-sm font-semibold text-mystic-purple transition-colors hover:text-mystic-pink"
             >
-              ดูบันทึกทั้งหมด →
+              {t.myReadings.viewAllNotesButton}
             </button>
           </section>
         </aside>
@@ -664,11 +678,11 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           role="dialog"
           aria-modal="true"
-          aria-label="ยืนยันการลบประวัติการอ่าน"
+          aria-label={t.myReadings.deleteConfirmAriaLabel}
         >
           <button
             type="button"
-            aria-label="ยกเลิกการลบ"
+            aria-label={t.myReadings.cancelDeleteAriaLabel}
             onClick={() => setConfirmDelete(null)}
             className="absolute inset-0 bg-mystic-ink/40 backdrop-blur-sm"
           />
@@ -678,17 +692,20 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
             </span>
             <h3 className="mt-3 font-extrabold text-mystic-ink-deep">
               {confirmDelete.kind === "all"
-                ? `ลบประวัติการอ่านทั้งหมด (${items.length} รายการ)?`
-                : "ลบการอ่านรายการนี้?"}
+                ? t.myReadings.deleteAllTitle.replace(
+                    "{count}",
+                    String(items.length),
+                  )
+                : t.myReadings.deleteOneTitle}
             </h3>
             <p className="mt-1.5 text-sm text-mystic-muted">
               {confirmDelete.kind === "all" ? (
-                "ประวัติการอ่านทุกรายการจะถูกลบถาวร (โน้ตที่บันทึกไว้จะไม่ถูกลบ)"
+                t.myReadings.deleteAllBody
               ) : (
                 <>
                   “{readingDisplayTitle(confirmDelete.item)}”
                   <br />
-                  จะถูกลบถาวรและกู้คืนไม่ได้
+                  {t.myReadings.deleteOneBody}
                 </>
               )}
             </p>
@@ -698,14 +715,16 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                 onClick={performDelete}
                 className="rounded-full bg-[#FF6B6B] px-7 py-2.5 font-bold text-white shadow-pastel transition-transform hover:scale-105 active:scale-95"
               >
-                {confirmDelete.kind === "all" ? "ลบทั้งหมด" : "ลบรายการนี้"}
+                {confirmDelete.kind === "all"
+                  ? t.myReadings.deleteAllButton
+                  : t.myReadings.deleteOneButton}
               </button>
               <button
                 type="button"
                 onClick={() => setConfirmDelete(null)}
                 className="rounded-full border border-mystic-border px-7 py-2.5 font-semibold text-mystic-ink/70 transition-colors hover:bg-mystic-pink-light"
               >
-                ยกเลิก
+                {t.myReadings.cancel}
               </button>
             </div>
           </div>
@@ -718,17 +737,20 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           role="dialog"
           aria-modal="true"
-          aria-label={`ผลการอ่าน ${resultFor.title}`}
+          aria-label={t.myReadings.resultAriaLabel.replace(
+            "{title}",
+            resultFor.title,
+          )}
         >
           <button
             type="button"
-            aria-label="ปิดผลการอ่าน"
+            aria-label={t.myReadings.closeResultAriaLabel}
             onClick={() => setResultFor(null)}
             className="absolute inset-0 bg-mystic-ink/40 backdrop-blur-sm"
           />
           <div className="animate-toast-in relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-bubble-lg bg-white p-6 shadow-pastel-lg md:p-8">
             <h3 className="text-center text-lg font-extrabold text-mystic-ink-deep">
-              ผลการอ่านของคุณ <span aria-hidden="true">🔮</span>
+              {t.myReadings.resultTitle} <span aria-hidden="true">🔮</span>
             </h3>
             <p className="mt-1 text-center font-semibold text-mystic-purple">
               {readingDisplayTitle(resultFor)}
@@ -740,7 +762,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
               <Icon name="calendar" className="h-3.5 w-3.5" />
               {resultFor.date} • {resultFor.time} •
               <Icon name="cards" className="h-3.5 w-3.5" />
-              {resultFor.cardCount} ใบ
+              {resultFor.cardCount} {t.myReadings.cardCountUnit}
             </p>
 
             {resultFor.cards && resultFor.cards.length > 0 ? (
@@ -754,12 +776,15 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                         decks.find((d) => d.id === resultFor.deckId)
                           ?.cardBack ?? resultFor.cover
                       }
-                      alt={`ไพ่ ${card.title}`}
+                      alt={t.myReadings.cardAlt.replace("{title}", card.title)}
                       className="aspect-[19/28] w-16 shrink-0 rounded-lg border-2 border-mystic-border-purple object-cover shadow-pastel md:w-20"
                     />
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-mystic-muted">
-                        ใบที่ {i + 1}
+                        {t.myReadings.cardIndexLabel.replace(
+                          "{index}",
+                          String(i + 1),
+                        )}
                       </p>
                       <p className="font-bold text-mystic-ink-deep">
                         {card.title}
@@ -796,14 +821,14 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                 }}
                 className="rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] px-6 py-2.5 font-bold text-white shadow-pastel transition-transform hover:scale-105"
               >
-                บันทึกโน้ต 📖
+                {t.myReadings.saveNoteButton}
               </button>
               <button
                 type="button"
                 onClick={() => setResultFor(null)}
                 className="rounded-full border border-mystic-border px-6 py-2.5 font-semibold text-mystic-ink/70 transition-colors hover:bg-mystic-pink-light"
               >
-                ปิด
+                {t.myReadings.close}
               </button>
             </div>
           </div>
@@ -816,17 +841,20 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           role="dialog"
           aria-modal="true"
-          aria-label={`บันทึกโน้ตสำหรับ ${noteFor.title}`}
+          aria-label={t.myReadings.noteAriaLabel.replace(
+            "{title}",
+            noteFor.title,
+          )}
         >
           <button
             type="button"
-            aria-label="ปิดหน้าต่างโน้ต"
+            aria-label={t.myReadings.closeNoteAriaLabel}
             onClick={() => setNoteFor(null)}
             className="absolute inset-0 bg-mystic-ink/40 backdrop-blur-sm"
           />
           <div className="animate-toast-in relative w-full max-w-md rounded-bubble-lg bg-white p-6 shadow-pastel-lg">
             <h3 className="font-extrabold text-mystic-ink-deep">
-              บันทึกโน้ต <span aria-hidden="true">📖</span>
+              {t.myReadings.noteModalTitle} <span aria-hidden="true">📖</span>
             </h3>
             <p className="mt-1 truncate text-sm text-mystic-muted">
               {readingDisplayTitle(noteFor)}
@@ -836,7 +864,7 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
               onChange={(e) => setNoteDraft(e.target.value)}
               rows={5}
               autoFocus
-              placeholder="เขียนความรู้สึกหรือสิ่งที่ไพ่บอกคุณ..."
+              placeholder={t.myReadings.noteDraftPlaceholder}
               className="mt-4 w-full resize-none rounded-2xl border border-[#EADCF4] bg-[#FFFBFE] p-4 text-[15px] text-mystic-ink placeholder:text-mystic-muted focus:border-mystic-purple focus:outline-none"
             />
             <div className="mt-4 flex justify-end gap-2">
@@ -845,14 +873,14 @@ export default function MyReadingsPage({ onNavigate }: MyReadingsPageProps) {
                 onClick={() => setNoteFor(null)}
                 className="rounded-full border border-mystic-border px-6 py-2.5 text-sm font-semibold text-mystic-ink/70 transition-colors hover:bg-mystic-pink-light"
               >
-                ยกเลิก
+                {t.myReadings.cancel}
               </button>
               <button
                 type="button"
                 onClick={() => void submitNote()}
                 className="rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] px-7 py-2.5 text-sm font-bold text-white shadow-pastel transition-transform hover:scale-105"
               >
-                บันทึก ✨
+                {t.myReadings.saveNoteSubmit}
               </button>
             </div>
           </div>
