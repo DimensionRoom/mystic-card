@@ -1,12 +1,13 @@
-import { forwardRef, useEffect, useMemo } from "react";
+import { forwardRef, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
 import {
   RigidBody,
   type CollisionEnterPayload,
   type RapierRigidBody,
 } from "@react-three/rapier";
 import { runeById, type RuneId } from "../../data/runes";
-import { ensureRuneFont, runeFaceTexture } from "./runeTextures";
+import { auraTexture, ensureRuneFont, runeFaceTexture } from "./runeTextures";
 import { DIE_SIZE } from "./dicePhysics";
 
 interface RuneDieProps {
@@ -14,10 +15,12 @@ interface RuneDieProps {
   faces: RuneId[];
   position: [number, number, number];
   onCollide?: (payload: CollisionEnterPayload) => void;
+  /** เรืองแสงหลังทอยเสร็จ (phase === "revealed") */
+  glow?: boolean;
 }
 
 const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
-  { faces, position, onCollide },
+  { faces, position, onCollide, glow = false },
   ref,
 ) {
   // วัสดุเมทัลลิก: ทองอบใน map, ตัวลูกดำมัน — สะท้อนแสงจาก Environment ในซีน
@@ -30,6 +33,8 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
             roughness: 0.3,
             metalness: 0.9,
             envMapIntensity: 1.7,
+            emissive: new THREE.Color("#ffffff"),
+            emissiveIntensity: 0,
           }),
       ),
     [],
@@ -43,7 +48,10 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
       if (cancelled) return;
       faces.forEach((id, i) => {
         const rune = runeById(id);
-        materials[i].map = runeFaceTexture(rune.glyph, rune.id);
+        const tex = runeFaceTexture(rune.glyph, rune.id);
+        materials[i].map = tex;
+        // emissiveMap = texture เดียวกัน → เฉพาะทองเปล่งแสง แผงดำเรือง ≈ 0
+        materials[i].emissiveMap = tex;
         materials[i].needsUpdate = true;
       });
     });
@@ -52,9 +60,50 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     };
   }, [faces, materials]);
 
+  // วัสดุ sprite ออร่า (ทองเรือง โปร่งขอบ) — เริ่มโปร่งใส
+  const auraMat = useMemo(
+    () =>
+      new THREE.SpriteMaterial({
+        map: auraTexture(),
+        color: new THREE.Color("#833ef1"),
+        transparent: true,
+        depthWrite: true, // ให้ sprite เขียน depth buffer → ถูกบังโดยลูกเต๋า
+        depthTest: false, // ไม่ให้พื้นโต๊ะบัง sprite → ไม่มีเส้นตรงตัดแสง
+        blending: THREE.AdditiveBlending,
+        opacity: 0,
+      }),
+    [],
+  );
+
+  // ค่อย ๆ เพิ่ม/ลดออร่าตาม glow — ผิวเรือง + halo sprite + แสงเปล่งลงโต๊ะ เต้นนุ่ม ๆ
+  const t = useRef(0);
+  const gRef = useRef(0); // 0..1 ระดับออร่าปัจจุบัน (ramp นุ่ม)
+  const spriteRef = useRef<THREE.Sprite>(null);
+  const lightRef = useRef<THREE.PointLight>(null);
+  useFrame((_, dt) => {
+    t.current += dt;
+    gRef.current += ((glow ? 1 : 0) - gRef.current) * Math.min(dt * 4, 1);
+    const g = gRef.current;
+    const pulse = 0.5 + 0.5 * Math.sin(t.current * 3);
+    // ผิวทองเปล่งแสง
+    const em = g * (0.7 + 0.5 * pulse);
+    for (const m of materials) m.emissiveIntensity = em;
+    // halo sprite
+    auraMat.opacity = g * (0.5 + 0.35 * pulse);
+    if (spriteRef.current) {
+      const s = 1.9 + g * (0.9 + 0.35 * pulse);
+      spriteRef.current.scale.set(s, s, s);
+    }
+    // แสงออร่าเปล่งลงพื้นโต๊ะรอบ ๆ
+    if (lightRef.current) lightRef.current.intensity = g * (2.4 + 1.4 * pulse);
+  });
+
   useEffect(() => {
-    return () => materials.forEach((m) => m.dispose());
-  }, [materials]);
+    return () => {
+      materials.forEach((m) => m.dispose());
+      auraMat.dispose();
+    };
+  }, [materials, auraMat]);
 
   return (
     <RigidBody
@@ -71,6 +120,17 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
       <mesh castShadow receiveShadow material={materials}>
         <boxGeometry args={[DIE_SIZE, DIE_SIZE, DIE_SIZE]} />
       </mesh>
+      {/* ออร่ารอบลูกเต๋า — sprite billboard หันเข้ากล้องเสมอ */}
+      <sprite ref={spriteRef} material={auraMat} scale={[1.9, 1.9, 1.9]} />
+      {/* แสงออร่าเปล่งลงโต๊ะ (ไม่ทำเงา) */}
+      <pointLight
+        ref={lightRef}
+        color="#f5da27"
+        distance={3.4}
+        decay={5}
+        intensity={0}
+        castShadow={false}
+      />
     </RigidBody>
   );
 });

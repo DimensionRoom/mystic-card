@@ -163,6 +163,26 @@ export function runeFaceTexture(glyph: string, runeId: string): THREE.CanvasText
   return tex;
 }
 
+// ออร่ารอบลูกเต๋า — radial gradient ทองนุ่ม โปร่งขอบ (ใช้กับ sprite)
+let auraTex: THREE.CanvasTexture | null = null;
+export function auraTexture(): THREE.CanvasTexture {
+  if (auraTex) return auraTex;
+  const s = 256;
+  const c = document.createElement("canvas");
+  c.width = c.height = s;
+  const ctx = c.getContext("2d")!;
+  const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+  g.addColorStop(0, "rgba(255,255,255,0.9)");
+  g.addColorStop(0.22, "rgba(255,226,150,0.6)");
+  g.addColorStop(0.55, "rgba(255,205,120,0.2)");
+  g.addColorStop(1, "rgba(255,205,120,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, s, s);
+  auraTex = new THREE.CanvasTexture(c);
+  auraTex.colorSpace = THREE.SRGBColorSpace;
+  return auraTex;
+}
+
 /** felt สีม่วงเข้มมีวงทอง + ดาว (พื้นโต๊ะ) — CanvasTexture ไม่ต้องใช้ไฟล์ภาพ */
 let feltTex: THREE.CanvasTexture | null = null;
 export function feltTexture(): THREE.CanvasTexture {
@@ -213,4 +233,6 @@ export function disposeRuneTextures(): void {
   cache.clear();
   feltTex?.dispose();
   feltTex = null;
+  auraTex?.dispose();
+  auraTex = null;
 }
