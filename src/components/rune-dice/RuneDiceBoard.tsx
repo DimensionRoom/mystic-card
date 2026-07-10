@@ -313,6 +313,7 @@ export default function RuneDiceBoard({
               faces={faces}
               position={REST_SPOTS[i]}
               onCollide={handleCollide}
+              glow={phase === "revealed"}
             />
           ))}
           <DiceController
