@@ -1,4 +1,9 @@
+import type { RuneId } from "../data/runes";
+
 export type Language = "th" | "en";
+
+/** ครบทั้ง 24 รูน — ใช้ satisfies กับ th.runeDice.runes เพื่อบังคับให้ไม่ตกหล่น */
+type RuneCopy = Record<RuneId, { name: string; meaning: string }>;
 
 export const languageNames: Record<Language, string> = {
   th: "ไทย",
@@ -10,6 +15,7 @@ const th = {
     nav: "เมนูหลัก",
     home: "หน้าหลัก",
     decks: "เลือกไพ่",
+    runeDice: "Rune Dice",
     readings: "การอ่านของฉัน",
     shop: "ร้านค้า",
     settings: "ตั้งค่า",
@@ -501,6 +507,136 @@ const th = {
     terms5Body:
       "คำทำนายมีไว้เพื่อความบันเทิงและแรงบันดาลใจ การตัดสินใจใด ๆ จากผลการอ่านเป็นความรับผิดชอบของผู้ใช้ บริการนี้ไม่ใช่คำแนะนำทางการแพทย์ กฎหมาย หรือการเงิน",
   },
+  runeDice: {
+    title: "Rune Dice ✨",
+    subtitle: "ตั้งคำถามในใจ แล้วทอยรูน 3 ลูก เพื่อรับคำแนะนำจากจักรวาล",
+    step1: "เลือกคำถาม",
+    step2: "ทอยรูน",
+    step3: "ดูคำทำนาย",
+    stepsAriaLabel: "ขั้นตอนการทอยรูน",
+    catLove: "ความรัก",
+    catWork: "การงาน",
+    catMoney: "การเงิน",
+    catToday: "คำแนะนำวันนี้",
+    catCustom: "+ คำถามของตัวเอง",
+    customPlaceholder: "พิมพ์คำถามของคุณ...",
+    boardAriaLabel: "กระดานทอยรูน",
+    rollButton: "ทอย Rune Dice",
+    rerollButton: "ทอยใหม่",
+    hintIdle: "ตั้งสมาธิ นึกถึงคำถาม แล้วกดทอยรูนเพื่อรับคำแนะนำจากพลังแห่งรูน ✨",
+    hintRolling: "รูนกำลังกลิ้ง... ตั้งจิตให้นิ่งนะ 🌙",
+    hintRevealed: "บันทึกผลลัพธ์ไว้ในประวัติ เพื่อติดตามการเดินทางของคุณ ✨",
+    panelTitle: "คำทำนายของคุณ",
+    panelEmpty: "ผลจะปรากฏที่นี่หลังทอยรูน",
+    pos1: "พลังงานปัจจุบัน",
+    pos2: "สิ่งที่ต้องระวัง",
+    pos3: "คำแนะนำจากจักรวาล",
+    saveButton: "บันทึกผล",
+    savedButton: "บันทึกแล้ว ✓",
+    bonusButton: "เปิดไพ่เสริม",
+    savedToast: "บันทึกผลแล้ว ✨",
+    saveLoginToast: "เข้าสู่ระบบเพื่อบันทึกผลนะ",
+    bonusToast: "กำลังพาไปที่ไพ่เสริม ✨",
+    deckName: "Rune Dice",
+    runes: {
+      fehu: {
+        name: "เฟฮู",
+        meaning: "ความมั่งคั่งและโชคลาภ ทรัพย์สินและสิ่งดี ๆ กำลังไหลเข้ามาสู่ชีวิตคุณ",
+      },
+      uruz: {
+        name: "อูรุซ",
+        meaning: "พลังดิบและความแข็งแกร่ง สุขภาพที่ดีและความมุ่งมั่นจะพาคุณผ่านทุกอย่าง",
+      },
+      thurisaz: {
+        name: "ทูริซาซ",
+        meaning: "พลังปกป้องและอุปสรรคที่ต้องเผชิญ ตั้งสติแล้วรับมืออย่างมีสติ",
+      },
+      ansuz: {
+        name: "อันซุซ",
+        meaning: "การสื่อสารและปัญญา ข้อความสำคัญจากเบื้องบนกำลังจะมาถึงคุณ",
+      },
+      raidho: {
+        name: "ไรโธ",
+        meaning: "การเดินทางและความก้าวหน้า เชื่อมั่นในจังหวะชีวิตที่กำลังเคลื่อนไป",
+      },
+      kenaz: {
+        name: "เคนาซ",
+        meaning: "แสงสว่างแห่งปัญญาและความคิดสร้างสรรค์ ไอเดียใหม่กำลังจุดประกาย",
+      },
+      gebo: {
+        name: "ไกโบ",
+        meaning: "พลังแห่งการให้และรับ ความสัมพันธ์ที่ดีเกื้อกูลกัน สิ่งดี ๆ กำลังไหลเข้ามา",
+      },
+      wunjo: {
+        name: "วุนโย",
+        meaning: "ความสุขและความสมหวัง ช่วงเวลาแห่งความกลมเกลียวและความสงบใจ",
+      },
+      hagalaz: {
+        name: "ฮากาลาซ",
+        meaning: "การเปลี่ยนแปลงกะทันหันและบททดสอบ ปล่อยวางสิ่งเก่าเพื่อเปิดรับสิ่งใหม่",
+      },
+      nauthiz: {
+        name: "นอต",
+        meaning: "ความท้าทายและข้อจำกัด อย่าฝืนเกินตัว วางแผนให้รอบคอบ อดทนแล้วจะผ่านไปได้",
+      },
+      isa: {
+        name: "อีซา",
+        meaning: "การหยุดนิ่งและรอคอย ใช้เวลานี้ทบทวนตัวเองก่อนก้าวต่อไป",
+      },
+      jera: {
+        name: "เยรา",
+        meaning: "ผลของความเพียร ถึงเวลาเก็บเกี่ยวสิ่งดี ๆ ที่คุณหว่านไว้",
+      },
+      eihwaz: {
+        name: "ไอห์วาซ",
+        meaning: "ความมั่นคงและการเปลี่ยนผ่าน ยืนหยัดอย่างอดทนแล้วคุณจะเติบโต",
+      },
+      perthro: {
+        name: "เพิร์ทโธ",
+        meaning: "ความลึกลับและโชคชะตา สิ่งที่ซ่อนอยู่กำลังจะเผยตัวให้คุณเห็น",
+      },
+      algiz: {
+        name: "อัลกิซ",
+        meaning: "การปกป้องคุ้มครอง เชื่อในสัญชาตญาณและพลังที่คอยดูแลคุณอยู่",
+      },
+      sowilo: {
+        name: "โซวีโล",
+        meaning: "พลังแห่งความสำเร็จและชัยชนะ ความสว่างไสวกำลังส่องทางให้คุณ",
+      },
+      tiwaz: {
+        name: "เทวาช",
+        meaning: "พลังแห่งชัยชนะและความกล้าหาญ เชื่อมั่นในตัวเองและก้าวต่อไป ความสำเร็จรออยู่ข้างหน้า",
+      },
+      berkano: {
+        name: "เบอร์คาโน",
+        meaning: "การเริ่มต้นใหม่และการเติบโต สิ่งเล็ก ๆ ที่คุณดูแลจะค่อย ๆ งอกงาม",
+      },
+      ehwaz: {
+        name: "เอห์วาซ",
+        meaning: "ความก้าวหน้าร่วมกันและความไว้วางใจ คนรอบข้างจะพาคุณไปได้ไกล",
+      },
+      mannaz: {
+        name: "มันนาซ",
+        meaning: "ตัวตนและความสัมพันธ์กับผู้คน มองตัวเองอย่างเข้าใจแล้วเชื่อมโยงกับคนอื่น",
+      },
+      laguz: {
+        name: "ลากุซ",
+        meaning: "การไหลลื่นและสัญชาตญาณ ปล่อยให้อารมณ์และความรู้สึกนำทางคุณ",
+      },
+      ingwaz: {
+        name: "อิงวาซ",
+        meaning: "พลังภายในที่พร้อมงอกงาม บ่มเพาะสิ่งดี ๆ ไว้แล้วรอวันเบ่งบาน",
+      },
+      dagaz: {
+        name: "ดากาซ",
+        meaning: "รุ่งอรุณและการตื่นรู้ ความหวังใหม่และการเปลี่ยนแปลงที่สดใสกำลังมา",
+      },
+      othala: {
+        name: "โอทาลา",
+        meaning: "มรดกและรากเหง้า สิ่งที่สืบทอดมาจะเป็นรากฐานที่มั่นคงให้คุณ",
+      },
+    } satisfies RuneCopy,
+  },
 };
 
 const en: typeof th = {
@@ -508,6 +644,7 @@ const en: typeof th = {
     nav: "Main menu",
     home: "Home",
     decks: "My Decks",
+    runeDice: "Rune Dice",
     readings: "My Readings",
     shop: "Shop",
     settings: "Settings",
@@ -998,6 +1135,163 @@ const en: typeof th = {
     terms5Heading: "Limitation of liability",
     terms5Body:
       "Readings are intended for entertainment and inspiration. Any decisions made based on a reading are the user's own responsibility. This service is not medical, legal, or financial advice.",
+  },
+  runeDice: {
+    title: "Rune Dice ✨",
+    subtitle:
+      "Hold your question in mind, then roll 3 runes for guidance from the universe",
+    step1: "Choose a question",
+    step2: "Roll runes",
+    step3: "View reading",
+    stepsAriaLabel: "Rune roll steps",
+    catLove: "Love",
+    catWork: "Work",
+    catMoney: "Money",
+    catToday: "Today's guidance",
+    catCustom: "+ Your own question",
+    customPlaceholder: "Type your question...",
+    boardAriaLabel: "Rune rolling board",
+    rollButton: "Roll Rune Dice",
+    rerollButton: "Roll again",
+    hintIdle:
+      "Focus, hold your question in mind, then roll the runes to receive their guidance ✨",
+    hintRolling: "The runes are tumbling... keep your mind still 🌙",
+    hintRevealed:
+      "Save the result to your history to follow your journey ✨",
+    panelTitle: "Your reading",
+    panelEmpty: "Your result will appear here after you roll",
+    pos1: "Current energy",
+    pos2: "What to watch for",
+    pos3: "Guidance from the universe",
+    saveButton: "Save result",
+    savedButton: "Saved ✓",
+    bonusButton: "Draw a bonus card",
+    savedToast: "Result saved ✨",
+    saveLoginToast: "Sign in to save your result",
+    bonusToast: "Taking you to bonus cards ✨",
+    deckName: "Rune Dice",
+    runes: {
+      fehu: {
+        name: "Fehu",
+        meaning:
+          "Wealth and good fortune — abundance and good things are flowing into your life",
+      },
+      uruz: {
+        name: "Uruz",
+        meaning:
+          "Raw strength and vitality — good health and determination will carry you through",
+      },
+      thurisaz: {
+        name: "Thurisaz",
+        meaning:
+          "A protective force and obstacles to face — stay grounded and respond with care",
+      },
+      ansuz: {
+        name: "Ansuz",
+        meaning:
+          "Communication and wisdom — an important message from above is on its way",
+      },
+      raidho: {
+        name: "Raidho",
+        meaning:
+          "A journey and progress — trust the rhythm of life that is moving you forward",
+      },
+      kenaz: {
+        name: "Kenaz",
+        meaning:
+          "The light of insight and creativity — a new idea is beginning to spark",
+      },
+      gebo: {
+        name: "Gebo",
+        meaning:
+          "The power of giving and receiving — a relationship of mutual support; good things are flowing in",
+      },
+      wunjo: {
+        name: "Wunjo",
+        meaning:
+          "Joy and fulfillment — a time of harmony and inner peace",
+      },
+      hagalaz: {
+        name: "Hagalaz",
+        meaning:
+          "Sudden change and a test — release the old to make room for the new",
+      },
+      nauthiz: {
+        name: "Nauthiz",
+        meaning:
+          "Challenges and limits — don't overreach, plan carefully; endure and it will pass",
+      },
+      isa: {
+        name: "Isa",
+        meaning:
+          "Stillness and waiting — use this time to reflect before you move on",
+      },
+      jera: {
+        name: "Jera",
+        meaning:
+          "The fruit of your effort — it's time to harvest the good you have sown",
+      },
+      eihwaz: {
+        name: "Eihwaz",
+        meaning:
+          "Steadiness and transformation — stand firm with patience and you will grow",
+      },
+      perthro: {
+        name: "Perthro",
+        meaning:
+          "Mystery and fate — what lies hidden is about to reveal itself to you",
+      },
+      algiz: {
+        name: "Algiz",
+        meaning:
+          "Protection — trust your instincts and the force that watches over you",
+      },
+      sowilo: {
+        name: "Sowilo",
+        meaning:
+          "The power of success and victory — a bright light is lighting your way",
+      },
+      tiwaz: {
+        name: "Tiwaz",
+        meaning:
+          "The power of victory and courage — believe in yourself and step forward; success lies ahead",
+      },
+      berkano: {
+        name: "Berkano",
+        meaning:
+          "New beginnings and growth — the small things you tend will gently blossom",
+      },
+      ehwaz: {
+        name: "Ehwaz",
+        meaning:
+          "Progress together and trust — the people around you will take you far",
+      },
+      mannaz: {
+        name: "Mannaz",
+        meaning:
+          "The self and your ties to others — understand yourself, then connect with others",
+      },
+      laguz: {
+        name: "Laguz",
+        meaning:
+          "Flow and intuition — let your emotions and feelings guide you",
+      },
+      ingwaz: {
+        name: "Ingwaz",
+        meaning:
+          "Inner potential ready to blossom — nurture the good within and await its bloom",
+      },
+      dagaz: {
+        name: "Dagaz",
+        meaning:
+          "Dawn and awakening — fresh hope and a bright change are coming",
+      },
+      othala: {
+        name: "Othala",
+        meaning:
+          "Heritage and roots — what you inherit becomes a firm foundation for you",
+      },
+    },
   },
 };
 

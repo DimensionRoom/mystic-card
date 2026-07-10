@@ -5,7 +5,15 @@ import type { DeckTab } from "../components/DeckTabs";
 import { SETTINGS_SUB_VIEWS, type SettingsSubView } from "./settingsViews";
 
 // เส้นทางที่แอปมีหน้าจริงรองรับ (ตรงกับ Route table ใน App.tsx)
-const staticPaths = ["/", "/readings", "/shop", "/checkout", "/decks", "/settings"];
+const staticPaths = [
+  "/",
+  "/readings",
+  "/shop",
+  "/checkout",
+  "/decks",
+  "/rune-dice",
+  "/settings",
+];
 
 // แท็บจริงของหน้า deck — ต้องตรงกับ DeckTabs/DeckRoute เท่านั้น (กัน /deck/x/ebook หลุดผ่าน)
 const deckTabs: DeckTab[] = ["read", "meaning", "about"];

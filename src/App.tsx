@@ -16,6 +16,8 @@ const CheckoutRoute = lazy(() => import("./pages/CheckoutRoute"));
 const DecksRoute = lazy(() => import("./pages/DecksRoute"));
 const SettingsRoute = lazy(() => import("./pages/SettingsRoute"));
 const DeckRoute = lazy(() => import("./pages/DeckRoute"));
+// Rune Dice โหลด Three.js/rapier (~600KB) — ต้องอยู่ใน lazy chunk แยกเสมอ
+const RuneDiceRoute = lazy(() => import("./pages/RuneDiceRoute"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 export default function App() {
@@ -103,6 +105,7 @@ export default function App() {
               <Route path="/shop" element={<ShopRoute />} />
               <Route path="/checkout/:productId?" element={<CheckoutRoute />} />
               <Route path="/decks" element={<DecksRoute />} />
+              <Route path="/rune-dice" element={<RuneDiceRoute />} />
               <Route path="/settings/:view?" element={<SettingsRoute />} />
               <Route path="/deck/:deckId/:tab?" element={<DeckRoute />} />
               <Route path="*" element={<NotFoundPage />} />
