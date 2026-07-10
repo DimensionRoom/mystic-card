@@ -2,11 +2,12 @@ import Icon, { type IconName } from "./Icon";
 import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
 
-type MenuKey = "home" | "decks" | "readings" | "shop" | "settings";
+type MenuKey = "home" | "decks" | "runeDice" | "readings" | "shop" | "settings";
 
 const menuItems: { key: MenuKey; icon: IconName; path: string }[] = [
   { key: "home", icon: "home", path: "/" },
   { key: "decks", icon: "cards", path: "/decks" },
+  { key: "runeDice", icon: "dice", path: "/rune-dice" },
   { key: "readings", icon: "book", path: "/readings" },
   { key: "shop", icon: "bag", path: "/shop" },
   { key: "settings", icon: "settings", path: "/settings" },

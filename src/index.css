@@ -31,6 +31,17 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ฟอนต์รูน Elder Futhark (Unicode Runic block) สำหรับ Rune Dice —
+   ไฟล์โหลดเฉพาะเมื่อมี glyph รูนแสดงจริง (lazy) จึงไม่กระทบหน้าอื่น */
+@font-face {
+  font-family: "Noto Sans Runic";
+  src: url("/fonts/NotoSansRunic-Regular.woff2") format("woff2");
+  font-display: swap;
+}
+.rune-glyph {
+  font-family: "Noto Sans Runic", var(--font-sans);
+}
+
 body {
   background-color: var(--color-mystic-bg);
   color: var(--color-mystic-ink);
