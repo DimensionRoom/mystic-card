@@ -99,11 +99,9 @@ export function runeFaceTexture(glyph: string, runeId: string): THREE.CanvasText
   c.width = c.height = size;
   const ctx = c.getContext("2d")!;
 
-  // 1) พื้นทอง (กลายเป็นกรอบ + ขอบลูกเต๋าเมื่อหน้าประกบกัน)
+  // 1) พื้นทองเต็มสี่เหลี่ยม (ถึงมุมทุกมุม) — ขอบลูกบาศก์จึงเป็นทองเต็ม ไม่มีช่องดำ
   ctx.fillStyle = goldGradient(ctx, 0, 0, size, size);
-  ctx.beginPath();
-  ctx.roundRect(0, 0, size, size, 30);
-  ctx.fill();
+  ctx.fillRect(0, 0, size, size);
 
   // 2) แผงดำเว้ากรอบทอง
   const inset = 22;

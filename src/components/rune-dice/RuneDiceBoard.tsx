@@ -1,4 +1,12 @@
-import { Suspense, useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, Lightformer, RoundedBox } from "@react-three/drei";
 import {
@@ -118,9 +126,34 @@ function DiceController({
 
 function Table() {
   const felt = useMemo(() => feltTexture(), []);
+  // ปูภาพพื้นโต๊ะจาก /img/rune-board.png ถ้ามี — ไม่มีไฟล์ก็ใช้ felt ที่วาดเองแทน
+  const [boardMap, setBoardMap] = useState<THREE.Texture>(felt);
+  useEffect(() => {
+    let disposed = false;
+    new THREE.TextureLoader().load(
+      "/img/rune-board.png",
+      (tex) => {
+        if (disposed) {
+          tex.dispose();
+          return;
+        }
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = 8;
+        setBoardMap(tex);
+      },
+      undefined,
+      () => {
+        /* ไม่มีไฟล์ → คง felt เดิม */
+      },
+    );
+    return () => {
+      disposed = true;
+    };
+  }, [felt]);
+
   return (
     <group>
-      {/* ขอบโต๊ะ (visual) */}
+      {/* ขอบโต๊ะ (visual) — สีเข้มเข้ากับกรอบภาพพื้น */}
       <RoundedBox
         args={[9.6, 0.8, 6.6]}
         radius={0.24}
@@ -128,12 +161,18 @@ function Table() {
         position={[0, -0.4, 0]}
         receiveShadow
       >
-        <meshStandardMaterial color="#32245c" roughness={0.95} metalness={0} />
+        <meshStandardMaterial color="#f4c300" roughness={0.95} metalness={0} />
       </RoundedBox>
-      {/* felt ด้านบน */}
+      {/* พื้นโต๊ะด้านบน */}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.005, 0]} receiveShadow>
-        <planeGeometry args={[8.8, 5.8]} />
-        <meshStandardMaterial map={felt} roughness={1} />
+        <planeGeometry args={[9.0, 6.0]} />
+        <meshStandardMaterial
+          map={boardMap}
+          emissive="#8800ff"
+          emissiveMap={boardMap}
+          emissiveIntensity={0.35}
+          roughness={1}
+        />
       </mesh>
     </group>
   );
