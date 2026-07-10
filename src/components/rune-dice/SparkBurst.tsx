@@ -4,8 +4,15 @@ import { useFrame } from "@react-three/fiber";
 
 const POOL = 120; // จำนวนอนุภาคสูงสุดในพูล
 const PER_BURST = 14; // อนุภาคต่อการชน 1 ครั้ง
-const LIFE = 0.4; // อายุอนุภาค (วินาที)
+const LIFE = 0.36; // อายุอนุภาค (วินาที)
 const GOLD = new THREE.Color("#ffdf8a");
+
+// ขอบเขตที่ประกายยังโชว์ได้ — เลยขอบนี้/ต่ำกว่าพื้น = ดับทันที กันทิ้งรอยบนฉาก
+const FLOOR_Y = 0.06; // ระดับผิว felt
+const CEIL_Y = 7;
+const HALF_X = 4.1;
+const HALF_Z = 2.8;
+const PARKED_Y = -1000; // เก็บอนุภาคที่ตายไว้ใต้ฉาก
 
 export interface SparkBurstHandle {
   emit: (x: number, y: number, z: number) => void;
@@ -79,11 +86,11 @@ const SparkBurst = forwardRef<SparkBurstHandle>(function SparkBurst(_props, ref)
           positions[i * 3] = x;
           positions[i * 3 + 1] = y;
           positions[i * 3 + 2] = z;
-          // พุ่งออกทุกทิศ เอียงขึ้นเล็กน้อย
+          // พุ่งออกทุกทิศ เอียงขึ้น — ความเร็วพอประมาณให้ประกายอยู่ใกล้ลูกเต๋า
           const a = Math.random() * Math.PI * 2;
-          const speed = 2 + Math.random() * 3.5;
+          const speed = 1.3 + Math.random() * 1.8;
           vel[i * 3] = Math.cos(a) * speed;
-          vel[i * 3 + 1] = 1 + Math.random() * 2.5;
+          vel[i * 3 + 1] = 1.4 + Math.random() * 1.8;
           vel[i * 3 + 2] = Math.sin(a) * speed;
           life[i] = LIFE * (0.7 + Math.random() * 0.3);
           colors[i * 3] = GOLD.r;
@@ -105,18 +112,29 @@ const SparkBurst = forwardRef<SparkBurstHandle>(function SparkBurst(_props, ref)
       dirty = true;
       life[i] -= step;
       vel[i * 3 + 1] -= 9 * step; // แรงโน้มถ่วง
-      positions[i * 3] += vel[i * 3] * step;
-      positions[i * 3 + 1] += vel[i * 3 + 1] * step;
-      positions[i * 3 + 2] += vel[i * 3 + 2] * step;
-      const f = Math.max(life[i], 0) / LIFE; // จางตามอายุ
-      colors[i * 3] = GOLD.r * f;
-      colors[i * 3 + 1] = GOLD.g * f;
-      colors[i * 3 + 2] = GOLD.b * f;
-      if (life[i] <= 0) {
+      const px = (positions[i * 3] += vel[i * 3] * step);
+      const py = (positions[i * 3 + 1] += vel[i * 3 + 1] * step);
+      const pz = (positions[i * 3 + 2] += vel[i * 3 + 2] * step);
+      // ดับเมื่อหมดอายุ หรือถึงพื้น/เลยขอบกระดาน — กันประกายทิ้งรอยบนฉาก
+      const outOfBounds =
+        py < FLOOR_Y ||
+        py > CEIL_Y ||
+        px < -HALF_X ||
+        px > HALF_X ||
+        pz < -HALF_Z ||
+        pz > HALF_Z;
+      if (life[i] <= 0 || outOfBounds) {
+        life[i] = 0;
+        positions[i * 3 + 1] = PARKED_Y; // เก็บออกไปใต้ฉาก
         colors[i * 3] = 0;
         colors[i * 3 + 1] = 0;
         colors[i * 3 + 2] = 0;
+        continue;
       }
+      const f = life[i] / LIFE; // จางตามอายุ
+      colors[i * 3] = GOLD.r * f;
+      colors[i * 3 + 1] = GOLD.g * f;
+      colors[i * 3 + 2] = GOLD.b * f;
     }
     if (dirty) {
       geom.attributes.position.needsUpdate = true;
