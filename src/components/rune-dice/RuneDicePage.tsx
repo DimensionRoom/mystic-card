@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../../auth/AuthContext";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { useToast } from "../../router/ToastContext";
@@ -88,9 +88,15 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         {/* ---- board + controls ---- */}
         <div className="flex flex-col gap-4">
-          <div
+          <motion.div
             aria-label={t.runeDice.boardAriaLabel}
-            className="relative aspect-[4/3] min-h-[300px] w-full overflow-hidden rounded-bubble-lg border border-[#3a2c66] bg-[linear-gradient(160deg,#3a2b63_0%,#2a1f4d_100%)] shadow-[0_18px_50px_rgba(40,25,80,0.35)] md:aspect-[16/10]"
+            animate={
+              rolling
+                ? { boxShadow: "0 0 46px rgba(230,190,110,0.5) inset, 0 18px 50px rgba(40,25,80,0.35)" }
+                : { boxShadow: "0 0 0px rgba(230,190,110,0) inset, 0 18px 50px rgba(40,25,80,0.35)" }
+            }
+            transition={{ duration: 0.5 }}
+            className="relative aspect-[4/3] min-h-[300px] w-full overflow-hidden rounded-bubble-lg border border-[#3a2c66] bg-[linear-gradient(160deg,#3a2b63_0%,#2a1f4d_100%)] md:aspect-[16/10]"
           >
             <RuneDiceBoard
               rollId={rollId}
@@ -99,7 +105,21 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
               onSettling={onSettling}
               onSettled={onSettled}
             />
-          </div>
+
+            {/* flash ทองวูบตอนเริ่มทอย — เอฟเฟกต์ให้ feedback ชัดเจน */}
+            <AnimatePresence>
+              {phase === "rolling" && (
+                <motion.div
+                  key={rollId}
+                  initial={{ opacity: 0.55 }}
+                  animate={{ opacity: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.7, ease: "easeOut" }}
+                  className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,224,150,0.7)_0%,transparent_60%)]"
+                />
+              )}
+            </AnimatePresence>
+          </motion.div>
 
           <div className="flex flex-col items-center gap-3">
             <div className="flex w-full flex-col gap-2.5 sm:flex-row sm:justify-center">

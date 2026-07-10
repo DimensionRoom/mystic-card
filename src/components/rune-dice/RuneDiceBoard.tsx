@@ -1,15 +1,17 @@
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { RoundedBox } from "@react-three/drei";
+import { Environment, Lightformer, RoundedBox } from "@react-three/drei";
 import {
   CuboidCollider,
   Physics,
   RigidBody,
+  type CollisionEnterPayload,
   type RapierRigidBody,
 } from "@react-three/rapier";
 import type { RuneId } from "../../data/runes";
 import type { DieResult, RollPhase } from "./useDiceRoll";
 import RuneDie from "./RuneDie";
+import SparkBurst, { type SparkBurstHandle } from "./SparkBurst";
 import {
   disposeRuneTextures,
   ensureRuneFont,
@@ -24,9 +26,6 @@ import {
   SPAWN,
   throwDie,
 } from "./dicePhysics";
-
-// สีเน้น glyph ต่อบทบาทลูกเต๋า: 1 ชมพู, 2 เหลืองอำพัน, 3 ม่วง (ตรงกับการ์ดผล)
-const DIE_ACCENTS = ["#f75fa2", "#e0a400", "#7c4be8"];
 
 const CALM_FRAMES = 18;
 const MIN_CONFIDENCE = 0.85;
@@ -174,11 +173,29 @@ export default function RuneDiceBoard({
   const d1 = useRef<RapierRigidBody | null>(null);
   const d2 = useRef<RapierRigidBody | null>(null);
   const dieRefs = useMemo(() => [d0, d1, d2], []);
+  const sparkRef = useRef<SparkBurstHandle>(null);
 
   useEffect(() => {
     void ensureRuneFont();
     return () => disposeRuneTextures();
   }, []);
+
+  // ประกายแสงเฉพาะตอนลูกเต๋าชนกันเอง แรงพอ (ไม่พ่นตอนแตะพื้น/สั่นตอนหยุด)
+  const handleCollide = useCallback(
+    (payload: CollisionEnterPayload) => {
+      const target = payload.target.rigidBody;
+      const other = payload.other.rigidBody;
+      if (!target || !other) return;
+      const bodies = dieRefs.map((r) => r.current);
+      if (!bodies.includes(other)) return; // ต้องชนลูกเต๋าด้วยกัน
+      const lv = target.linvel();
+      if (Math.hypot(lv.x, lv.y, lv.z) < 2.2) return; // กรองการชนเบา ๆ
+      const a = target.translation();
+      const b = other.translation();
+      sparkRef.current?.emit((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+    },
+    [dieRefs],
+  );
 
   return (
     <Canvas
@@ -188,11 +205,11 @@ export default function RuneDiceBoard({
       camera={{ position: [0, 7, 8], fov: 40, near: 0.1, far: 60 }}
       onCreated={({ camera }) => camera.lookAt(0, 0, 0.4)}
     >
-      <ambientLight intensity={0.6} color="#b9a8e8" />
+      <ambientLight intensity={0.5} color="#cdbdf2" />
       <directionalLight
         position={[4, 9, 3]}
-        intensity={1.15}
-        color="#fff6ea"
+        intensity={1.6}
+        color="#fff3d6"
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-camera-left={-6}
@@ -200,12 +217,51 @@ export default function RuneDiceBoard({
         shadow-camera-top={6}
         shadow-camera-bottom={-6}
       />
+      {/* fill อุ่นจากทางกล้อง ให้หน้าลูกเต๋าฝั่งกล้องเป็นทองสว่าง ไม่ดำ */}
+      <directionalLight position={[0, 3, 8]} intensity={0.8} color="#ffe6b0" />
       <spotLight
         position={[-5, 6, -3]}
-        intensity={0.45}
-        color="#ff9ad5"
+        intensity={0.7}
+        color="#ffcf8a"
         angle={0.7}
       />
+
+      {/* Environment inline (ไม่โหลด HDR ภายนอก) ให้ทองมีแสงสะท้อนดูเมทัลลิกทุกหน้า */}
+      <Environment resolution={128}>
+        <Lightformer
+          intensity={3}
+          position={[0, 4, -3]}
+          scale={[12, 6, 1]}
+          color="#fff2d0"
+        />
+        <Lightformer
+          intensity={2.4}
+          position={[0, 2, 7]}
+          scale={[10, 6, 1]}
+          color="#ffdca0"
+        />
+        <Lightformer
+          intensity={1.6}
+          position={[-5, 2, 3]}
+          scale={[6, 6, 1]}
+          color="#ffcf8a"
+        />
+        <Lightformer
+          intensity={1.6}
+          position={[5, 2, 3]}
+          scale={[6, 6, 1]}
+          color="#ffcf8a"
+        />
+        <Lightformer
+          intensity={1.2}
+          position={[0, -3, 0]}
+          scale={[8, 8, 1]}
+          color="#8a6bd8"
+        />
+      </Environment>
+
+      {/* ประกายแสงทอง — พ่นตอนลูกเต๋ากระทบกัน */}
+      <SparkBurst ref={sparkRef} />
 
       <Suspense fallback={null}>
         <Physics gravity={[0, -18, 0]}>
@@ -216,8 +272,8 @@ export default function RuneDiceBoard({
               key={i}
               ref={dieRefs[i]}
               faces={faces}
-              accent={DIE_ACCENTS[i]}
               position={REST_SPOTS[i]}
+              onCollide={handleCollide}
             />
           ))}
           <DiceController

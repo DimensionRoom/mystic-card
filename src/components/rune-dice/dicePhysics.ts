@@ -5,11 +5,11 @@ import type { RapierRigidBody } from "@react-three/rapier";
 // ชนกัน แล้วหยุดใน ~1.5-3 วินาที (ใช้คู่กับ gravity [0,-18,0] และ damping ใน RuneDie)
 export const DIE_SIZE = 0.9;
 
-/** จุดเกิด 3 ลูกเหนือโต๊ะ (y สูงต่างกันเล็กน้อยให้ตกไม่พร้อมกัน) */
+/** จุดเกิด 3 ลูกเหนือโต๊ะ — วางใกล้กันให้ตกมากระทบกันบ่อย (เกิดประกายแสง) */
 export const SPAWN: [number, number, number][] = [
-  [-1.3, 3.6, -0.5],
-  [0, 4.2, 0.5],
-  [1.3, 4.8, -0.2],
+  [-0.95, 3.6, 0.2],
+  [0, 4.3, -0.35],
+  [0.95, 4.0, 0.25],
 ];
 export const SPAWN_JITTER = 0.3; // ± สุ่มบน x/z
 export const IMPULSE_XZ = 1.4; // แรงเหวี่ยงแนวราบสูงสุด
@@ -51,9 +51,9 @@ export function throwDie(
 
   rb.applyImpulse(
     {
-      x: rand(-IMPULSE_XZ, IMPULSE_XZ) - x * 0.35, // ดึงเข้ากลางโต๊ะ
+      x: rand(-IMPULSE_XZ, IMPULSE_XZ) - x * 0.5, // ดึงเข้ากลางโต๊ะ ให้ลูกมาชนกัน
       y: rand(IMPULSE_Y[0], IMPULSE_Y[1]),
-      z: rand(-IMPULSE_XZ, IMPULSE_XZ) - z * 0.35,
+      z: rand(-IMPULSE_XZ, IMPULSE_XZ) - z * 0.5,
     },
     true,
   );
