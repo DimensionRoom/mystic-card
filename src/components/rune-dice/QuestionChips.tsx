@@ -3,6 +3,12 @@ import { useLanguage } from "../../i18n/LanguageContext";
 
 export type QuestionCategory = "love" | "work" | "money" | "today" | "custom";
 
+/** เลนส์ความหมายรูนตามหมวดคำถาม — today/custom/ไม่เลือก = ทั่วไป (meaning) */
+export type RuneLens = "meaning" | "love" | "work" | "money";
+export function lensForCategory(cat: QuestionCategory | null): RuneLens {
+  return cat === "love" || cat === "work" || cat === "money" ? cat : "meaning";
+}
+
 interface QuestionChipsProps {
   category: QuestionCategory | null;
   onSelect: (cat: QuestionCategory) => void;

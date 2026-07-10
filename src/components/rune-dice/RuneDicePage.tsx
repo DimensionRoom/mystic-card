@@ -9,7 +9,10 @@ import UserActions from "../UserActions";
 import RuneDiceBoard from "./RuneDiceBoard";
 import ResultPanel from "./ResultPanel";
 import StepIndicator from "./StepIndicator";
-import QuestionChips, { type QuestionCategory } from "./QuestionChips";
+import QuestionChips, {
+  lensForCategory,
+  type QuestionCategory,
+} from "./QuestionChips";
 import { useDiceRoll } from "./useDiceRoll";
 
 interface RuneDicePageProps {
@@ -34,6 +37,22 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
 
   const rolling = phase === "rolling" || phase === "settling";
   const currentStep = phase === "revealed" ? 3 : category ? 2 : 1;
+
+  // เลนส์ความหมายตามหมวด + ป้ายหัวข้อที่ถาม
+  const lens = lensForCategory(category);
+  const categoryLabel: Record<QuestionCategory, string> = {
+    love: t.runeDice.catLove,
+    work: t.runeDice.catWork,
+    money: t.runeDice.catMoney,
+    today: t.runeDice.catToday,
+    custom: t.runeDice.catCustom,
+  };
+  const topic =
+    category === "custom"
+      ? customQuestion.trim() || undefined
+      : category
+        ? categoryLabel[category]
+        : undefined;
   const hint =
     phase === "revealed"
       ? t.runeDice.hintRevealed
@@ -57,7 +76,7 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
         title: `${t.runeDice.runes[r.runeId].name} (${runeById(r.runeId).translit})`,
         subtitle: [t.runeDice.pos1, t.runeDice.pos2, t.runeDice.pos3][i],
         image: "",
-        meaning: t.runeDice.runes[r.runeId].meaning,
+        meaning: t.runeDice.runes[r.runeId][lens],
       })),
     });
     setSaved(true);
@@ -96,7 +115,7 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
                 : { boxShadow: "0 0 0px rgba(230,190,110,0) inset, 0 18px 50px rgba(40,25,80,0.35)" }
             }
             transition={{ duration: 0.5 }}
-            className="relative aspect-[4/3] min-h-[300px] w-full overflow-hidden rounded-bubble-lg border border-[#3a2c66] bg-[linear-gradient(160deg,#3a2b63_0%,#2a1f4d_100%)] md:aspect-[16/10]"
+            className="relative aspect-[4/3] min-h-[300px] w-full overflow-hidden rounded-bubble-lg border border-[#3a2c66] bg-[linear-gradient(160deg,#3b1080_0%,#000000_100%)] md:aspect-[16/10]"
           >
             <RuneDiceBoard
               rollId={rollId}
@@ -155,6 +174,8 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
         <ResultPanel
           results={results}
           rollId={rollId}
+          lens={lens}
+          topic={topic}
           saved={saved}
           onSave={() => void handleSave()}
           onBonus={() => showToast(t.runeDice.bonusToast)}
