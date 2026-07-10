@@ -27,7 +27,6 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
     useDiceRoll();
 
   const [category, setCategory] = useState<QuestionCategory | null>(null);
-  const [customQuestion, setCustomQuestion] = useState("");
   const [saved, setSaved] = useState(false);
 
   // เริ่มทอยใหม่ = ล้างสถานะบันทึกของรอบก่อน
@@ -45,14 +44,8 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
     work: t.runeDice.catWork,
     money: t.runeDice.catMoney,
     today: t.runeDice.catToday,
-    custom: t.runeDice.catCustom,
   };
-  const topic =
-    category === "custom"
-      ? customQuestion.trim() || undefined
-      : category
-        ? categoryLabel[category]
-        : undefined;
+  const topic = category ? categoryLabel[category] : undefined;
   const hint =
     phase === "revealed"
       ? t.runeDice.hintRevealed
@@ -97,12 +90,7 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
       </header>
 
       <StepIndicator current={currentStep} />
-      <QuestionChips
-        category={category}
-        onSelect={setCategory}
-        customQuestion={customQuestion}
-        onCustomChange={setCustomQuestion}
-      />
+      <QuestionChips category={category} onSelect={setCategory} />
 
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         {/* ---- board + controls ---- */}
