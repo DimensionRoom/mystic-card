@@ -2,8 +2,12 @@ import type { RuneId } from "../data/runes";
 
 export type Language = "th" | "en";
 
-/** ครบทั้ง 24 รูน — ใช้ satisfies กับ th.runeDice.runes เพื่อบังคับให้ไม่ตกหล่น */
-type RuneCopy = Record<RuneId, { name: string; meaning: string }>;
+/** ครบทั้ง 24 รูน — ใช้ satisfies กับ th.runeDice.runes เพื่อบังคับให้ไม่ตกหล่น
+ *  meaning = ความหมายทั่วไป (general); love/work/money = ความหมายเฉพาะหมวดคำถาม */
+type RuneCopy = Record<
+  RuneId,
+  { name: string; meaning: string; love: string; work: string; money: string }
+>;
 
 export const languageNames: Record<Language, string> = {
   th: "ไทย",
@@ -518,8 +522,6 @@ const th = {
     catWork: "การงาน",
     catMoney: "การเงิน",
     catToday: "คำแนะนำวันนี้",
-    catCustom: "+ คำถามของตัวเอง",
-    customPlaceholder: "พิมพ์คำถามของคุณ...",
     boardAriaLabel: "กระดานทอยรูน",
     rollButton: "ทอย Rune Dice",
     rerollButton: "ทอยใหม่",
@@ -528,6 +530,7 @@ const th = {
     hintRevealed: "บันทึกผลลัพธ์ไว้ในประวัติ เพื่อติดตามการเดินทางของคุณ ✨",
     panelTitle: "คำทำนายของคุณ",
     panelEmpty: "ผลจะปรากฏที่นี่หลังทอยรูน",
+    topicPrefix: "เรื่องที่ถาม",
     pos1: "พลังงานปัจจุบัน",
     pos2: "สิ่งที่ต้องระวัง",
     pos3: "คำแนะนำจากจักรวาล",
@@ -542,98 +545,170 @@ const th = {
       fehu: {
         name: "เฟฮู",
         meaning: "ความมั่งคั่งและโชคลาภ ทรัพย์สินและสิ่งดี ๆ กำลังไหลเข้ามาสู่ชีวิตคุณ",
+        love: "ความรักที่เต็มไปด้วยการให้ ความสัมพันธ์กำลังเบ่งบานและมั่นคงขึ้น",
+        work: "โอกาสและรายได้กำลังมา ทุ่มเทแล้วผลตอบแทนจะคุ้มค่า",
+        money: "การเงินไหลลื่น มีลาภเข้ามา แต่อย่าลืมเก็บออมไว้ด้วย",
       },
       uruz: {
         name: "อูรุซ",
         meaning: "พลังดิบและความแข็งแกร่ง สุขภาพที่ดีและความมุ่งมั่นจะพาคุณผ่านทุกอย่าง",
+        love: "ความสัมพันธ์ต้องการพลังและความจริงใจ กล้าเปิดใจแล้วจะแข็งแรงขึ้น",
+        work: "พลังและความมุ่งมั่นพาคุณฝ่าอุปสรรค เป็นจังหวะลงมือทำจริงจัง",
+        money: "รากฐานการเงินแข็งแรงขึ้นได้ด้วยวินัยและความอดทน",
       },
       thurisaz: {
         name: "ทูริซาซ",
         meaning: "พลังปกป้องและอุปสรรคที่ต้องเผชิญ ตั้งสติแล้วรับมืออย่างมีสติ",
+        love: "ระวังความขัดแย้งหรืออารมณ์ชั่ววูบ ใจเย็นแล้วค่อยคุยกัน",
+        work: "มีอุปสรรคหรือคู่แข่ง ตั้งรับให้ดีแล้วใช้เป็นแรงผลักดัน",
+        money: "ระวังการใช้จ่ายหุนหันหรือความเสี่ยง ตัดสินใจอย่างรอบคอบ",
       },
       ansuz: {
         name: "อันซุซ",
         meaning: "การสื่อสารและปัญญา ข้อความสำคัญจากเบื้องบนกำลังจะมาถึงคุณ",
+        love: "การพูดคุยอย่างจริงใจจะคลี่คลายทุกอย่าง เปิดใจรับฟังกัน",
+        work: "ข่าวดีหรือคำแนะนำสำคัญกำลังมา การสื่อสารคือกุญแจความสำเร็จ",
+        money: "คำปรึกษาที่ดีจะช่วยเรื่องเงิน รับฟังผู้รู้ก่อนตัดสินใจ",
       },
       raidho: {
         name: "ไรโธ",
         meaning: "การเดินทางและความก้าวหน้า เชื่อมั่นในจังหวะชีวิตที่กำลังเคลื่อนไป",
+        love: "ความสัมพันธ์กำลังก้าวไปข้างหน้า ไปด้วยกันอย่างมีจังหวะ",
+        work: "งานกำลังเดินหน้า อาจมีการเดินทางหรือการเปลี่ยนแปลงที่ดี",
+        money: "การเงินเคลื่อนไปในทางที่ดี วางแผนเป็นขั้นตอนแล้วจะราบรื่น",
       },
       kenaz: {
         name: "เคนาซ",
         meaning: "แสงสว่างแห่งปัญญาและความคิดสร้างสรรค์ ไอเดียใหม่กำลังจุดประกาย",
+        love: "ประกายใหม่ในความสัมพันธ์ ความเข้าใจและแรงบันดาลใจกำลังจุดขึ้น",
+        work: "ไอเดียสร้างสรรค์จะพางานให้โดดเด่น กล้านำเสนอสิ่งใหม่",
+        money: "โอกาสใหม่จากความคิดสร้างสรรค์ มองหาช่องทางที่ยังไม่มีใครเห็น",
       },
       gebo: {
         name: "ไกโบ",
         meaning: "พลังแห่งการให้และรับ ความสัมพันธ์ที่ดีเกื้อกูลกัน สิ่งดี ๆ กำลังไหลเข้ามา",
+        love: "ความรักที่เกื้อกูลสมดุล การให้และรับอย่างเท่าเทียมทำให้มั่นคง",
+        work: "ความร่วมมือและพันธมิตรจะพาไปได้ไกล น้ำใจสร้างโอกาส",
+        money: "มีลาภจากผู้อื่นหรือการแบ่งปัน ให้ด้วยใจแล้วจะได้กลับคืน",
       },
       wunjo: {
         name: "วุนโย",
         meaning: "ความสุขและความสมหวัง ช่วงเวลาแห่งความกลมเกลียวและความสงบใจ",
+        love: "ช่วงเวลาแห่งความสุขและความกลมเกลียว ความสัมพันธ์อบอุ่นสดใส",
+        work: "บรรยากาศการทำงานราบรื่น ความสำเร็จนำมาซึ่งความภูมิใจ",
+        money: "การเงินมั่นคงพอให้สบายใจ ความสุขไม่ได้วัดที่ตัวเลขเสมอไป",
       },
       hagalaz: {
         name: "ฮากาลาซ",
         meaning: "การเปลี่ยนแปลงกะทันหันและบททดสอบ ปล่อยวางสิ่งเก่าเพื่อเปิดรับสิ่งใหม่",
+        love: "อาจมีความปั่นป่วนหรือจุดเปลี่ยน ผ่านไปได้แล้วจะเข้าใจกันมากขึ้น",
+        work: "การเปลี่ยนแปลงที่คุมไม่ได้ ปรับตัวแล้วจะเจอโอกาสใหม่หลังพายุ",
+        money: "รายจ่ายไม่คาดฝันอาจเข้ามา เตรียมสำรองไว้แล้วจะผ่านไปได้",
       },
       nauthiz: {
         name: "นอต",
         meaning: "ความท้าทายและข้อจำกัด อย่าฝืนเกินตัว วางแผนให้รอบคอบ อดทนแล้วจะผ่านไปได้",
+        love: "ความสัมพันธ์ต้องการความอดทนและเข้าใจข้อจำกัดของกันและกัน",
+        work: "งานหนักหรือข้อจำกัดมาก อย่าฝืนเกินไป ค่อย ๆ ทำแล้วจะผ่าน",
+        money: "ช่วงต้องรัดเข็มขัด วางแผนรอบคอบแล้วสถานการณ์จะดีขึ้น",
       },
       isa: {
         name: "อีซา",
         meaning: "การหยุดนิ่งและรอคอย ใช้เวลานี้ทบทวนตัวเองก่อนก้าวต่อไป",
+        love: "ความสัมพันธ์อาจนิ่งชั่วคราว ให้เวลาและใจเย็น อย่าเพิ่งรีบร้อน",
+        work: "ยังไม่ใช่จังหวะรุก หยุดทบทวนแผนก่อนเดินต่อ",
+        money: "ชะลอการตัดสินใจเรื่องเงินไว้ก่อน รอจังหวะที่ชัดเจนกว่านี้",
       },
       jera: {
         name: "เยรา",
         meaning: "ผลของความเพียร ถึงเวลาเก็บเกี่ยวสิ่งดี ๆ ที่คุณหว่านไว้",
+        love: "ความตั้งใจที่ผ่านมากำลังออกผล ความสัมพันธ์ค่อย ๆ งอกงาม",
+        work: "ถึงเวลาเก็บเกี่ยวผลของความพยายาม ความสำเร็จมาตามวงจร",
+        money: "ผลตอบแทนจากที่ลงแรงไว้กำลังกลับมา อดทนอีกนิดจะคุ้มค่า",
       },
       eihwaz: {
         name: "ไอห์วาซ",
         meaning: "ความมั่นคงและการเปลี่ยนผ่าน ยืนหยัดอย่างอดทนแล้วคุณจะเติบโต",
+        love: "ความสัมพันธ์ผ่านการเปลี่ยนผ่าน ยืนหยัดด้วยกันแล้วจะแข็งแรงขึ้น",
+        work: "อดทนกับช่วงเปลี่ยนผ่านของงาน ความมั่นคงจะตามมา",
+        money: "มองการเงินระยะยาว ความมั่นคงสร้างได้ด้วยความสม่ำเสมอ",
       },
       perthro: {
         name: "เพิร์ทโธ",
         meaning: "ความลึกลับและโชคชะตา สิ่งที่ซ่อนอยู่กำลังจะเผยตัวให้คุณเห็น",
+        love: "มีเรื่องที่ยังไม่เผย เปิดใจแล้วความลับของหัวใจจะค่อย ๆ ชัดเจน",
+        work: "โอกาสที่ซ่อนอยู่กำลังจะปรากฏ จับตาสิ่งที่คาดไม่ถึง",
+        money: "อาจมีลาภลอยหรือโชคที่คาดไม่ถึง แต่อย่าพึ่งดวงอย่างเดียว",
       },
       algiz: {
         name: "อัลกิซ",
         meaning: "การปกป้องคุ้มครอง เชื่อในสัญชาตญาณและพลังที่คอยดูแลคุณอยู่",
+        love: "มีเกราะคุ้มครองความสัมพันธ์ เชื่อสัญชาตญาณว่าใครจริงใจกับคุณ",
+        work: "ได้รับการสนับสนุนและปกป้อง เชื่อในสัญชาตญาณเรื่องคนและงาน",
+        money: "ปกป้องทรัพย์สินไว้ให้ดี ระวังคนหรือดีลที่ไม่น่าไว้ใจ",
       },
       sowilo: {
         name: "โซวีโล",
         meaning: "พลังแห่งความสำเร็จและชัยชนะ ความสว่างไสวกำลังส่องทางให้คุณ",
+        love: "ความรักสดใสเปล่งประกาย ช่วงเวลาที่หัวใจอบอุ่นและมั่นใจ",
+        work: "ความสำเร็จและการยอมรับกำลังส่องมา เป็นจังหวะทองของงาน",
+        money: "การเงินรุ่งเรือง โอกาสทำกำไรเปิดกว้าง ใช้ให้เป็นประโยชน์",
       },
       tiwaz: {
         name: "เทวาช",
         meaning: "พลังแห่งชัยชนะและความกล้าหาญ เชื่อมั่นในตัวเองและก้าวต่อไป ความสำเร็จรออยู่ข้างหน้า",
+        love: "กล้าซื่อสัตย์และมุ่งมั่นในความรัก ความจริงใจจะได้รับการตอบแทน",
+        work: "กล้าตัดสินใจและยืนหยัดในสิ่งที่ถูกต้อง ชัยชนะรออยู่",
+        money: "ความยุติธรรมและวินัยจะช่วยเรื่องเงิน ทำถูกต้องแล้วจะมั่นคง",
       },
       berkano: {
         name: "เบอร์คาโน",
         meaning: "การเริ่มต้นใหม่และการเติบโต สิ่งเล็ก ๆ ที่คุณดูแลจะค่อย ๆ งอกงาม",
+        love: "การเริ่มต้นใหม่หรือความสัมพันธ์ที่ค่อย ๆ เบ่งบาน ดูแลอย่างอ่อนโยน",
+        work: "โปรเจกต์ใหม่กำลังตั้งไข่ ค่อย ๆ บ่มเพาะแล้วจะเติบโต",
+        money: "จุดเริ่มต้นของการเงินที่ดีขึ้น ค่อย ๆ สะสมทีละน้อย",
       },
       ehwaz: {
         name: "เอห์วาซ",
         meaning: "ความก้าวหน้าร่วมกันและความไว้วางใจ คนรอบข้างจะพาคุณไปได้ไกล",
+        love: "ความสัมพันธ์ก้าวไปด้วยความไว้วางใจ เดินเคียงข้างกันอย่างมั่นคง",
+        work: "ทีมและพันธมิตรที่ดีจะพางานไปข้างหน้า ความร่วมมือคือพลัง",
+        money: "ความร่วมมือหรือหุ้นส่วนช่วยให้การเงินเติบโต เลือกคนที่ไว้ใจได้",
       },
       mannaz: {
         name: "มันนาซ",
         meaning: "ตัวตนและความสัมพันธ์กับผู้คน มองตัวเองอย่างเข้าใจแล้วเชื่อมโยงกับคนอื่น",
+        love: "เข้าใจตัวเองก่อนแล้วจะเข้าใจคนรัก ความสัมพันธ์เติบโตจากภายใน",
+        work: "เครือข่ายและความสัมพันธ์กับผู้คนคือกุญแจ ขอความช่วยเหลือได้",
+        money: "ปรึกษาคนที่ไว้ใจเรื่องเงิน มุมมองจากคนอื่นช่วยให้ตัดสินใจดีขึ้น",
       },
       laguz: {
         name: "ลากุซ",
         meaning: "การไหลลื่นและสัญชาตญาณ ปล่อยให้อารมณ์และความรู้สึกนำทางคุณ",
+        love: "ปล่อยให้ความรู้สึกนำทาง ความรักไหลลื่นเมื่อไม่ฝืนใจ",
+        work: "เชื่อสัญชาตญาณในงาน ปรับตัวตามกระแสแล้วจะราบรื่น",
+        money: "ใช้สัญชาตญาณควบคู่เหตุผลเรื่องเงิน อย่าตัดสินใจด้วยอารมณ์ล้วน",
       },
       ingwaz: {
         name: "อิงวาซ",
         meaning: "พลังภายในที่พร้อมงอกงาม บ่มเพาะสิ่งดี ๆ ไว้แล้วรอวันเบ่งบาน",
+        love: "ความรักกำลังบ่มตัวเงียบ ๆ รอวันเบ่งบานอย่างอบอุ่นและมั่นคง",
+        work: "โครงการกำลังสุกงอม อดใจอีกนิดแล้วผลจะออกมาสมบูรณ์",
+        money: "การเงินกำลังตั้งหลักได้ดี สิ่งที่เพาะไว้จะให้ผลในไม่ช้า",
       },
       dagaz: {
         name: "ดากาซ",
         meaning: "รุ่งอรุณและการตื่นรู้ ความหวังใหม่และการเปลี่ยนแปลงที่สดใสกำลังมา",
+        love: "ความสัมพันธ์เข้าสู่ช่วงสดใสใหม่ ความเข้าใจใหม่ทำให้หัวใจเบิกบาน",
+        work: "จุดเปลี่ยนที่สดใสในงาน ความคิดใหม่เปิดทางสู่ความสำเร็จ",
+        money: "สถานการณ์การเงินกำลังพลิกดีขึ้น ความหวังใหม่กำลังมา",
       },
       othala: {
         name: "โอทาลา",
         meaning: "มรดกและรากเหง้า สิ่งที่สืบทอดมาจะเป็นรากฐานที่มั่นคงให้คุณ",
+        love: "ครอบครัวและความผูกพันคือรากฐาน ความรักมั่นคงจากสิ่งที่สร้างร่วมกัน",
+        work: "ประสบการณ์และสิ่งที่สั่งสมมาคือทุน ต่อยอดจากรากฐานที่มี",
+        money: "ทรัพย์สินหรือมรดกเป็นรากฐานมั่นคง ดูแลและต่อยอดไว้ให้ดี",
       },
     } satisfies RuneCopy,
   },
@@ -1148,8 +1223,6 @@ const en: typeof th = {
     catWork: "Work",
     catMoney: "Money",
     catToday: "Today's guidance",
-    catCustom: "+ Your own question",
-    customPlaceholder: "Type your question...",
     boardAriaLabel: "Rune rolling board",
     rollButton: "Roll Rune Dice",
     rerollButton: "Roll again",
@@ -1160,6 +1233,7 @@ const en: typeof th = {
       "Save the result to your history to follow your journey ✨",
     panelTitle: "Your reading",
     panelEmpty: "Your result will appear here after you roll",
+    topicPrefix: "Your question",
     pos1: "Current energy",
     pos2: "What to watch for",
     pos3: "Guidance from the universe",
@@ -1175,121 +1249,193 @@ const en: typeof th = {
         name: "Fehu",
         meaning:
           "Wealth and good fortune — abundance and good things are flowing into your life",
+        love: "A love full of giving — your relationship is blossoming and growing steadier",
+        work: "Opportunity and income are coming — put in the effort and it will pay off",
+        money: "Money flows in and fortune arrives — but remember to save some too",
       },
       uruz: {
         name: "Uruz",
         meaning:
           "Raw strength and vitality — good health and determination will carry you through",
+        love: "The relationship needs strength and honesty — open up and it grows stronger",
+        work: "Power and drive push you past obstacles — it's time to act in earnest",
+        money: "Your financial base grows solid through discipline and patience",
       },
       thurisaz: {
         name: "Thurisaz",
         meaning:
           "A protective force and obstacles to face — stay grounded and respond with care",
+        love: "Beware conflict or a flash of temper — stay calm before you talk it out",
+        work: "Obstacles or rivals appear — hold your ground and turn it into drive",
+        money: "Beware impulsive spending or risk — decide carefully",
       },
       ansuz: {
         name: "Ansuz",
         meaning:
           "Communication and wisdom — an important message from above is on its way",
+        love: "An honest conversation resolves everything — open your hearts and listen",
+        work: "Good news or key advice is coming — communication is the key to success",
+        money: "Good counsel helps your finances — listen to those who know before deciding",
       },
       raidho: {
         name: "Raidho",
         meaning:
           "A journey and progress — trust the rhythm of life that is moving you forward",
+        love: "The relationship is moving forward — travel it together, in rhythm",
+        work: "Work is advancing — a trip or a good change may be ahead",
+        money: "Finances move in a good direction — plan step by step and it flows smoothly",
       },
       kenaz: {
         name: "Kenaz",
         meaning:
           "The light of insight and creativity — a new idea is beginning to spark",
+        love: "A new spark in the relationship — understanding and inspiration are igniting",
+        work: "A creative idea will make your work shine — dare to present something new",
+        money: "New opportunity from creativity — look for a path no one else has seen",
       },
       gebo: {
         name: "Gebo",
         meaning:
           "The power of giving and receiving — a relationship of mutual support; good things are flowing in",
+        love: "A balanced, supportive love — giving and receiving equally makes it steady",
+        work: "Cooperation and allies take you far — kindness creates opportunity",
+        money: "Fortune through others or sharing — give from the heart and it returns",
       },
       wunjo: {
         name: "Wunjo",
         meaning:
           "Joy and fulfillment — a time of harmony and inner peace",
+        love: "A time of joy and harmony — the relationship is warm and bright",
+        work: "A smooth atmosphere at work — success brings pride",
+        money: "Finances are stable enough for peace of mind — happiness isn't always a number",
       },
       hagalaz: {
         name: "Hagalaz",
         meaning:
           "Sudden change and a test — release the old to make room for the new",
+        love: "There may be turbulence or a turning point — get through it and you'll understand each other more",
+        work: "Change beyond your control — adapt and you'll find new opportunity after the storm",
+        money: "Unexpected expenses may come — keep a reserve and you'll get through",
       },
       nauthiz: {
         name: "Nauthiz",
         meaning:
           "Challenges and limits — don't overreach, plan carefully; endure and it will pass",
+        love: "The relationship needs patience and understanding of each other's limits",
+        work: "Hard work or heavy limits — don't force it; go slowly and you'll get through",
+        money: "A time to tighten the belt — plan carefully and things will improve",
       },
       isa: {
         name: "Isa",
         meaning:
           "Stillness and waiting — use this time to reflect before you move on",
+        love: "The relationship may pause for a while — give it time, stay calm, don't rush",
+        work: "Not the moment to push — pause and review your plan before moving on",
+        money: "Hold off on money decisions for now — wait for a clearer moment",
       },
       jera: {
         name: "Jera",
         meaning:
           "The fruit of your effort — it's time to harvest the good you have sown",
+        love: "Past sincerity is bearing fruit — the relationship gradually flourishes",
+        work: "Time to harvest the fruit of your effort — success comes in its cycle",
+        money: "The return on what you invested is coming back — a little more patience pays off",
       },
       eihwaz: {
         name: "Eihwaz",
         meaning:
           "Steadiness and transformation — stand firm with patience and you will grow",
+        love: "The relationship passes through a transition — stand firm together and grow stronger",
+        work: "Be patient through a work transition — stability will follow",
+        money: "Take the long view on money — stability is built through consistency",
       },
       perthro: {
         name: "Perthro",
         meaning:
           "Mystery and fate — what lies hidden is about to reveal itself to you",
+        love: "Something is still unrevealed — open up and the heart's secret grows clear",
+        work: "A hidden opportunity is about to appear — watch for the unexpected",
+        money: "Unexpected fortune may come — but don't rely on luck alone",
       },
       algiz: {
         name: "Algiz",
         meaning:
           "Protection — trust your instincts and the force that watches over you",
+        love: "There's a shield over the relationship — trust your instinct about who is sincere",
+        work: "You're supported and protected — trust your instincts about people and work",
+        money: "Guard your assets well — beware people or deals you can't trust",
       },
       sowilo: {
         name: "Sowilo",
         meaning:
           "The power of success and victory — a bright light is lighting your way",
+        love: "Love shines bright — a time when the heart is warm and confident",
+        work: "Success and recognition are shining on you — a golden moment for work",
+        money: "Finances flourish — chances for profit open up; use them well",
       },
       tiwaz: {
         name: "Tiwaz",
         meaning:
           "The power of victory and courage — believe in yourself and step forward; success lies ahead",
+        love: "Be brave, honest and devoted in love — sincerity will be rewarded",
+        work: "Dare to decide and stand for what's right — victory awaits",
+        money: "Fairness and discipline help your finances — do right and it stays secure",
       },
       berkano: {
         name: "Berkano",
         meaning:
           "New beginnings and growth — the small things you tend will gently blossom",
+        love: "A fresh start or a slowly blossoming relationship — tend it gently",
+        work: "A new project is taking its first steps — nurture it and it will grow",
+        money: "The beginning of better finances — build up little by little",
       },
       ehwaz: {
         name: "Ehwaz",
         meaning:
           "Progress together and trust — the people around you will take you far",
+        love: "The relationship moves ahead on trust — walk side by side, steadily",
+        work: "A good team and allies move your work forward — cooperation is power",
+        money: "Cooperation or partnership grows your finances — choose people you can trust",
       },
       mannaz: {
         name: "Mannaz",
         meaning:
           "The self and your ties to others — understand yourself, then connect with others",
+        love: "Understand yourself first, then your partner — love grows from within",
+        work: "Your network and relationships are the key — it's okay to ask for help",
+        money: "Consult someone you trust about money — another view helps you decide better",
       },
       laguz: {
         name: "Laguz",
         meaning:
           "Flow and intuition — let your emotions and feelings guide you",
+        love: "Let your feelings lead — love flows when you don't force it",
+        work: "Trust your instincts at work — adapt to the current and it goes smoothly",
+        money: "Use intuition alongside reason about money — don't decide on emotion alone",
       },
       ingwaz: {
         name: "Ingwaz",
         meaning:
           "Inner potential ready to blossom — nurture the good within and await its bloom",
+        love: "Love is quietly ripening — awaiting a warm, steady bloom",
+        work: "The project is ripening — hold on a little longer and the result comes out whole",
+        money: "Your finances are finding solid footing — what you've planted will soon yield",
       },
       dagaz: {
         name: "Dagaz",
         meaning:
           "Dawn and awakening — fresh hope and a bright change are coming",
+        love: "The relationship enters a bright new phase — new understanding lifts the heart",
+        work: "A bright turning point at work — a new idea opens the way to success",
+        money: "Your financial situation is turning for the better — fresh hope is coming",
       },
       othala: {
         name: "Othala",
         meaning:
           "Heritage and roots — what you inherit becomes a firm foundation for you",
+        love: "Family and bonds are the foundation — love steadied by what you build together",
+        work: "Experience and what you've accumulated are your capital — build on your foundation",
+        money: "Assets or an inheritance are a solid base — care for them and build on them",
       },
     },
   },

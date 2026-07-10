@@ -2,11 +2,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { runeById } from "../../data/runes";
 import { useLanguage } from "../../i18n/LanguageContext";
 import Icon from "../Icon";
+import type { RuneLens } from "./QuestionChips";
 import type { DieResult } from "./useDiceRoll";
 
 interface ResultPanelProps {
   results: DieResult[];
   rollId: number;
+  /** เลนส์ความหมายตามหมวดคำถาม */
+  lens: RuneLens;
+  /** หัวข้อที่ถาม (โชว์บนหัว panel ถ้ามี) */
+  topic?: string;
   saved: boolean;
   onSave: () => void;
   onBonus: () => void;
@@ -37,6 +42,8 @@ const POS_STYLES = [
 export default function ResultPanel({
   results,
   rollId,
+  lens,
+  topic,
   saved,
   onSave,
   onBonus,
@@ -51,6 +58,12 @@ export default function ResultPanel({
         <span aria-hidden="true">✦</span> {t.runeDice.panelTitle}{" "}
         <span aria-hidden="true">✦</span>
       </h3>
+
+      {topic && (
+        <p className="-mt-2 line-clamp-2 text-center text-xs text-mystic-muted">
+          {t.runeDice.topicPrefix}: <span className="font-semibold text-mystic-purple">{topic}</span>
+        </p>
+      )}
 
       {!hasResults ? (
         <div className="flex flex-col items-center gap-3 py-12 text-center">
@@ -110,7 +123,7 @@ export default function ResultPanel({
                         {t.runeDice.runes[r.runeId].name} ({rune.translit})
                       </p>
                       <p className="mt-1 text-sm leading-relaxed text-mystic-ink/75">
-                        {t.runeDice.runes[r.runeId].meaning}
+                        {t.runeDice.runes[r.runeId][lens]}
                       </p>
                     </div>
                   </div>
