@@ -132,7 +132,7 @@ function Table() {
   useEffect(() => {
     let disposed = false;
     new THREE.TextureLoader().load(
-      "/img/rune-board2.png",
+      "/img/rune-board-new.png",
       (tex) => {
         if (disposed) {
           tex.dispose();
