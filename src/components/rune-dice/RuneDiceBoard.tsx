@@ -126,12 +126,13 @@ function DiceController({
 
 function Table() {
   const felt = useMemo(() => feltTexture(), []);
-  // ปูภาพพื้นโต๊ะจาก /img/rune-board.png ถ้ามี — ไม่มีไฟล์ก็ใช้ felt ที่วาดเองแทน
+  // ปูภาพพื้นโต๊ะจาก /img/rune-board2.png ถ้ามี — ไม่มีไฟล์ก็ใช้ felt ที่วาดเองแทน
+  // (ใช้ชื่อไฟล์ใหม่เมื่อเปลี่ยนภาพ เพื่อเลี่ยง cache ของ browser/CDN ที่อิงตาม URL)
   const [boardMap, setBoardMap] = useState<THREE.Texture>(felt);
   useEffect(() => {
     let disposed = false;
     new THREE.TextureLoader().load(
-      "/img/rune-board.png",
+      "/img/rune-board2.png",
       (tex) => {
         if (disposed) {
           tex.dispose();
