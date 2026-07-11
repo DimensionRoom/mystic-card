@@ -1,13 +1,20 @@
 import type { RuneId } from "../data/runes";
+import type { CelestialId } from "../data/diceSets";
 
 export type Language = "th" | "en";
 
-/** ครบทั้ง 24 รูน — ใช้ satisfies กับ th.runeDice.runes เพื่อบังคับให้ไม่ตกหล่น
- *  meaning = ความหมายทั่วไป (general); love/work/money = ความหมายเฉพาะหมวดคำถาม */
-type RuneCopy = Record<
-  RuneId,
-  { name: string; meaning: string; love: string; work: string; money: string }
->;
+/** meaning = ความหมายทั่วไป (general); love/work/money = ความหมายเฉพาะหมวดคำถาม */
+type SymbolCopy = {
+  name: string;
+  meaning: string;
+  love: string;
+  work: string;
+  money: string;
+};
+/** ครบทั้ง 24 รูน — ใช้ satisfies กับ th.runeDice.runes เพื่อบังคับให้ไม่ตกหล่น */
+type RuneCopy = Record<RuneId, SymbolCopy>;
+/** ครบทั้ง 24 สัญลักษณ์จักรวาล — satisfies กับ th.runeDice.celestial */
+type CelestialCopy = Record<CelestialId, SymbolCopy>;
 
 export const languageNames: Record<Language, string> = {
   th: "ไทย",
@@ -523,6 +530,9 @@ const th = {
     catMoney: "การเงิน",
     catToday: "คำแนะนำวันนี้",
     boardAriaLabel: "กระดานทอยรูน",
+    setLabel: "ชุดลูกเต๋า",
+    setRunesD6: "รูนโบราณ · 6 หน้า",
+    setCelestial: "จักรวาล · 8 หน้า",
     powerLabel: "ความแรงในการทอย",
     powerLight: "เบา",
     powerStrong: "แรง",
@@ -714,6 +724,176 @@ const th = {
         money: "ทรัพย์สินหรือมรดกเป็นรากฐานมั่นคง ดูแลและต่อยอดไว้ให้ดี",
       },
     } satisfies RuneCopy,
+    celestial: {
+      aries: {
+        name: "ราศีเมษ",
+        meaning: "พลังบุกเบิกและความกล้า จังหวะนี้เหมาะกับการเริ่มต้นสิ่งใหม่ทันที",
+        love: "ความรักต้องการความกล้า เดินเข้าหาก่อนแล้วประกายไฟจะจุดติด",
+        work: "ลุยโปรเจกต์ใหม่ได้เลย พลังบุกเบิกของคุณจะพาไปก่อนใคร",
+        money: "โอกาสการเงินมาแบบต้องตัดสินใจไว แต่คิดให้รอบก่อนกระโดด",
+      },
+      taurus: {
+        name: "ราศีพฤษภ",
+        meaning: "ความมั่นคงและความอดทน ค่อย ๆ สร้างอย่างต่อเนื่องแล้วผลจะยั่งยืน",
+        love: "ความรักที่ค่อยเป็นค่อยไปคือของจริง ความสม่ำเสมอชนะใจกว่าคำหวาน",
+        work: "งานที่ทำด้วยความอดทนกำลังหยั่งราก อย่าเพิ่งเปลี่ยนเส้นทาง",
+        money: "เก็บออมแบบสม่ำเสมอให้ผลแน่นอน ความมั่งคั่งสร้างจากความมั่นคง",
+      },
+      gemini: {
+        name: "ราศีเมถุน",
+        meaning: "การสื่อสารและความยืดหยุ่น คำพูดและข้อมูลใหม่จะเปิดประตูให้คุณ",
+        love: "บทสนทนาดี ๆ คือสะพานหัวใจ พูดคุยกันมากขึ้นแล้วจะเข้าใจกัน",
+        work: "การประสานงานและการเจรจาคือจุดแข็งช่วงนี้ ใช้คำพูดให้เป็นประโยชน์",
+        money: "ข่าวสารการเงินใหม่กำลังมา เปรียบเทียบข้อมูลก่อนตัดสินใจ",
+      },
+      cancer: {
+        name: "ราศีกรกฎ",
+        meaning: "การดูแลและความอบอุ่น ใส่ใจคนใกล้ตัวและความรู้สึกของตัวเอง",
+        love: "ความอ่อนโยนคือเสน่ห์ของคุณ ดูแลกันเล็ก ๆ น้อย ๆ แล้วใจจะใกล้กัน",
+        work: "ทีมที่อบอุ่นทำงานได้ดี บทบาทผู้ดูแลของคุณมีค่ามากช่วงนี้",
+        money: "เก็บเงินเพื่อบ้านและครอบครัวเป็นจังหวะดี ความปลอดภัยมาก่อน",
+      },
+      leo: {
+        name: "ราศีสิงห์",
+        meaning: "ความมั่นใจและการเปล่งประกาย ถึงเวลาก้าวออกมาอยู่กลางแสง",
+        love: "ความมั่นใจดึงดูดหัวใจ เป็นตัวเองเต็มที่แล้วคนที่ใช่จะมองเห็น",
+        work: "ผลงานของคุณสมควรถูกมองเห็น กล้านำเสนอและรับบทนำ",
+        money: "จังหวะเปล่งประกายด้านรายได้ ผลตอบแทนจากความสามารถกำลังมา",
+      },
+      virgo: {
+        name: "ราศีกันย์",
+        meaning: "ความละเอียดและการจัดระเบียบ รายละเอียดเล็ก ๆ คือกุญแจของช่วงนี้",
+        love: "ความใส่ใจรายละเอียดเล็ก ๆ ทำให้อีกฝ่ายรู้สึกพิเศษ",
+        work: "งานที่ต้องความแม่นยำจะสำเร็จ ตรวจทานอีกครั้งก่อนส่ง",
+        money: "จัดระเบียบบัญชีและรายจ่าย แล้วจะเห็นช่องทางเก็บเงินชัดขึ้น",
+      },
+      libra: {
+        name: "ราศีตุลย์",
+        meaning: "สมดุลและความยุติธรรม ชั่งน้ำหนักให้ดีแล้วเลือกทางสายกลาง",
+        love: "ความสัมพันธ์ต้องการความเท่าเทียม รับฟังกันคนละครึ่งทาง",
+        work: "การไกล่เกลี่ยและความแฟร์ทำให้ทีมเดินต่อได้ คุณคือคนกลางที่ดี",
+        money: "สมดุลรายรับรายจ่ายคือหัวใจ อย่าเทน้ำหนักไปข้างเดียว",
+      },
+      scorpio: {
+        name: "ราศีพิจิก",
+        meaning: "ความลึกซึ้งและการเปลี่ยนแปลง มองทะลุผิวเผินแล้วจะพบความจริง",
+        love: "ความรักลึกซึ้งต้องการความจริงใจ เปิดใจแล้วสายสัมพันธ์จะแน่นแฟ้น",
+        work: "มองเกมให้ขาดก่อนขยับ ความเฉียบของคุณคือข้อได้เปรียบ",
+        money: "เงินก้อนที่ซ่อนอยู่หรือผลประโยชน์ร่วมกำลังเผยตัว อ่านสัญญาให้ละเอียด",
+      },
+      sagittarius: {
+        name: "ราศีธนู",
+        meaning: "การผจญภัยและการมองการณ์ไกล โลกกว้างกว่าที่คิด กล้าออกเดินทาง",
+        love: "ความรักต้องการพื้นที่และการเติบโตร่วมกัน ชวนกันไปเจอโลกใหม่",
+        work: "โอกาสไกลตัวหรือต่างถิ่นกำลังเรียก เปิดรับมุมมองใหม่",
+        money: "การลงทุนระยะยาวและการขยายตัวให้ผลดี มองภาพใหญ่ไว้",
+      },
+      capricorn: {
+        name: "ราศีมังกร",
+        meaning: "วินัยและเป้าหมายระยะยาว ปีนทีละก้าวแล้วยอดเขาจะเป็นของคุณ",
+        love: "ความรักที่จริงจังต้องการเวลา สร้างอนาคตร่วมกันทีละขั้น",
+        work: "ความรับผิดชอบนำมาซึ่งตำแหน่งที่สูงขึ้น วางแผนแล้วเดินตามแผน",
+        money: "การเงินมั่นคงจากวินัย ตั้งเป้าระยะยาวแล้วทำตามให้ครบ",
+      },
+      aquarius: {
+        name: "ราศีกุมภ์",
+        meaning: "ความคิดใหม่และอิสรภาพ ทางที่แตกต่างอาจเป็นทางที่ใช่สำหรับคุณ",
+        love: "ความรักที่เคารพความเป็นตัวเองของกันคือรักที่ยั่งยืน",
+        work: "ไอเดียแหวกแนวของคุณคือจุดเปลี่ยน กล้าเสนอสิ่งที่ไม่เหมือนใคร",
+        money: "ช่องทางรายได้รูปแบบใหม่กำลังเปิด ศึกษาให้ดีแล้วลอง",
+      },
+      pisces: {
+        name: "ราศีมีน",
+        meaning: "จินตนาการและสัญชาตญาณ ความฝันกำลังส่งสัญญาณบางอย่างให้คุณ",
+        love: "หัวใจรับรู้ได้มากกว่าคำพูด เชื่อความรู้สึกแรกของคุณ",
+        work: "งานสร้างสรรค์และศิลปะเปล่งประกาย ปล่อยจินตนาการนำทาง",
+        money: "สัญชาตญาณการเงินแม่นช่วงนี้ แต่บันทึกตัวเลขไว้กันฝันหวานเกินจริง",
+      },
+      sun: {
+        name: "ดวงอาทิตย์",
+        meaning: "พลังชีวิตและความสำเร็จ ทุกอย่างสว่างไสวและเดินหน้าเต็มกำลัง",
+        love: "ความรักอบอุ่นเปล่งประกาย ช่วงเวลาแห่งความสุขและความชัดเจน",
+        work: "ความสำเร็จเด่นชัด ผลงานของคุณกำลังฉายแสงให้ทุกคนเห็น",
+        money: "การเงินสดใสรุ่งเรือง จังหวะทองของรายได้และผลตอบแทน",
+      },
+      moon: {
+        name: "ดวงจันทร์",
+        meaning: "อารมณ์และความรู้สึกลึก ๆ ฟังเสียงข้างในก่อนตัดสินใจ",
+        love: "ความรู้สึกกำลังขึ้นลงเหมือนน้ำขึ้นน้ำลง ให้เวลาใจได้ทบทวน",
+        work: "บรรยากาศทีมมีผลกับงานมากช่วงนี้ อ่านความรู้สึกคนรอบข้าง",
+        money: "อย่าตัดสินใจการเงินตามอารมณ์ รอให้ใจนิ่งก่อนแล้วค่อยเลือก",
+      },
+      mercury: {
+        name: "ดาวพุธ",
+        meaning: "ข่าวสารและการเจรจา ข้อมูลที่มาถึงตอนนี้สำคัญกว่าที่คิด",
+        love: "ข้อความหรือบทสนทนาสั้น ๆ อาจเปลี่ยนความสัมพันธ์ สื่อสารให้ชัด",
+        work: "การเจรจาต่อรองเป็นใจ เตรียมข้อมูลให้พร้อมแล้วพูดให้ตรง",
+        money: "สัญญาและตัวเลขต้องอ่านละเอียด ข้อมูลคือเงินในช่วงนี้",
+      },
+      venus: {
+        name: "ดาวศุกร์",
+        meaning: "ความรักและความงาม ความสุขเล็ก ๆ รอบตัวคือของขวัญช่วงนี้",
+        love: "เสน่ห์ของคุณกำลังเปล่งประกาย ความหวานและความกลมกลืนมาเยือน",
+        work: "งานที่เกี่ยวกับความงามหรือศิลปะรุ่ง สายสัมพันธ์ที่ดีช่วยหนุนงาน",
+        money: "รายได้จากสิ่งสวยงามหรือความคิดสร้างสรรค์ ระวังใช้เพลินตามใจ",
+      },
+      mars: {
+        name: "ดาวอังคาร",
+        meaning: "พลังขับเคลื่อนและความกล้า ลงมือทำเดี๋ยวนี้ดีกว่ารอให้พร้อม",
+        love: "ความรู้สึกร้อนแรง กล้าบอกความในใจ แต่คุมจังหวะอย่าใจร้อน",
+        work: "พลังงานเต็มถัง เหมาะเร่งงานใหญ่ แต่ระวังปะทะกับเพื่อนร่วมงาน",
+        money: "รายได้จากความขยันกำลังเข้า แต่เลี่ยงการเสี่ยงแบบหุนหันพลันแล่น",
+      },
+      jupiter: {
+        name: "ดาวพฤหัสบดี",
+        meaning: "โชคลาภและการขยายตัว โอกาสใหญ่กำลังเปิดกว้างให้คุณ",
+        love: "ความสัมพันธ์เติบโตและอบอุ่น โอกาสพบคนที่เปิดโลกให้คุณ",
+        work: "จังหวะขยายงาน เลื่อนขั้น หรือเรียนรู้สิ่งใหม่ คว้าไว้",
+        money: "โชคด้านการเงินเข้าข้าง ผลตอบแทนขยายตัว แต่แบ่งเก็บไว้เสมอ",
+      },
+      saturn: {
+        name: "ดาวเสาร์",
+        meaning: "บทเรียนและความรับผิดชอบ สิ่งที่ยากตอนนี้คือครูที่ดีที่สุด",
+        love: "ความรักถูกทดสอบด้วยความจริงจัง ผ่านไปได้จะมั่นคงยิ่งกว่าเดิม",
+        work: "งานหนักและกรอบเวลากดดัน แต่วินัยจะสร้างรากฐานที่แข็งแรง",
+        money: "รัดเข็มขัดและจ่ายหนี้ให้ตรงเวลา ความเข้มงวดวันนี้คืออิสรภาพวันหน้า",
+      },
+      uranus: {
+        name: "ดาวยูเรนัส",
+        meaning: "การเปลี่ยนแปลงฉับพลัน สิ่งไม่คาดคิดกำลังปลดล็อกคุณจากกรอบเดิม",
+        love: "ความสัมพันธ์มีจุดหักมุม เปิดใจกับรูปแบบที่ไม่เหมือนเดิม",
+        work: "การเปลี่ยนแปลงกะทันหันในงานคือโอกาสแฝง ปรับตัวไวได้เปรียบ",
+        money: "รายรับรายจ่ายผันผวน สำรองเงินฉุกเฉินไว้ก่อนอุ่นใจกว่า",
+      },
+      neptune: {
+        name: "ดาวเนปจูน",
+        meaning: "ความฝันและแรงบันดาลใจ จินตนาการพาไปไกล แต่เท้ายังต้องติดพื้น",
+        love: "ความโรแมนติกละมุนดั่งความฝัน แต่มองคนตรงหน้าตามความเป็นจริงด้วย",
+        work: "งานสร้างสรรค์ได้แรงบันดาลใจเต็มเปี่ยม จดไอเดียไว้ก่อนจาง",
+        money: "ระวังภาพลวงทางการเงินและข้อเสนอที่หวานเกินจริง ตรวจสอบให้ชัด",
+      },
+      pluto: {
+        name: "ดาวพลูโต",
+        meaning: "การเกิดใหม่ ปล่อยสิ่งที่หมดอายุแล้วชีวิตบทใหม่จะเริ่มต้น",
+        love: "ความสัมพันธ์กำลังลอกคราบ จบบางอย่างเพื่อเริ่มสิ่งที่ลึกซึ้งกว่า",
+        work: "ยกเครื่องวิธีทำงานครั้งใหญ่ ความเปลี่ยนแปลงนี้คือพลังที่แท้จริง",
+        money: "ปรับโครงสร้างการเงินใหม่หมด ตัดรายจ่ายที่ตายแล้วออกไป",
+      },
+      node: {
+        name: "ราหู",
+        meaning: "จุดหมายของโชคชะตา เส้นทางที่รู้สึกท้าทายคือทางที่วิญญาณเลือก",
+        love: "คนที่เข้ามาช่วงนี้มีบทเรียนสำคัญให้คุณ ความสัมพันธ์นำพาการเติบโต",
+        work: "งานที่ท้าทายกว่าเดิมคือเส้นทางที่ใช่ ก้าวออกจากจุดที่คุ้นเคย",
+        money: "ทิศทางการเงินกำลังเปลี่ยนเข็ม เรียนรู้ทักษะเงินแบบใหม่",
+      },
+      comet: {
+        name: "ดาวหาง",
+        meaning: "โอกาสหายากที่มาไวไปไว เห็นแล้วต้องคว้า ก่อนแสงจะลับฟ้า",
+        love: "คนพิเศษอาจผ่านเข้ามาแบบไม่ทันตั้งตัว อย่าปล่อยจังหวะสำคัญหลุดมือ",
+        work: "โอกาสทองแวบเข้ามาชั่วขณะ ตัดสินใจให้ทันเวลา",
+        money: "จังหวะเงินพิเศษเข้ามาสั้น ๆ คว้าไว้แต่อย่าทุ่มหมดหน้าตัก",
+      },
+    } satisfies CelestialCopy,
   },
 };
 
@@ -1227,6 +1407,9 @@ const en: typeof th = {
     catMoney: "Money",
     catToday: "Today's guidance",
     boardAriaLabel: "Rune rolling board",
+    setLabel: "Dice set",
+    setRunesD6: "Ancient Runes · 6 faces",
+    setCelestial: "Celestial · 8 faces",
     powerLabel: "Throw strength",
     powerLight: "Light",
     powerStrong: "Strong",
@@ -1444,7 +1627,188 @@ const en: typeof th = {
         money: "Assets or an inheritance are a solid base — care for them and build on them",
       },
     },
+    celestial: {
+      aries: {
+        name: "Aries",
+        meaning: "Pioneering fire and courage — the moment is ripe to start something new right away",
+        love: "Love favors the bold — make the first move and the spark will catch",
+        work: "Charge into that new project — your pioneering energy puts you ahead of the pack",
+        money: "A money chance demands a quick decision — think it through, then leap",
+      },
+      taurus: {
+        name: "Taurus",
+        meaning: "Stability and patience — build steadily and the results will last",
+        love: "Slow-growing love is the real thing — consistency wins hearts over sweet talk",
+        work: "Patient work is taking root — don't change course just yet",
+        money: "Steady saving pays off surely — wealth is built on stability",
+      },
+      gemini: {
+        name: "Gemini",
+        meaning: "Communication and flexibility — words and fresh information open doors for you",
+        love: "A good conversation is a bridge between hearts — talk more and understanding follows",
+        work: "Coordination and negotiation are your strengths now — let your words work for you",
+        money: "Fresh financial news is coming — compare the facts before you decide",
+      },
+      cancer: {
+        name: "Cancer",
+        meaning: "Care and warmth — tend to the people close to you and to your own feelings",
+        love: "Tenderness is your charm — small acts of care draw hearts closer",
+        work: "A warm team works well — your nurturing role is precious right now",
+        money: "Saving for home and family is well-starred — security comes first",
+      },
+      leo: {
+        name: "Leo",
+        meaning: "Confidence and radiance — it's time to step into the light",
+        love: "Confidence is magnetic — be fully yourself and the right person will see you",
+        work: "Your work deserves to be seen — present boldly and take the lead",
+        money: "A shining phase for income — rewards for your talent are on the way",
+      },
+      virgo: {
+        name: "Virgo",
+        meaning: "Precision and order — the small details are the key to this moment",
+        love: "Noticing the little things makes someone feel truly special",
+        work: "Work that demands precision will succeed — double-check before you submit",
+        money: "Put your accounts in order and clearer ways to save will appear",
+      },
+      libra: {
+        name: "Libra",
+        meaning: "Balance and fairness — weigh things carefully and choose the middle path",
+        love: "A relationship needs equality — meet each other halfway and listen",
+        work: "Mediation and fairness keep the team moving — you're the good bridge-builder",
+        money: "Balancing income and spending is the heart of it — don't tip to one side",
+      },
+      scorpio: {
+        name: "Scorpio",
+        meaning: "Depth and transformation — look beneath the surface and you'll find the truth",
+        love: "Deep love requires honesty — open up and the bond grows unbreakable",
+        work: "Read the whole game before you move — your sharpness is the advantage",
+        money: "Hidden money or shared assets are surfacing — read every contract closely",
+      },
+      sagittarius: {
+        name: "Sagittarius",
+        meaning: "Adventure and far sight — the world is wider than you think, dare to set out",
+        love: "Love needs room to grow together — explore a new world side by side",
+        work: "A distant or foreign opportunity is calling — open up to new perspectives",
+        money: "Long-term investment and expansion pay off — keep the big picture in view",
+      },
+      capricorn: {
+        name: "Capricorn",
+        meaning: "Discipline and long-term goals — climb step by step and the summit is yours",
+        love: "Serious love takes time — build a future together one stage at a time",
+        work: "Responsibility brings you higher — make the plan and walk it",
+        money: "Financial security comes from discipline — set the long goal and see it through",
+      },
+      aquarius: {
+        name: "Aquarius",
+        meaning: "New ideas and freedom — the different path may be exactly your path",
+        love: "Love that respects each other's individuality is the love that lasts",
+        work: "Your unconventional idea is the turning point — dare to propose the unusual",
+        money: "A new kind of income stream is opening — study it well, then try",
+      },
+      pisces: {
+        name: "Pisces",
+        meaning: "Imagination and intuition — your dreams are sending you a signal",
+        love: "The heart knows more than words — trust your first feeling",
+        work: "Creative and artistic work shines — let imagination lead the way",
+        money: "Your money intuition is sharp now — still, write the numbers down to stay grounded",
+      },
+      sun: {
+        name: "The Sun",
+        meaning: "Vitality and success — everything is bright and moving at full power",
+        love: "Love glows warm and clear — a season of joy and certainty",
+        work: "Success stands out — your work is shining for everyone to see",
+        money: "Finances are radiant — a golden hour for income and returns",
+      },
+      moon: {
+        name: "The Moon",
+        meaning: "Emotions and deep feelings — listen to the voice within before deciding",
+        love: "Feelings rise and fall like the tide — give your heart time to reflect",
+        work: "Team mood shapes the work right now — read the feelings around you",
+        money: "Don't decide money matters on emotion — wait for a calm heart, then choose",
+      },
+      mercury: {
+        name: "Mercury",
+        meaning: "Messages and negotiation — the information arriving now matters more than you think",
+        love: "A short message or talk could change the relationship — communicate clearly",
+        work: "Negotiations lean your way — prepare your facts and speak straight",
+        money: "Read contracts and numbers closely — information is money right now",
+      },
+      venus: {
+        name: "Venus",
+        meaning: "Love and beauty — the small pleasures around you are this moment's gift",
+        love: "Your charm is glowing — sweetness and harmony come calling",
+        work: "Work tied to beauty or art flourishes — good relationships lift the work",
+        money: "Income from beautiful or creative things — just watch the pleasure spending",
+      },
+      mars: {
+        name: "Mars",
+        meaning: "Drive and courage — acting now beats waiting until you feel ready",
+        love: "Feelings burn hot — speak your heart, but keep the tempo, don't rush",
+        work: "Energy at full tank — push the big job, but avoid clashing with colleagues",
+        money: "Earnings from hard work are flowing in — avoid impulsive risks",
+      },
+      jupiter: {
+        name: "Jupiter",
+        meaning: "Fortune and expansion — a great opportunity is opening wide for you",
+        love: "The relationship grows warm and generous — you may meet someone who opens your world",
+        work: "A season to expand, get promoted, or learn something new — seize it",
+        money: "Financial luck is on your side and returns are growing — always set a share aside",
+      },
+      saturn: {
+        name: "Saturn",
+        meaning: "Lessons and responsibility — what is hard right now is your best teacher",
+        love: "Love is being tested by seriousness — pass through and it grows stronger than ever",
+        work: "Heavy work and deadlines press in, but discipline builds a foundation that lasts",
+        money: "Tighten the belt and pay debts on time — strictness today is freedom tomorrow",
+      },
+      uranus: {
+        name: "Uranus",
+        meaning: "Sudden change — the unexpected is unlocking you from an old frame",
+        love: "A plot twist in the relationship — stay open to a shape it hasn't taken before",
+        work: "Sudden change at work hides an opportunity — the quick adapter wins",
+        money: "Income and expenses swing — an emergency fund brings peace of mind",
+      },
+      neptune: {
+        name: "Neptune",
+        meaning: "Dreams and inspiration — imagination carries you far, but keep your feet on the ground",
+        love: "Romance as soft as a dream — still, see the person in front of you as they are",
+        work: "Creative work brims with inspiration — capture ideas before they fade",
+        money: "Beware financial illusions and offers too sweet to be true — verify everything",
+      },
+      pluto: {
+        name: "Pluto",
+        meaning: "Rebirth — release what has expired and a new chapter of life begins",
+        love: "The relationship is shedding its skin — something ends so something deeper can begin",
+        work: "A major overhaul of how you work — this transformation is true power",
+        money: "Restructure your finances completely — cut the expenses that no longer live",
+      },
+      node: {
+        name: "North Node",
+        meaning: "Destiny's compass — the path that feels challenging is the one your soul chose",
+        love: "Whoever enters your life now carries an important lesson — this bond brings growth",
+        work: "The more challenging job is the right path — step out of the familiar",
+        money: "Your financial direction is turning — learn a new way with money",
+      },
+      comet: {
+        name: "The Comet",
+        meaning: "A rare chance that comes and goes fast — seize it before its light leaves the sky",
+        love: "Someone special may sweep in unannounced — don't let the crucial moment slip",
+        work: "A golden opportunity flashes by — decide in time",
+        money: "A brief special windfall arrives — grab it, but never bet everything",
+      },
+    },
   },
 };
 
 export const translations: Record<Language, typeof th> = { th, en };
+
+/** คำทำนายของสัญลักษณ์ตามกลุ่มชุดลูกเต๋า (runes | celestial) — ใช้กับ Rune Dice */
+export function diceSymbolCopy(
+  t: typeof th,
+  group: "runes" | "celestial",
+  symbolId: string,
+): SymbolCopy {
+  return group === "celestial"
+    ? t.runeDice.celestial[symbolId as CelestialId]
+    : t.runeDice.runes[symbolId as RuneId];
+}

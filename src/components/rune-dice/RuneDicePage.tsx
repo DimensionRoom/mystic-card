@@ -4,7 +4,13 @@ import { useAuth } from "../../auth/AuthContext";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { useToast } from "../../router/ToastContext";
 import { saveReading } from "../../lib/db";
-import { runeById } from "../../data/runes";
+import {
+  DICE_SETS,
+  diceSetById,
+  symbolById,
+  type DiceSetId,
+} from "../../data/diceSets";
+import { diceSymbolCopy } from "../../i18n/translations";
 import UserActions from "../UserActions";
 import RuneDiceBoard from "./RuneDiceBoard";
 import ResultPanel from "./ResultPanel";
@@ -24,12 +30,24 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { showToast } = useToast();
+
+  const [setId, setSetId] = useState<DiceSetId>("runes-d6");
+  const set = diceSetById(setId);
   const { phase, rollId, assignment, results, roll, onSettling, onSettled } =
-    useDiceRoll();
+    useDiceRoll(set);
 
   const [category, setCategory] = useState<QuestionCategory | null>(null);
   const [power, setPower] = useState(STRENGTH_DEFAULT);
   const [saved, setSaved] = useState(false);
+
+  const setLabel: Record<DiceSetId, string> = {
+    "runes-d6": t.runeDice.setRunesD6,
+    "celestial-d8": t.runeDice.setCelestial,
+  };
+  const setIcon: Record<DiceSetId, string> = {
+    "runes-d6": "🎲",
+    "celestial-d8": "🌙",
+  };
 
   // เริ่มทอยใหม่ = ล้างสถานะบันทึกของรอบก่อน
   useEffect(() => {
@@ -63,16 +81,19 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
     }
     await saveReading(user.id, {
       deckId: "rune-dice",
-      deckName: t.runeDice.deckName,
+      deckName: `${t.runeDice.deckName} · ${setLabel[setId]}`,
       deckType: "Rune",
       readingType: "rune-dice-3",
-      cards: results.map((r, i) => ({
-        id: r.runeId,
-        title: `${t.runeDice.runes[r.runeId].name} (${runeById(r.runeId).translit})`,
-        subtitle: [t.runeDice.pos1, t.runeDice.pos2, t.runeDice.pos3][i],
-        image: "",
-        meaning: t.runeDice.runes[r.runeId][lens],
-      })),
+      cards: results.map((r, i) => {
+        const copy = diceSymbolCopy(t, set.copyGroup, r.symbolId);
+        return {
+          id: r.symbolId,
+          title: `${copy.name} (${symbolById(set, r.symbolId).translit})`,
+          subtitle: [t.runeDice.pos1, t.runeDice.pos2, t.runeDice.pos3][i],
+          image: "",
+          meaning: copy[lens],
+        };
+      }),
     });
     setSaved(true);
     showToast(t.runeDice.savedToast);
@@ -94,6 +115,33 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
       <StepIndicator current={currentStep} />
       <QuestionChips category={category} onSelect={setCategory} />
 
+      {/* แถบเลือกชุดลูกเต๋า — เปลี่ยนทรง/สัญลักษณ์/คำทำนาย (ห้ามสลับระหว่างทอย) */}
+      <div className="flex flex-wrap items-center gap-2.5">
+        <span className="text-sm font-semibold text-mystic-muted">
+          {t.runeDice.setLabel}:
+        </span>
+        {DICE_SETS.map((s) => {
+          const active = s.id === setId;
+          return (
+            <motion.button
+              key={s.id}
+              type="button"
+              onClick={() => setSetId(s.id)}
+              disabled={rolling}
+              aria-pressed={active}
+              whileTap={{ scale: 0.94 }}
+              className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                active
+                  ? "border-transparent bg-mystic-purple text-white shadow-pastel"
+                  : "border-mystic-border bg-white text-mystic-ink/70 hover:bg-mystic-lavender/50"
+              }`}
+            >
+              {setIcon[s.id]} {setLabel[s.id]}
+            </motion.button>
+          );
+        })}
+      </div>
+
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         {/* ---- board + controls ---- */}
         <div className="flex flex-col gap-4">
@@ -110,7 +158,9 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
             <RuneDiceBoard
               rollId={rollId}
               phase={phase}
+              set={set}
               assignment={assignment}
+              results={results}
               power={power}
               onSettling={onSettling}
               onSettled={onSettled}
@@ -211,6 +261,7 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
         <ResultPanel
           results={results}
           rollId={rollId}
+          set={set}
           lens={lens}
           topic={topic}
           saved={saved}

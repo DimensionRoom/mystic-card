@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { runeById } from "../../data/runes";
+import { symbolById, type DiceSetDef } from "../../data/diceSets";
+import { diceSymbolCopy } from "../../i18n/translations";
 import { useLanguage } from "../../i18n/LanguageContext";
 import Icon from "../Icon";
 import type { RuneLens } from "./QuestionChips";
@@ -8,6 +9,8 @@ import type { DieResult } from "./useDiceRoll";
 interface ResultPanelProps {
   results: DieResult[];
   rollId: number;
+  /** ชุดลูกเต๋าที่ทอย — กำหนด glyph + กลุ่มคำทำนาย */
+  set: DiceSetDef;
   /** เลนส์ความหมายตามหมวดคำถาม */
   lens: RuneLens;
   /** หัวข้อที่ถาม (โชว์บนหัว panel ถ้ามี) */
@@ -42,6 +45,7 @@ const POS_STYLES = [
 export default function ResultPanel({
   results,
   rollId,
+  set,
   lens,
   topic,
   saved,
@@ -87,7 +91,8 @@ export default function ResultPanel({
             className="flex flex-col gap-3"
           >
             {results.map((r, i) => {
-              const rune = runeById(r.runeId);
+              const symbol = symbolById(set, r.symbolId);
+              const copy = diceSymbolCopy(t, set.copyGroup, r.symbolId);
               const s = POS_STYLES[i];
               return (
                 <motion.article
@@ -115,15 +120,15 @@ export default function ResultPanel({
                       className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${s.circle}`}
                     >
                       <span className="rune-glyph text-3xl leading-none">
-                        {rune.glyph}
+                        {symbol.glyph}
                       </span>
                     </span>
                     <div className="min-w-0">
                       <p className="font-bold text-mystic-ink-deep">
-                        {t.runeDice.runes[r.runeId].name} ({rune.translit})
+                        {copy.name} ({symbol.translit})
                       </p>
                       <p className="mt-1 text-sm leading-relaxed text-mystic-ink/75">
-                        {t.runeDice.runes[r.runeId][lens]}
+                        {copy[lens]}
                       </p>
                     </div>
                   </div>

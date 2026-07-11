@@ -16,7 +16,8 @@ import {
   type CollisionEnterPayload,
   type RapierRigidBody,
 } from "@react-three/rapier";
-import type { RuneId } from "../../data/runes";
+import { symbolById, type DiceSetDef } from "../../data/diceSets";
+import { diceShapeById, type DiceShape } from "./diceShapes";
 import type { DieResult, RollPhase } from "./useDiceRoll";
 import RuneDie from "./RuneDie";
 import SparkBurst, { type SparkBurstHandle } from "./SparkBurst";
@@ -42,8 +43,12 @@ const MAX_NUDGES = 2;
 interface RuneDiceBoardProps {
   rollId: number;
   phase: RollPhase;
-  /** RuneId[3][6] */
-  assignment: RuneId[][];
+  /** ชุดลูกเต๋าที่เลือก (กำหนดทรง + สัญลักษณ์) */
+  set: DiceSetDef;
+  /** symbolId[3][faceCount] */
+  assignment: string[][];
+  /** ผลหลัง settle — ใช้บอกลูกเต๋าคริสตัลว่าแตกแล้วโชว์สัญลักษณ์ไหน */
+  results: DieResult[];
   /** ตัวคูณความแรงของการทอย (อ่านตอนทอยจริง) */
   power: number;
   onSettling: () => void;
@@ -55,6 +60,7 @@ function DiceController({
   rollId,
   phase,
   assignment,
+  shape,
   dieRefs,
   powerRef,
   onSettling,
@@ -62,7 +68,8 @@ function DiceController({
 }: {
   rollId: number;
   phase: RollPhase;
-  assignment: RuneId[][];
+  assignment: string[][];
+  shape: DiceShape;
   dieRefs: React.MutableRefObject<RapierRigidBody | null>[];
   powerRef: React.MutableRefObject<number>;
   onSettling: () => void;
@@ -107,7 +114,7 @@ function DiceController({
       dice.every((rb) => rb.isSleeping()) || calmFrames.current >= CALM_FRAMES;
     if (!rested && !timedOut) return;
 
-    const reads = dice.map(readUpFace);
+    const reads = dice.map((rb) => readUpFace(rb, shape.faceNormals));
     const cocked = reads.findIndex((r) => r.confidence < MIN_CONFIDENCE);
     if (cocked !== -1 && !timedOut && nudges.current[cocked] < MAX_NUDGES) {
       nudges.current[cocked] += 1;
@@ -120,7 +127,7 @@ function DiceController({
     onSettled(
       reads.map((r, die) => ({
         die,
-        runeId: assignment[die][r.faceIndex],
+        symbolId: assignment[die][r.faceIndex],
       })),
     );
   });
@@ -210,7 +217,9 @@ function Bounds() {
 export default function RuneDiceBoard({
   rollId,
   phase,
+  set,
   assignment,
+  results,
   power,
   onSettling,
   onSettled,
@@ -220,6 +229,7 @@ export default function RuneDiceBoard({
   const d2 = useRef<RapierRigidBody | null>(null);
   const dieRefs = useMemo(() => [d0, d1, d2], []);
   const sparkRef = useRef<SparkBurstHandle>(null);
+  const shape = diceShapeById(set.shapeId);
   // อ่านความแรงล่าสุดตอนทอย โดยไม่ต้อง re-render canvas
   const powerRef = useRef(power);
   powerRef.current = power;
@@ -316,20 +326,31 @@ export default function RuneDiceBoard({
         <Physics gravity={[0, -18, 0]}>
           <Table />
           <Bounds />
-          {assignment.map((faces, i) => (
-            <RuneDie
-              key={i}
-              ref={dieRefs[i]}
-              faces={faces}
-              position={REST_SPOTS[i]}
-              onCollide={handleCollide}
-              glow={phase === "revealed"}
-            />
-          ))}
+          {assignment.map((faceIds, i) => {
+            const res =
+              phase === "revealed"
+                ? results.find((r) => r.die === i)
+                : undefined;
+            return (
+              <RuneDie
+                key={`${set.id}-${i}`}
+                ref={dieRefs[i]}
+                faces={faceIds.map((id) => symbolById(set, id))}
+                shape={shape}
+                setId={set.id}
+                materialStyle={set.material}
+                position={REST_SPOTS[i]}
+                onCollide={handleCollide}
+                glow={phase === "revealed"}
+                revealSymbol={res ? symbolById(set, res.symbolId) : undefined}
+              />
+            );
+          })}
           <DiceController
             rollId={rollId}
             phase={phase}
             assignment={assignment}
+            shape={shape}
             dieRefs={dieRefs}
             powerRef={powerRef}
             onSettling={onSettling}

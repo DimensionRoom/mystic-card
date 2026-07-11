@@ -85,25 +85,19 @@ export function nudgeDie(rb: RapierRigidBody): void {
   rb.applyTorqueImpulse({ x: rand(-0.1, 0.1), y: 0, z: rand(-0.1, 0.1) }, true);
 }
 
-// normal ของ 6 หน้า (local) → index วัสดุ ตรงกับลำดับ group ของ BoxGeometry
-// [+X, -X, +Y, -Y, +Z, -Z]
-const FACE_NORMALS: ReadonlyArray<readonly [THREE.Vector3, number]> = [
-  [new THREE.Vector3(1, 0, 0), 0],
-  [new THREE.Vector3(-1, 0, 0), 1],
-  [new THREE.Vector3(0, 1, 0), 2],
-  [new THREE.Vector3(0, -1, 0), 3],
-  [new THREE.Vector3(0, 0, 1), 4],
-  [new THREE.Vector3(0, 0, -1), 5],
-];
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
 const _tmp = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 
 /**
- * อ่านว่าหน้าไหนหงายขึ้น: หมุน normal ทั้ง 6 ด้วย quaternion โลกของลูกเต๋า
- * แล้วเลือกอันที่ dot กับ (0,1,0) มากสุด — confidence ≈ 1.0 เมื่อวางเรียบสนิท
+ * อ่านว่าหน้าไหนหงายขึ้น: หมุน normal ทุกหน้า (ตามทรงลูกเต๋า) ด้วย quaternion
+ * โลกของลูกเต๋า แล้วเลือกอันที่ dot กับ (0,1,0) มากสุด — index ของ normals
+ * ต้องตรงกับ material group ของ geometry; confidence ≈ 1.0 เมื่อวางเรียบสนิท
  */
-export function readUpFace(rb: RapierRigidBody): {
+export function readUpFace(
+  rb: RapierRigidBody,
+  faceNormals: readonly THREE.Vector3[],
+): {
   faceIndex: number;
   confidence: number;
 } {
@@ -111,11 +105,11 @@ export function readUpFace(rb: RapierRigidBody): {
   _q.set(r.x, r.y, r.z, r.w);
   let faceIndex = 0;
   let confidence = -Infinity;
-  for (const [normal, idx] of FACE_NORMALS) {
-    const dot = _tmp.copy(normal).applyQuaternion(_q).dot(WORLD_UP);
+  for (let i = 0; i < faceNormals.length; i++) {
+    const dot = _tmp.copy(faceNormals[i]).applyQuaternion(_q).dot(WORLD_UP);
     if (dot > confidence) {
       confidence = dot;
-      faceIndex = idx;
+      faceIndex = i;
     }
   }
   return { faceIndex, confidence };
