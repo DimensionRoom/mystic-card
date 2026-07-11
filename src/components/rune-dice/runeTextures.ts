@@ -352,6 +352,63 @@ function drawCrystalTriangleFace(
   return toTexture(c);
 }
 
+// กาแล็กซีก้นหอยในลูกเต๋าคริสตัล — sprite หมุนวนอยู่กลางเนื้อแก้ว
+let galaxyTex: THREE.CanvasTexture | null = null;
+export function galaxyTexture(): THREE.CanvasTexture {
+  if (galaxyTex) return galaxyTex;
+  const s = 256;
+  const cx = s / 2;
+  const c = document.createElement("canvas");
+  c.width = c.height = s;
+  const ctx = c.getContext("2d")!;
+
+  // แกนกลางเรืองขาว-ม่วง
+  const core = ctx.createRadialGradient(cx, cx, 0, cx, cx, 46);
+  core.addColorStop(0, "rgba(255,255,255,0.95)");
+  core.addColorStop(0.35, "rgba(232,200,255,0.7)");
+  core.addColorStop(1, "rgba(190,150,255,0)");
+  ctx.fillStyle = core;
+  ctx.fillRect(0, 0, s, s);
+
+  // แขนก้นหอย 3 แขน (logarithmic spiral) ไล่สีม่วง-ชมพู-ฟ้า จางปลาย
+  const ARM_COLORS = ["192,132,252", "240,171,252", "147,197,253"];
+  for (let arm = 0; arm < 3; arm++) {
+    const offset = (arm * Math.PI * 2) / 3;
+    const rgb = ARM_COLORS[arm];
+    for (let t = 0; t < 4.6; t += 0.055) {
+      const r = 8 + t * 21;
+      const a = t * 1.35 + offset;
+      const x = cx + r * Math.cos(a);
+      const y = cx + r * Math.sin(a);
+      const fade = 1 - t / 4.6;
+      ctx.fillStyle = `rgba(${rgb},${(0.75 * fade).toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(x, y, 7 * fade + 1.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ดาวประกายเล็ก ๆ โปรยทั่ว
+  for (let i = 0; i < 46; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = 14 + Math.random() * 100;
+    ctx.fillStyle = `rgba(255,255,255,${0.25 + Math.random() * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(
+      cx + r * Math.cos(a),
+      cx + r * Math.sin(a),
+      0.6 + Math.random() * 1.1,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+  }
+
+  galaxyTex = new THREE.CanvasTexture(c);
+  galaxyTex.colorSpace = THREE.SRGBColorSpace;
+  return galaxyTex;
+}
+
 // ออร่ารอบลูกเต๋า — radial gradient ทองนุ่ม โปร่งขอบ (ใช้กับ sprite)
 let auraTex: THREE.CanvasTexture | null = null;
 export function auraTexture(): THREE.CanvasTexture {
@@ -424,4 +481,6 @@ export function disposeRuneTextures(): void {
   feltTex = null;
   auraTex?.dispose();
   auraTex = null;
+  galaxyTex?.dispose();
+  galaxyTex = null;
 }

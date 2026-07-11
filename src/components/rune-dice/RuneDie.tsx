@@ -8,7 +8,12 @@ import {
 } from "@react-three/rapier";
 import type { DiceMaterialStyle, DiceSymbol } from "../../data/diceSets";
 import type { DiceShape } from "./diceShapes";
-import { auraTexture, ensureRuneFont, faceTexture } from "./runeTextures";
+import {
+  auraTexture,
+  ensureRuneFont,
+  faceTexture,
+  galaxyTexture,
+} from "./runeTextures";
 import { DIE_SIZE } from "./dicePhysics";
 
 interface RuneDieProps {
@@ -90,6 +95,23 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     };
   }, [faces, materials, setId, shape.frame, materialStyle]);
 
+  // กาแล็กซีหมุนวนในเนื้อแก้ว (เฉพาะ crystal) — sprite additive กลางลูก
+  const galaxyMat = useMemo(
+    () =>
+      materialStyle === "crystal"
+        ? new THREE.SpriteMaterial({
+            map: galaxyTexture(),
+            transparent: true,
+            depthWrite: false,
+            depthTest: false, // มองทะลุเนื้อแก้ว (glass เขียน depth ไว้ก่อน)
+            blending: THREE.AdditiveBlending,
+            opacity: 0.85,
+          })
+        : null,
+    [materialStyle],
+  );
+  const galaxyRef = useRef<THREE.Sprite>(null);
+
   // วัสดุ sprite ออร่า (ทองเรือง โปร่งขอบ) — เริ่มโปร่งใส
   const auraMat = useMemo(
     () =>
@@ -127,15 +149,21 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     }
     // แสงออร่าเปล่งลงพื้นโต๊ะรอบ ๆ
     if (lightRef.current) lightRef.current.intensity = g * (2.4 + 1.4 * pulse);
+    // กาแล็กซีหมุนวนช้า ๆ ตลอดเวลา สว่างขึ้นตอน reveal
+    if (galaxyMat) {
+      galaxyMat.rotation += dt * 0.9;
+      galaxyMat.opacity = 0.72 + g * 0.28 + 0.06 * Math.sin(t.current * 2.2);
+    }
   });
 
   useEffect(() => {
     return () => {
       materials.forEach((m) => m.dispose());
       auraMat.dispose();
+      galaxyMat?.dispose();
       dieGeometry.dispose();
     };
-  }, [materials, auraMat, dieGeometry]);
+  }, [materials, auraMat, galaxyMat, dieGeometry]);
 
   return (
     <RigidBody
@@ -155,6 +183,15 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
         geometry={dieGeometry}
         material={materials}
       />
+      {/* กาแล็กซีหมุนวนใจกลางลูกคริสตัล */}
+      {galaxyMat && (
+        <sprite
+          ref={galaxyRef}
+          material={galaxyMat}
+          scale={[0.78, 0.78, 0.78]}
+          renderOrder={5}
+        />
+      )}
       {/* ออร่ารอบลูกเต๋า — sprite billboard หันเข้ากล้องเสมอ */}
       <sprite ref={spriteRef} material={auraMat} scale={[1.9, 1.9, 1.9]} />
       {/* แสงออร่าเปล่งลงโต๊ะ (ไม่ทำเงา) */}
