@@ -130,14 +130,14 @@ function DiceController({
 
 function Table() {
   const felt = useMemo(() => feltTexture(), []);
-  // ปูภาพพื้นโต๊ะจาก /img/rune-board.png ถ้ามี — ไม่มีไฟล์ก็ใช้ felt ที่วาดเองแทน
+  // ปูภาพพื้นโต๊ะจาก /img/rune-board-moon.png ถ้ามี — ไม่มีไฟล์ก็ใช้ felt ที่วาดเองแทน
   // สำคัญ: ชื่อไฟล์นี้ต้องมีอยู่จริงใน public/img และตรงกับที่ commit ไป
   // (ไม่งั้น Vercel จะ 404 แล้ว fallback เป็น felt) — เปลี่ยนภาพให้เปลี่ยนชื่อไฟล์ด้วยเพื่อเลี่ยง cache
   const [boardMap, setBoardMap] = useState<THREE.Texture>(felt);
   useEffect(() => {
     let disposed = false;
     new THREE.TextureLoader().load(
-      "/img/rune-board.png",
+      "/img/rune-board-moon.png",
       (tex) => {
         if (disposed) {
           tex.dispose();

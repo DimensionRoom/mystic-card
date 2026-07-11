@@ -94,12 +94,12 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     const g = gRef.current;
     const pulse = 0.5 + 0.5 * Math.sin(t.current * 3);
     // ผิวทองเปล่งแสง
-    const em = g * (0.7 + 0.5 * pulse);
+    const em = g * (0.3 + 0.5 * pulse);
     for (const m of materials) m.emissiveIntensity = em;
     // halo sprite
     auraMat.opacity = g * (0.5 + 0.35 * pulse);
     if (spriteRef.current) {
-      const s = 1.9 + g * (0.9 + 0.35 * pulse);
+      const s = 1.9 + g * (0.3 + 0.35 * pulse);
       spriteRef.current.scale.set(s, s, s);
     }
     // แสงออร่าเปล่งลงพื้นโต๊ะรอบ ๆ
@@ -138,8 +138,8 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
       <pointLight
         ref={lightRef}
         color="#f5da27"
-        distance={3.4}
-        decay={5}
+        distance={3}
+        decay={2.5}
         intensity={0}
         castShadow={false}
       />
