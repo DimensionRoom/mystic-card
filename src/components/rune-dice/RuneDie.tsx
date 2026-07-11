@@ -95,22 +95,67 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     };
   }, [faces, materials, setId, shape.frame, materialStyle]);
 
-  // กาแล็กซีหมุนวนในเนื้อแก้ว (เฉพาะ crystal) — sprite additive กลางลูก
-  const galaxyMat = useMemo(
-    () =>
-      materialStyle === "crystal"
-        ? new THREE.SpriteMaterial({
-            map: galaxyTexture(),
-            transparent: true,
-            depthWrite: false,
-            depthTest: false, // มองทะลุเนื้อแก้ว (glass เขียน depth ไว้ก่อน)
-            blending: THREE.AdditiveBlending,
-            opacity: 0.85,
-          })
-        : null,
-    [materialStyle],
-  );
-  const galaxyRef = useRef<THREE.Sprite>(null);
+  // กาแล็กซีหลายวงลอยวนในเนื้อแก้ว (เฉพาะ crystal) — sprite additive
+  // แต่ละวงมีขนาด/ทิศหมุน/วงโคจร (lissajous) สุ่มเฉพาะลูก
+  const galaxies = useMemo(() => {
+    if (materialStyle !== "crystal") return null;
+    return Array.from({ length: 3 }, () => ({
+      mat: new THREE.SpriteMaterial({
+        map: galaxyTexture(),
+        transparent: true,
+        depthWrite: false,
+        depthTest: false, // มองทะลุเนื้อแก้ว (glass เขียน depth ไว้ก่อน)
+        blending: THREE.AdditiveBlending,
+        opacity: 0.55 + Math.random() * 0.25,
+        rotation: Math.random() * Math.PI * 2,
+      }),
+      scale: 0.3 + Math.random() * 0.2,
+      spin: (Math.random() > 0.5 ? 1 : -1) * (0.5 + Math.random() * 0.9),
+      freq: [
+        0.25 + Math.random() * 0.25,
+        0.2 + Math.random() * 0.25,
+        0.3 + Math.random() * 0.25,
+      ] as const,
+      phase: [
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2,
+      ] as const,
+      amp: 0.11 + Math.random() * 0.05,
+    }));
+  }, [materialStyle]);
+  const galaxyRefs = useRef<(THREE.Sprite | null)[]>([]);
+
+  // ดวงดาวระยิบระยับในเนื้อแก้ว — points cloud หมุนช้า ๆ
+  const stars = useMemo(() => {
+    if (materialStyle !== "crystal") return null;
+    const n = 46;
+    const pos = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      // สุ่มในทรงกลมรัศมี ~0.27 (อยู่ในเนื้อ octahedron)
+      const r = 0.27 * Math.cbrt(Math.random());
+      const a = Math.random() * Math.PI * 2;
+      const z = Math.random() * 2 - 1;
+      const s = Math.sqrt(1 - z * z);
+      pos[i * 3] = r * s * Math.cos(a);
+      pos[i * 3 + 1] = r * s * Math.sin(a);
+      pos[i * 3 + 2] = r * z;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({
+      color: new THREE.Color("#efe4ff"),
+      size: 0.026,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.9,
+      depthWrite: false,
+      depthTest: false,
+      blending: THREE.AdditiveBlending,
+    });
+    return { geo, mat };
+  }, [materialStyle]);
+  const starsRef = useRef<THREE.Points>(null);
 
   // วัสดุ sprite ออร่า (ทองเรือง โปร่งขอบ) — เริ่มโปร่งใส
   const auraMat = useMemo(
@@ -149,10 +194,29 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     }
     // แสงออร่าเปล่งลงพื้นโต๊ะรอบ ๆ
     if (lightRef.current) lightRef.current.intensity = g * (2.4 + 1.4 * pulse);
-    // กาแล็กซีหมุนวนช้า ๆ ตลอดเวลา สว่างขึ้นตอน reveal
-    if (galaxyMat) {
-      galaxyMat.rotation += dt * 0.9;
-      galaxyMat.opacity = 0.72 + g * 0.28 + 0.06 * Math.sin(t.current * 2.2);
+    // กาแล็กซีลอยวนไปมา + หมุนตัวเอง สว่างขึ้นตอน reveal
+    if (galaxies) {
+      galaxies.forEach((gal, i) => {
+        gal.mat.rotation += dt * gal.spin;
+        gal.mat.opacity =
+          0.5 + g * 0.3 + 0.08 * Math.sin(t.current * 1.8 + gal.phase[0]);
+        const sp = galaxyRefs.current[i];
+        if (sp) {
+          sp.position.set(
+            gal.amp * Math.sin(t.current * gal.freq[0] + gal.phase[0]),
+            gal.amp * Math.sin(t.current * gal.freq[1] + gal.phase[1]),
+            gal.amp * Math.sin(t.current * gal.freq[2] + gal.phase[2]),
+          );
+        }
+      });
+    }
+    // ดวงดาวหมุนช้า ๆ + ระยิบระยับ
+    if (stars) {
+      if (starsRef.current) {
+        starsRef.current.rotation.y += dt * 0.22;
+        starsRef.current.rotation.x += dt * 0.07;
+      }
+      stars.mat.opacity = 0.65 + 0.3 * Math.sin(t.current * 2.6) * 0.5 + g * 0.2;
     }
   });
 
@@ -160,10 +224,14 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     return () => {
       materials.forEach((m) => m.dispose());
       auraMat.dispose();
-      galaxyMat?.dispose();
+      galaxies?.forEach((gal) => gal.mat.dispose());
+      if (stars) {
+        stars.geo.dispose();
+        stars.mat.dispose();
+      }
       dieGeometry.dispose();
     };
-  }, [materials, auraMat, galaxyMat, dieGeometry]);
+  }, [materials, auraMat, galaxies, stars, dieGeometry]);
 
   return (
     <RigidBody
@@ -183,14 +251,20 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
         geometry={dieGeometry}
         material={materials}
       />
-      {/* กาแล็กซีหมุนวนใจกลางลูกคริสตัล */}
-      {galaxyMat && (
+      {/* กาแล็กซีหลายวง + ดวงดาว ลอยวนในลูกคริสตัล */}
+      {galaxies?.map((gal, i) => (
         <sprite
-          ref={galaxyRef}
-          material={galaxyMat}
-          scale={[0.78, 0.78, 0.78]}
+          key={i}
+          ref={(el) => {
+            galaxyRefs.current[i] = el;
+          }}
+          material={gal.mat}
+          scale={[gal.scale, gal.scale, gal.scale]}
           renderOrder={5}
         />
+      ))}
+      {stars && (
+        <points geometry={stars.geo} material={stars.mat} ref={starsRef} renderOrder={4} />
       )}
       {/* ออร่ารอบลูกเต๋า — sprite billboard หันเข้ากล้องเสมอ */}
       <sprite ref={spriteRef} material={auraMat} scale={[1.9, 1.9, 1.9]} />
