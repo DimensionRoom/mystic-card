@@ -282,9 +282,8 @@ function drawTriangleFace(c: HTMLCanvasElement, glyph: string): THREE.CanvasText
 }
 
 /**
- * หน้าคริสตัลใส (d8 จักรวาล): บน material แบบ transmission สีขาว = ใส
- * จึงวาดพื้นเกือบขาว (แต้มม่วงอ่อนที่ขอบให้ดูเป็นเหลี่ยมคริสตัล)
- * + เส้นทองบาง + glyph ทองแกะสลัก — glyph จะดูฝังอยู่ในเนื้อแก้ว
+ * หน้าคริสตัลจักรวาล (d8 — ตามภาพอ้างอิง): แก้วม่วงอมชมพูมีกาแล็กซีก้นหอย
+ * เต็มหน้า แกนสว่างอุ่น เมฆเนบิวลา ดาวระยิบ + glyph ทองแกะสลัก
  */
 function drawCrystalTriangleFace(
   c: HTMLCanvasElement,
@@ -299,55 +298,81 @@ function drawCrystalTriangleFace(
   const cx = (A.x + L.x + R.x) / 3;
   const cy = (A.y + L.y + R.y) / 3;
 
-  // 1) เนื้อแก้ว: ขาวตรงกลาง → ม่วงอ่อนที่ขอบ (ขอบ/สันเหลื่อมสีเหมือนคริสตัล)
-  const body = ctx.createRadialGradient(cx, cy, 8, cx, cy, size * 0.62);
-  body.addColorStop(0, "#ffffff");
-  body.addColorStop(0.55, "#f3edff");
-  body.addColorStop(0.85, "#d9c9ff");
-  body.addColorStop(1, "#bfa8f5");
+  // 1) พื้นแก้วม่วงลึก (สว่างกลาง → เข้มขอบ แบบเนบิวลา)
+  const body = ctx.createRadialGradient(cx, cy, 6, cx, cy, size * 0.66);
+  body.addColorStop(0, "#8d5bf0");
+  body.addColorStop(0.4, "#6d28d9");
+  body.addColorStop(0.75, "#53189f");
+  body.addColorStop(1, "#38096e");
   ctx.fillStyle = body;
   ctx.fillRect(0, 0, size, size);
 
-  // 2) ประกายเฉียง (แสงวิ่งผ่านหน้าคริสตัล)
-  const sheen = ctx.createLinearGradient(0, 0, size, size);
-  sheen.addColorStop(0, "rgba(255,255,255,0)");
-  sheen.addColorStop(0.45, "rgba(255,255,255,0.55)");
-  sheen.addColorStop(0.55, "rgba(255,255,255,0)");
-  sheen.addColorStop(1, "rgba(255,255,255,0)");
-  ctx.fillStyle = sheen;
-  ctx.fillRect(0, 0, size, size);
-
-  // 3) เส้นทองบางตามขอบสามเหลี่ยม (กรอบหรู แต่โปร่ง)
-  const shrink = (p: { x: number; y: number }, k: number) => ({
-    x: cx + (p.x - cx) * k,
-    y: cy + (p.y - cy) * k,
-  });
-  const a = shrink(A, 0.86);
-  const l = shrink(L, 0.86);
-  const r = shrink(R, 0.86);
-  ctx.strokeStyle = goldGradient(ctx, l.x, a.y, r.x, l.y);
-  ctx.lineWidth = 3.5;
-  ctx.beginPath();
-  ctx.moveTo(a.x, a.y);
-  ctx.lineTo(l.x, l.y);
-  ctx.lineTo(r.x, r.y);
-  ctx.closePath();
-  ctx.stroke();
-
-  // ดาวจิ๋วที่มุมทั้งสาม
-  ctx.fillStyle = goldGradient(ctx, 0, 0, size, size);
-  for (const p of [shrink(A, 0.7), shrink(L, 0.7), shrink(R, 0.7)]) {
-    ctx.beginPath();
-    ctx.moveTo(p.x + 5, p.y);
-    ctx.lineTo(p.x, p.y - 5);
-    ctx.lineTo(p.x - 5, p.y);
-    ctx.lineTo(p.x, p.y + 5);
-    ctx.closePath();
-    ctx.fill();
+  // 2) เมฆเนบิวลานุ่ม ๆ (ชมพู/ฟ้า) กระจายรอบหน้า
+  const CLOUDS: [number, number, number, string][] = [
+    [cx - 46, cy - 20, 42, "244,171,252"],
+    [cx + 40, cy + 8, 46, "196,181,253"],
+    [cx + 6, cy + 44, 38, "147,197,253"],
+    [cx - 10, cy - 52, 34, "233,213,255"],
+  ];
+  for (const [x, y, rad, rgb] of CLOUDS) {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, rad);
+    g.addColorStop(0, `rgba(${rgb},0.4)`);
+    g.addColorStop(1, `rgba(${rgb},0)`);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
   }
 
-  // 4) glyph ม่วงเข้มแกะสลัก — อ่านชัดบนเนื้อแก้วใสแบบ stained glass
-  engraveGlyph(ctx, glyph, cx, cy + 14, 96, "violet");
+  // 3) กาแล็กซีก้นหอยเต็มหน้า — แขน 2 ข้างหมุนรอบ centroid
+  for (let arm = 0; arm < 2; arm++) {
+    const offset = arm * Math.PI;
+    for (let t = 0; t < 4.4; t += 0.045) {
+      const rr = 7 + t * 17;
+      const ang = t * 1.5 + offset;
+      const x = cx + rr * Math.cos(ang);
+      const y = cy + rr * Math.sin(ang) * 0.86; // แบนเล็กน้อยให้ดูเอียง
+      const fade = 1 - t / 4.4;
+      ctx.fillStyle = `rgba(${arm === 0 ? "252,231,255" : "216,180,254"},${(
+        0.5 * fade
+      ).toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(x, y, 6.5 * fade + 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  // แกนกาแล็กซีสว่างอุ่น (ขาว → ชมพูพีช)
+  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 40);
+  core.addColorStop(0, "rgba(255,250,235,0.95)");
+  core.addColorStop(0.35, "rgba(255,214,224,0.65)");
+  core.addColorStop(1, "rgba(255,190,220,0)");
+  ctx.fillStyle = core;
+  ctx.fillRect(0, 0, size, size);
+
+  // 4) ดาว: จุดเล็กทั่วหน้า + ประกาย 4 แฉกไม่กี่ดวง
+  for (let i = 0; i < 60; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    ctx.fillStyle = `rgba(255,255,255,${0.3 + Math.random() * 0.6})`;
+    ctx.beginPath();
+    ctx.arc(x, y, 0.5 + Math.random() * 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  const sparkle = (x: number, y: number, s: number) => {
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(x - s, y);
+    ctx.lineTo(x + s, y);
+    ctx.moveTo(x, y - s);
+    ctx.lineTo(x, y + s);
+    ctx.stroke();
+  };
+  sparkle(cx - 52, cy + 30, 7);
+  sparkle(cx + 48, cy - 26, 6);
+  sparkle(cx + 20, cy + 58, 5);
+  sparkle(cx - 18, cy - 60, 5);
+
+  // 5) glyph ทองแกะสลัก (เหมือนตราทองบนหน้าในภาพอ้างอิง)
+  engraveGlyph(ctx, glyph, cx, cy + 14, 96, "gold");
 
   return toTexture(c);
 }

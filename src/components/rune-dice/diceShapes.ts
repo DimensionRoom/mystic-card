@@ -47,6 +47,9 @@ const OCTA_NORMALS: readonly THREE.Vector3[] = OCTA_SIGNS.map(
   ([sx, sy, sz]) => new THREE.Vector3(sx, sy, sz).normalize(),
 );
 
+// แฟกเตอร์รัศมี d8 — ประกาศก่อนใช้ใน SHAPES (ตัว export อยู่ท้ายไฟล์)
+const D8_RADIUS_FACTOR_INTERNAL = 0.72;
+
 /**
  * สร้าง octahedron แบบ 8 material groups + UV ต่อหน้า (ให้ texture หนึ่งใบต่อหน้า)
  * จุดยอด 6 จุด (±r,0,0),(0,±r,0),(0,0,±r) — หน้า (sx,sy,sz) คือสามเหลี่ยมของ
@@ -92,11 +95,68 @@ const SHAPES: Record<DiceShapeId, DiceShape> = {
     faceNormals: OCTA_NORMALS,
     frame: "triangle",
     // circumradius ~0.72×size ให้ scale ใกล้ลูกบาศก์เดิม (จูนด้วยตาแล้ว)
-    makeGeometry: (size) => makeOctahedron(size * 0.72),
+    makeGeometry: (size) => makeOctahedron(size * D8_RADIUS_FACTOR_INTERNAL),
     collider: "hull",
   },
 };
 
 export function diceShapeById(id: DiceShapeId): DiceShape {
   return SHAPES[id];
+}
+
+// ─── โครงทองของ d8 (ตามภาพอ้างอิง): คานทอง 12 สัน + หัวมุม 6 จุด ───
+export const D8_RADIUS_FACTOR = D8_RADIUS_FACTOR_INTERNAL;
+
+export interface OctaFrameEdge {
+  /** จุดกึ่งกลางสัน */
+  position: [number, number, number];
+  /** quaternion หมุนแกน Y ของ cylinder ให้ขนานสัน */
+  quaternion: THREE.Quaternion;
+  length: number;
+}
+
+export interface OctaFrame {
+  edges: OctaFrameEdge[];
+  /** จุดยอด 6 จุด (ตำแหน่งหัวมุมทอง/เม็ดพลอย) */
+  vertices: [number, number, number][];
+}
+
+const Y_AXIS = new THREE.Vector3(0, 1, 0);
+
+/** คำนวณตำแหน่งสัน/จุดยอดของ octahedron ขนาด size (ใช้วางโครงทอง) */
+export function octaFrame(size: number): OctaFrame {
+  const r = size * D8_RADIUS_FACTOR;
+  const verts: THREE.Vector3[] = [
+    new THREE.Vector3(r, 0, 0),
+    new THREE.Vector3(-r, 0, 0),
+    new THREE.Vector3(0, r, 0),
+    new THREE.Vector3(0, -r, 0),
+    new THREE.Vector3(0, 0, r),
+    new THREE.Vector3(0, 0, -r),
+  ];
+  const edges: OctaFrameEdge[] = [];
+  for (let i = 0; i < verts.length; i++) {
+    for (let j = i + 1; j < verts.length; j++) {
+      const a = verts[i];
+      const b = verts[j];
+      if (a.clone().add(b).lengthSq() < 1e-8) continue; // ข้ามคู่ตรงข้าม (ไม่ใช่สัน)
+      const dir = b.clone().sub(a);
+      edges.push({
+        position: a.clone().add(b).multiplyScalar(0.5).toArray() as [
+          number,
+          number,
+          number,
+        ],
+        quaternion: new THREE.Quaternion().setFromUnitVectors(
+          Y_AXIS,
+          dir.clone().normalize(),
+        ),
+        length: dir.length(),
+      });
+    }
+  }
+  return {
+    edges,
+    vertices: verts.map((v) => v.toArray() as [number, number, number]),
+  };
 }

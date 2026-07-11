@@ -7,7 +7,7 @@ import {
   type RapierRigidBody,
 } from "@react-three/rapier";
 import type { DiceMaterialStyle, DiceSymbol } from "../../data/diceSets";
-import type { DiceShape } from "./diceShapes";
+import { octaFrame, type DiceShape } from "./diceShapes";
 import {
   auraTexture,
   ensureRuneFont,
@@ -42,14 +42,15 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
       Array.from({ length: shape.faceCount }, () =>
         materialStyle === "crystal"
           ? new THREE.MeshPhysicalMaterial({
-              roughness: 0.12,
+              // แก้วโอปอลม่วง (ตามภาพอ้างอิง): กึ่งโปร่ง เรืองจากข้างใน
+              roughness: 0.16,
               metalness: 0,
-              transmission: 1,
-              thickness: 0.55,
-              ior: 1.45,
+              transmission: 0.32,
+              thickness: 0.4,
+              ior: 1.4,
               clearcoat: 1,
-              clearcoatRoughness: 0.06,
-              envMapIntensity: 1.2,
+              clearcoatRoughness: 0.08,
+              envMapIntensity: 1.3,
               attenuationColor: new THREE.Color("#a98ef5"),
               attenuationDistance: 0.9,
               emissive: new THREE.Color("#ffffff"),
@@ -157,6 +158,41 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
   }, [materialStyle]);
   const starsRef = useRef<THREE.Points>(null);
 
+  // โครงทอง 12 สัน + หัวมุมทอง/เม็ดพลอยม่วง 6 จุด (เฉพาะ d8 คริสตัล — ตามภาพอ้างอิง)
+  const frame = useMemo(
+    () =>
+      materialStyle === "crystal" && shape.id === "d8"
+        ? octaFrame(DIE_SIZE)
+        : null,
+    [materialStyle, shape.id],
+  );
+  const goldMat = useMemo(
+    () =>
+      frame
+        ? new THREE.MeshStandardMaterial({
+            color: new THREE.Color("#e8c25a"),
+            metalness: 1,
+            roughness: 0.28,
+            envMapIntensity: 1.6,
+          })
+        : null,
+    [frame],
+  );
+  const gemMat = useMemo(
+    () =>
+      frame
+        ? new THREE.MeshPhysicalMaterial({
+            color: new THREE.Color("#c084fc"),
+            roughness: 0.12,
+            metalness: 0,
+            clearcoat: 1,
+            emissive: new THREE.Color("#a855f7"),
+            emissiveIntensity: 0.35,
+          })
+        : null,
+    [frame],
+  );
+
   // วัสดุ sprite ออร่า (ทองเรือง โปร่งขอบ) — เริ่มโปร่งใส
   const auraMat = useMemo(
     () =>
@@ -182,10 +218,14 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     gRef.current += ((glow ? 1 : 0) - gRef.current) * Math.min(dt * 4, 1);
     const g = gRef.current;
     const pulse = 0.5 + 0.5 * Math.sin(t.current * 3);
-    // ผิวเปล่งแสง — crystal ลดแรงลง ไม่ให้ขาววาบจน glyph จม
+    // ผิวเปล่งแสง — crystal เรืองจากข้างในตลอด (เนบิวลาสว่าง) + เร่งตอน reveal
     const em =
-      g * (0.3 + 0.5 * pulse) * (materialStyle === "crystal" ? 0.28 : 1);
+      materialStyle === "crystal"
+        ? 0.26 + g * (0.16 + 0.18 * pulse)
+        : g * (0.3 + 0.5 * pulse);
     for (const m of materials) m.emissiveIntensity = em;
+    // เม็ดพลอยม่วงที่หัวมุมเรืองรับตอน reveal
+    if (gemMat) gemMat.emissiveIntensity = 0.35 + g * (0.5 + 0.3 * pulse);
     // halo sprite
     auraMat.opacity = g * (0.5 + 0.35 * pulse);
     if (spriteRef.current) {
@@ -229,9 +269,11 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
         stars.geo.dispose();
         stars.mat.dispose();
       }
+      goldMat?.dispose();
+      gemMat?.dispose();
       dieGeometry.dispose();
     };
-  }, [materials, auraMat, galaxies, stars, dieGeometry]);
+  }, [materials, auraMat, galaxies, stars, goldMat, gemMat, dieGeometry]);
 
   return (
     <RigidBody
@@ -251,6 +293,35 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
         geometry={dieGeometry}
         material={materials}
       />
+      {/* โครงทองตามสัน + หัวมุมทองฝังพลอยม่วง (ตามภาพอ้างอิง) */}
+      {frame && goldMat && gemMat && (
+        <group>
+          {frame.edges.map((e, i) => (
+            <mesh
+              key={`edge-${i}`}
+              position={e.position}
+              quaternion={e.quaternion}
+              material={goldMat}
+            >
+              <cylinderGeometry args={[0.022, 0.022, e.length, 8]} />
+            </mesh>
+          ))}
+          {frame.vertices.map((v, i) => (
+            <group key={`vert-${i}`}>
+              <mesh position={v} material={goldMat}>
+                <sphereGeometry args={[0.052, 12, 12]} />
+              </mesh>
+              {/* เม็ดพลอยม่วงบนหัวมุม ยื่นออกตามแนวจุดยอด */}
+              <mesh
+                position={[v[0] * 1.06, v[1] * 1.06, v[2] * 1.06]}
+                material={gemMat}
+              >
+                <sphereGeometry args={[0.03, 10, 10]} />
+              </mesh>
+            </group>
+          ))}
+        </group>
+      )}
       {/* กาแล็กซีหลายวง + ดวงดาว ลอยวนในลูกคริสตัล */}
       {galaxies?.map((gal, i) => (
         <sprite
