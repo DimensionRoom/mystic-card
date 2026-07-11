@@ -186,10 +186,10 @@ function engraveGlyph(
     g.addColorStop(0.5, "#6d28d9");
     g.addColorStop(1, "#4c1d95");
   } else {
-    g.addColorStop(0, "#fff6cf");
-    g.addColorStop(0.45, "#eac35a");
-    g.addColorStop(0.6, "#c8931f");
-    g.addColorStop(1, "#e6bb52");
+    g.addColorStop(0, "#ffffff");
+    g.addColorStop(1, "#ffffff");
+    g.addColorStop(1, "#ffffff");
+    g.addColorStop(1, "#ffffff");
   }
   ctx.fillStyle = g;
   ctx.fillText(glyph, cx, cy);
@@ -392,14 +392,14 @@ export function glyphBurstTexture(glyph: string): THREE.CanvasTexture {
 
   // แสงเรืองทองนุ่มรอบสัญลักษณ์
   const halo = ctx.createRadialGradient(cx, cx, 0, cx, cx, s * 0.5);
-  halo.addColorStop(0, "rgba(255,230,150,0.85)");
-  halo.addColorStop(0.35, "rgba(250,200,90,0.35)");
-  halo.addColorStop(1, "rgba(250,200,90,0)");
+  halo.addColorStop(0, "rgb(21, 6, 18)");
+  halo.addColorStop(0.2, "rgb(44, 11, 53)");
+  halo.addColorStop(1, "rgba(72, 16, 68, 0)");
   ctx.fillStyle = halo;
   ctx.fillRect(0, 0, s, s);
 
   // glyph ทองแกะสลักตัวใหญ่กลางภาพ
-  engraveGlyph(ctx, glyph, cx, cx + 6, 148, "gold");
+  engraveGlyph(ctx, glyph, cx, cx + 6, 200, "gold");
 
   const tex = toTexture(c);
   cache.set(key, tex);

@@ -186,13 +186,13 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
   const shards = useMemo(() => {
     if (materialStyle !== "crystal") return null;
     const mat = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color("#8b5cf6"),
+      color: new THREE.Color("#000001"),
       roughness: 0.15,
       metalness: 0,
       clearcoat: 1,
       transparent: true,
       opacity: 0.85,
-      emissive: new THREE.Color("#a78bfa"),
+      emissive: new THREE.Color("#0f0727"),
       emissiveIntensity: 0.4,
     });
     const geos = Array.from(
