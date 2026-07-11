@@ -282,8 +282,8 @@ function drawTriangleFace(c: HTMLCanvasElement, glyph: string): THREE.CanvasText
 }
 
 /**
- * หน้าคริสตัลจักรวาล (d8 — ตามภาพอ้างอิง): แก้วม่วงอมชมพูมีกาแล็กซีก้นหอย
- * เต็มหน้า แกนสว่างอุ่น เมฆเนบิวลา ดาวระยิบ + glyph ทองแกะสลัก
+ * หน้าคริสตัลจักรวาล (d8): อวกาศดำสนิท มีกาแล็กซีจิ๋วคละขนาดหลากสี
+ * กระจายรอบหน้า + ดาวหลากสีระยิบ + glyph ทองแกะสลักตรงกลาง
  */
 function drawCrystalTriangleFace(
   c: HTMLCanvasElement,
@@ -298,62 +298,60 @@ function drawCrystalTriangleFace(
   const cx = (A.x + L.x + R.x) / 3;
   const cy = (A.y + L.y + R.y) / 3;
 
-  // 1) พื้นแก้วม่วงลึก (สว่างกลาง → เข้มขอบ แบบเนบิวลา)
+  // 1) พื้นอวกาศดำสนิท (แต้มน้ำเงินม่วงจาง ๆ ตรงกลางกันแบนเกิน)
   const body = ctx.createRadialGradient(cx, cy, 6, cx, cy, size * 0.66);
-  body.addColorStop(0, "#8d5bf0");
-  body.addColorStop(0.4, "#6d28d9");
-  body.addColorStop(0.75, "#53189f");
-  body.addColorStop(1, "#38096e");
+  body.addColorStop(0, "#12081f");
+  body.addColorStop(0.55, "#080312");
+  body.addColorStop(1, "#000000");
   ctx.fillStyle = body;
   ctx.fillRect(0, 0, size, size);
 
-  // 2) เมฆเนบิวลานุ่ม ๆ (ชมพู/ฟ้า) กระจายรอบหน้า
-  const CLOUDS: [number, number, number, string][] = [
-    [cx - 46, cy - 20, 42, "244,171,252"],
-    [cx + 40, cy + 8, 46, "196,181,253"],
-    [cx + 6, cy + 44, 38, "147,197,253"],
-    [cx - 10, cy - 52, 34, "233,213,255"],
+  // 2) กาแล็กซีจิ๋วคละขนาดหลากสี กระจายรอบหน้า (เว้นกลางไว้ให้ glyph)
+  const MINI_GALAXIES: [number, number, number, string, string][] = [
+    // [x, y, ขนาด, สีแขนหลัก, สีแกน]
+    [cx - 52, cy - 26, 20, "192,132,252", "255,240,255"], // ม่วง
+    [cx + 46, cy - 34, 15, "125,211,252", "230,250,255"], // ฟ้า
+    [cx + 52, cy + 34, 18, "249,168,212", "255,240,246"], // ชมพู
+    [cx - 40, cy + 46, 13, "252,211,77", "255,250,230"], // ทอง
+    [cx + 2, cy - 62, 11, "153,246,228", "240,255,252"], // เขียวมิ้นต์
   ];
-  for (const [x, y, rad, rgb] of CLOUDS) {
-    const g = ctx.createRadialGradient(x, y, 0, x, y, rad);
-    g.addColorStop(0, `rgba(${rgb},0.4)`);
-    g.addColorStop(1, `rgba(${rgb},0)`);
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, size, size);
-  }
-
-  // 3) กาแล็กซีก้นหอยเต็มหน้า — แขน 2 ข้างหมุนรอบ centroid
-  for (let arm = 0; arm < 2; arm++) {
-    const offset = arm * Math.PI;
-    for (let t = 0; t < 4.4; t += 0.045) {
-      const rr = 7 + t * 17;
-      const ang = t * 1.5 + offset;
-      const x = cx + rr * Math.cos(ang);
-      const y = cy + rr * Math.sin(ang) * 0.86; // แบนเล็กน้อยให้ดูเอียง
-      const fade = 1 - t / 4.4;
-      ctx.fillStyle = `rgba(${arm === 0 ? "252,231,255" : "216,180,254"},${(
-        0.5 * fade
-      ).toFixed(3)})`;
-      ctx.beginPath();
-      ctx.arc(x, y, 6.5 * fade + 1.2, 0, Math.PI * 2);
-      ctx.fill();
+  for (const [gx, gy, gr, rgb, coreRgb] of MINI_GALAXIES) {
+    // แขนก้นหอย 2 ข้างของกาแล็กซีจิ๋ว
+    const tilt = Math.random() * Math.PI;
+    for (let arm = 0; arm < 2; arm++) {
+      const offset = arm * Math.PI + tilt;
+      for (let t = 0; t < 3.6; t += 0.09) {
+        const rr = 2 + (t / 3.6) * gr;
+        const ang = t * 1.7 + offset;
+        const fade = 1 - t / 3.6;
+        ctx.fillStyle = `rgba(${rgb},${(0.55 * fade).toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(
+          gx + rr * Math.cos(ang),
+          gy + rr * Math.sin(ang) * 0.8,
+          (gr / 9) * fade + 0.6,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+      }
     }
+    const cg = ctx.createRadialGradient(gx, gy, 0, gx, gy, gr * 0.55);
+    cg.addColorStop(0, `rgba(${coreRgb},0.9)`);
+    cg.addColorStop(1, `rgba(${rgb},0)`);
+    ctx.fillStyle = cg;
+    ctx.fillRect(gx - gr, gy - gr, gr * 2, gr * 2);
   }
-  // แกนกาแล็กซีสว่างอุ่น (ขาว → ชมพูพีช)
-  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 40);
-  core.addColorStop(0, "rgba(255,250,235,0.95)");
-  core.addColorStop(0.35, "rgba(255,214,224,0.65)");
-  core.addColorStop(1, "rgba(255,190,220,0)");
-  ctx.fillStyle = core;
-  ctx.fillRect(0, 0, size, size);
 
-  // 4) ดาว: จุดเล็กทั่วหน้า + ประกาย 4 แฉกไม่กี่ดวง
-  for (let i = 0; i < 60; i++) {
+  // 3) ดาว: จุดเล็กหลากสีทั่วหน้า + ประกาย 4 แฉกไม่กี่ดวง
+  const STAR_TINTS = ["255,255,255", "216,180,254", "165,224,252", "254,215,170"];
+  for (let i = 0; i < 70; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
-    ctx.fillStyle = `rgba(255,255,255,${0.3 + Math.random() * 0.6})`;
+    const tint = STAR_TINTS[Math.floor(Math.random() * STAR_TINTS.length)];
+    ctx.fillStyle = `rgba(${tint},${0.35 + Math.random() * 0.6})`;
     ctx.beginPath();
-    ctx.arc(x, y, 0.5 + Math.random() * 1.2, 0, Math.PI * 2);
+    ctx.arc(x, y, 0.5 + Math.random() * 1.3, 0, Math.PI * 2);
     ctx.fill();
   }
   const sparkle = (x: number, y: number, s: number) => {
@@ -387,16 +385,16 @@ export function galaxyTexture(): THREE.CanvasTexture {
   c.width = c.height = s;
   const ctx = c.getContext("2d")!;
 
-  // แกนกลางเรืองขาว-ม่วง
+  // แกนกลางเรืองขาว — texture เป็นโทนขาวกลาง ๆ เพื่อให้ tint สีต่อ sprite ได้
   const core = ctx.createRadialGradient(cx, cx, 0, cx, cx, 46);
   core.addColorStop(0, "rgba(255,255,255,0.95)");
-  core.addColorStop(0.35, "rgba(232,200,255,0.7)");
-  core.addColorStop(1, "rgba(190,150,255,0)");
+  core.addColorStop(0.35, "rgba(245,240,255,0.7)");
+  core.addColorStop(1, "rgba(235,230,255,0)");
   ctx.fillStyle = core;
   ctx.fillRect(0, 0, s, s);
 
-  // แขนก้นหอย 3 แขน (logarithmic spiral) ไล่สีม่วง-ชมพู-ฟ้า จางปลาย
-  const ARM_COLORS = ["192,132,252", "240,171,252", "147,197,253"];
+  // แขนก้นหอย 3 แขน (logarithmic spiral) โทนขาวนวล จางปลาย
+  const ARM_COLORS = ["255,250,255", "245,240,255", "235,240,255"];
   for (let arm = 0; arm < 3; arm++) {
     const offset = (arm * Math.PI * 2) / 3;
     const rgb = ARM_COLORS[arm];

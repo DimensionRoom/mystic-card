@@ -97,20 +97,22 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
   }, [faces, materials, setId, shape.frame, materialStyle]);
 
   // กาแล็กซีหลายวงลอยวนในเนื้อแก้ว (เฉพาะ crystal) — sprite additive
-  // แต่ละวงมีขนาด/ทิศหมุน/วงโคจร (lissajous) สุ่มเฉพาะลูก
+  // คละขนาดหลากสี (tint texture ขาวกลางด้วยสีต่อวง) หมุน/โคจร (lissajous) สุ่มเฉพาะลูก
   const galaxies = useMemo(() => {
     if (materialStyle !== "crystal") return null;
-    return Array.from({ length: 3 }, () => ({
+    const TINTS = ["#c084fc", "#7dd3fc", "#f9a8d4", "#fcd34d", "#99f6e4"];
+    return Array.from({ length: 5 }, (_, i) => ({
       mat: new THREE.SpriteMaterial({
         map: galaxyTexture(),
+        color: new THREE.Color(TINTS[i % TINTS.length]),
         transparent: true,
         depthWrite: false,
         depthTest: false, // มองทะลุเนื้อแก้ว (glass เขียน depth ไว้ก่อน)
         blending: THREE.AdditiveBlending,
-        opacity: 0.55 + Math.random() * 0.25,
+        opacity: 0.4 + Math.random() * 0.2,
         rotation: Math.random() * Math.PI * 2,
       }),
-      scale: 0.3 + Math.random() * 0.2,
+      scale: 0.12 + Math.random() * 0.24, // คละขนาดชัดเจน แต่ไม่ใหญ่จนคลุมลูก
       spin: (Math.random() > 0.5 ? 1 : -1) * (0.5 + Math.random() * 0.9),
       freq: [
         0.25 + Math.random() * 0.25,
@@ -122,7 +124,7 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
         Math.random() * Math.PI * 2,
         Math.random() * Math.PI * 2,
       ] as const,
-      amp: 0.11 + Math.random() * 0.05,
+      amp: 0.11 + Math.random() * 0.06,
     }));
   }, [materialStyle]);
   const galaxyRefs = useRef<(THREE.Sprite | null)[]>([]);
@@ -218,28 +220,24 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     gRef.current += ((glow ? 1 : 0) - gRef.current) * Math.min(dt * 4, 1);
     const g = gRef.current;
     const pulse = 0.5 + 0.5 * Math.sin(t.current * 3);
-    // ผิวเปล่งแสง — crystal เรืองจากข้างในตลอด (เนบิวลาสว่าง) + เร่งตอน reveal
-    const em =
-      materialStyle === "crystal"
-        ? 0.26 + g * (0.16 + 0.18 * pulse)
-        : g * (0.3 + 0.5 * pulse);
+    // ผิวเปล่งแสง — crystal เรืองในตัวคงที่ (กาแล็กซี/ดาวใน texture สว่างบนพื้นดำ)
+    // ไม่เร่งแสงตอนทอยเสร็จตามที่เลือก; obsidian ยังเรืองตอน reveal เหมือนเดิม
+    const em = materialStyle === "crystal" ? 0.6 : g * (0.3 + 0.5 * pulse);
     for (const m of materials) m.emissiveIntensity = em;
-    // เม็ดพลอยม่วงที่หัวมุมเรืองรับตอน reveal
-    if (gemMat) gemMat.emissiveIntensity = 0.35 + g * (0.5 + 0.3 * pulse);
-    // halo sprite
-    auraMat.opacity = g * (0.5 + 0.35 * pulse);
-    if (spriteRef.current) {
-      const s = 1.9 + g * (0.3 + 0.35 * pulse);
-      spriteRef.current.scale.set(s, s, s);
+    if (materialStyle !== "crystal") {
+      // halo sprite + แสงเปล่งลงโต๊ะ (เฉพาะ obsidian — crystal ไม่มี reveal glow)
+      auraMat.opacity = g * (0.5 + 0.35 * pulse);
+      if (spriteRef.current) {
+        const s = 1.9 + g * (0.3 + 0.35 * pulse);
+        spriteRef.current.scale.set(s, s, s);
+      }
+      if (lightRef.current) lightRef.current.intensity = g * (2.4 + 1.4 * pulse);
     }
-    // แสงออร่าเปล่งลงพื้นโต๊ะรอบ ๆ
-    if (lightRef.current) lightRef.current.intensity = g * (2.4 + 1.4 * pulse);
-    // กาแล็กซีลอยวนไปมา + หมุนตัวเอง สว่างขึ้นตอน reveal
+    // กาแล็กซีลอยวนไปมา + หมุนตัวเอง (คงที่ ไม่ผูกกับ reveal)
     if (galaxies) {
       galaxies.forEach((gal, i) => {
         gal.mat.rotation += dt * gal.spin;
-        gal.mat.opacity =
-          0.5 + g * 0.3 + 0.08 * Math.sin(t.current * 1.8 + gal.phase[0]);
+        gal.mat.opacity = 0.48 + 0.1 * Math.sin(t.current * 1.8 + gal.phase[0]);
         const sp = galaxyRefs.current[i];
         if (sp) {
           sp.position.set(
@@ -256,7 +254,7 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
         starsRef.current.rotation.y += dt * 0.22;
         starsRef.current.rotation.x += dt * 0.07;
       }
-      stars.mat.opacity = 0.65 + 0.3 * Math.sin(t.current * 2.6) * 0.5 + g * 0.2;
+      stars.mat.opacity = 0.72 + 0.22 * Math.sin(t.current * 2.6);
     }
   });
 
@@ -337,17 +335,20 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
       {stars && (
         <points geometry={stars.geo} material={stars.mat} ref={starsRef} renderOrder={4} />
       )}
-      {/* ออร่ารอบลูกเต๋า — sprite billboard หันเข้ากล้องเสมอ */}
-      <sprite ref={spriteRef} material={auraMat} scale={[1.9, 1.9, 1.9]} />
-      {/* แสงออร่าเปล่งลงโต๊ะ (ไม่ทำเงา) */}
-      <pointLight
-        ref={lightRef}
-        color="#f5da27"
-        distance={3}
-        decay={2.5}
-        intensity={0}
-        castShadow={false}
-      />
+      {/* ออร่า reveal — เฉพาะ obsidian (crystal ไม่เรืองแสงตอนทอยเสร็จ) */}
+      {materialStyle !== "crystal" && (
+        <>
+          <sprite ref={spriteRef} material={auraMat} scale={[1.9, 1.9, 1.9]} />
+          <pointLight
+            ref={lightRef}
+            color="#f5da27"
+            distance={3}
+            decay={2.5}
+            intensity={0}
+            castShadow={false}
+          />
+        </>
+      )}
     </RigidBody>
   );
 });
