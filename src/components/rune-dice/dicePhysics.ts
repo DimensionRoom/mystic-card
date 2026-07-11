@@ -18,6 +18,11 @@ export const TORQUE_MAX = 0.25; // แรงบิดต่อแกน
 export const TORQUE_MIN_MAG = 0.08; // การันตีว่าหมุนเห็นได้ชัด
 export const SETTLE_TIMEOUT_MS = 6000;
 
+// ช่วงความแรงของการทอยที่ผู้ใช้ปรับได้ (คูณกับ impulse/torque/ความสูงจุดปล่อย)
+export const STRENGTH_MIN = 0.6;
+export const STRENGTH_MAX = 1.5;
+export const STRENGTH_DEFAULT = 1;
+
 // ตำแหน่งวางนิ่งบนโต๊ะ (สถานะเริ่มต้น ก่อนทอยครั้งแรก)
 export const REST_SPOTS: [number, number, number][] = [
   [-1.2, DIE_SIZE / 2 + 0.01, 0],
@@ -29,14 +34,20 @@ function rand(min: number, max: number): number {
   return min + Math.random() * (max - min);
 }
 
-/** รีเซ็ตลูกเต๋าไปจุดเกิด สุ่มหมุน แล้วยิง impulse + torque ให้กลิ้ง */
+/**
+ * รีเซ็ตลูกเต๋าไปจุดเกิด สุ่มหมุน แล้วยิง impulse + torque ให้กลิ้ง
+ * `strength` คูณแรงเหวี่ยง/แรงบิด/ความสูงจุดปล่อย (1 = ค่ามาตรฐาน)
+ */
 export function throwDie(
   rb: RapierRigidBody,
   spawn: [number, number, number],
+  strength: number = STRENGTH_DEFAULT,
 ): void {
   const x = spawn[0] + rand(-SPAWN_JITTER, SPAWN_JITTER);
   const z = spawn[2] + rand(-SPAWN_JITTER, SPAWN_JITTER);
-  rb.setTranslation({ x, y: spawn[1], z }, true);
+  // ทอยแรง = ปล่อยสูงขึ้นเล็กน้อย ให้ตกกระแทกดูรุนแรงกว่า
+  const y = spawn[1] + (strength - 1) * 1.2;
+  rb.setTranslation({ x, y, z }, true);
 
   const q = new THREE.Quaternion().setFromEuler(
     new THREE.Euler(
@@ -51,16 +62,17 @@ export function throwDie(
 
   rb.applyImpulse(
     {
-      x: rand(-IMPULSE_XZ, IMPULSE_XZ) - x * 0.5, // ดึงเข้ากลางโต๊ะ ให้ลูกมาชนกัน
-      y: rand(IMPULSE_Y[0], IMPULSE_Y[1]),
-      z: rand(-IMPULSE_XZ, IMPULSE_XZ) - z * 0.5,
+      x: rand(-IMPULSE_XZ, IMPULSE_XZ) * strength - x * 0.5, // ดึงเข้ากลางโต๊ะ ให้ลูกมาชนกัน
+      y: rand(IMPULSE_Y[0], IMPULSE_Y[1]) * strength,
+      z: rand(-IMPULSE_XZ, IMPULSE_XZ) * strength - z * 0.5,
     },
     true,
   );
 
   const torque = () => {
-    const v = rand(-TORQUE_MAX, TORQUE_MAX);
-    return Math.abs(v) < TORQUE_MIN_MAG ? Math.sign(v || 1) * TORQUE_MIN_MAG : v;
+    const v = rand(-TORQUE_MAX, TORQUE_MAX) * strength;
+    const min = TORQUE_MIN_MAG * strength;
+    return Math.abs(v) < min ? Math.sign(v || 1) * min : v;
   };
   rb.applyTorqueImpulse({ x: torque(), y: torque(), z: torque() }, true);
 }

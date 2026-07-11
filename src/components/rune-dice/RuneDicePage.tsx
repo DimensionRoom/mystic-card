@@ -14,6 +14,7 @@ import QuestionChips, {
   type QuestionCategory,
 } from "./QuestionChips";
 import { useDiceRoll } from "./useDiceRoll";
+import { STRENGTH_MIN, STRENGTH_MAX, STRENGTH_DEFAULT } from "./dicePhysics";
 
 interface RuneDicePageProps {
   onNavigate: (path: string) => void;
@@ -27,6 +28,7 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
     useDiceRoll();
 
   const [category, setCategory] = useState<QuestionCategory | null>(null);
+  const [power, setPower] = useState(STRENGTH_DEFAULT);
   const [saved, setSaved] = useState(false);
 
   // เริ่มทอยใหม่ = ล้างสถานะบันทึกของรอบก่อน
@@ -109,9 +111,35 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
               rollId={rollId}
               phase={phase}
               assignment={assignment}
+              power={power}
               onSettling={onSettling}
               onSettled={onSettled}
             />
+
+            {/* ตัวปรับความแรงของการทอย — ลอยมุมบนซ้ายของบอร์ด */}
+            <div className="pointer-events-auto absolute left-3 top-3 z-20 flex w-[190px] flex-col gap-1.5 rounded-2xl border border-white/10 bg-black/35 px-3.5 py-2.5 backdrop-blur-md sm:left-4 sm:top-4">
+              <div className="flex items-center justify-between text-[11px] font-semibold text-amber-100/90">
+                <span>🎲 {t.runeDice.powerLabel}</span>
+                <span className="tabular-nums text-amber-200">
+                  {power.toFixed(1)}×
+                </span>
+              </div>
+              <input
+                type="range"
+                min={STRENGTH_MIN}
+                max={STRENGTH_MAX}
+                step={0.1}
+                value={power}
+                onChange={(e) => setPower(Number(e.target.value))}
+                disabled={rolling}
+                aria-label={t.runeDice.powerLabel}
+                className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gradient-to-r from-amber-300/40 to-amber-400 accent-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              <div className="flex justify-between text-[10px] text-white/55">
+                <span>{t.runeDice.powerLight}</span>
+                <span>{t.runeDice.powerStrong}</span>
+              </div>
+            </div>
 
             {/* flash ทองวูบตอนเริ่มทอย — เอฟเฟกต์ให้ feedback ชัดเจน */}
             <AnimatePresence>

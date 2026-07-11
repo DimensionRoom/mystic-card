@@ -44,6 +44,8 @@ interface RuneDiceBoardProps {
   phase: RollPhase;
   /** RuneId[3][6] */
   assignment: RuneId[][];
+  /** ตัวคูณความแรงของการทอย (อ่านตอนทอยจริง) */
+  power: number;
   onSettling: () => void;
   onSettled: (results: DieResult[]) => void;
 }
@@ -54,6 +56,7 @@ function DiceController({
   phase,
   assignment,
   dieRefs,
+  powerRef,
   onSettling,
   onSettled,
 }: {
@@ -61,6 +64,7 @@ function DiceController({
   phase: RollPhase;
   assignment: RuneId[][];
   dieRefs: React.MutableRefObject<RapierRigidBody | null>[];
+  powerRef: React.MutableRefObject<number>;
   onSettling: () => void;
   onSettled: (results: DieResult[]) => void;
 }) {
@@ -76,7 +80,7 @@ function DiceController({
     void ensureRuneFont().then(() => {
       if (cancelled) return;
       dieRefs.forEach((ref, i) => {
-        if (ref.current) throwDie(ref.current, SPAWN[i]);
+        if (ref.current) throwDie(ref.current, SPAWN[i], powerRef.current);
       });
       startedAt.current = performance.now();
       calmFrames.current = 0;
@@ -132,7 +136,7 @@ function Table() {
   useEffect(() => {
     let disposed = false;
     new THREE.TextureLoader().load(
-      "/img/rune-board-new.png",
+      "/img/rune-board.png",
       (tex) => {
         if (disposed) {
           tex.dispose();
@@ -206,6 +210,7 @@ export default function RuneDiceBoard({
   rollId,
   phase,
   assignment,
+  power,
   onSettling,
   onSettled,
 }: RuneDiceBoardProps) {
@@ -214,6 +219,9 @@ export default function RuneDiceBoard({
   const d2 = useRef<RapierRigidBody | null>(null);
   const dieRefs = useMemo(() => [d0, d1, d2], []);
   const sparkRef = useRef<SparkBurstHandle>(null);
+  // อ่านความแรงล่าสุดตอนทอย โดยไม่ต้อง re-render canvas
+  const powerRef = useRef(power);
+  powerRef.current = power;
 
   useEffect(() => {
     void ensureRuneFont();
@@ -322,6 +330,7 @@ export default function RuneDiceBoard({
             phase={phase}
             assignment={assignment}
             dieRefs={dieRefs}
+            powerRef={powerRef}
             onSettling={onSettling}
             onSettled={onSettled}
           />
