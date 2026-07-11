@@ -375,6 +375,37 @@ function drawCrystalTriangleFace(
   return toTexture(c);
 }
 
+/**
+ * สัญลักษณ์ทองเรืองแสง (โผล่หลังลูกคริสตัลแตก) — พื้นโปร่งใส
+ * glow ทองนุ่มด้านหลัง + glyph ทองแกะสลักตัวใหญ่
+ */
+export function glyphBurstTexture(glyph: string): THREE.CanvasTexture {
+  const key = `burst:${glyph}`;
+  const hit = cache.get(key);
+  if (hit) return hit;
+
+  const s = 256;
+  const cx = s / 2;
+  const c = document.createElement("canvas");
+  c.width = c.height = s;
+  const ctx = c.getContext("2d")!;
+
+  // แสงเรืองทองนุ่มรอบสัญลักษณ์
+  const halo = ctx.createRadialGradient(cx, cx, 0, cx, cx, s * 0.5);
+  halo.addColorStop(0, "rgba(255,230,150,0.85)");
+  halo.addColorStop(0.35, "rgba(250,200,90,0.35)");
+  halo.addColorStop(1, "rgba(250,200,90,0)");
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, s, s);
+
+  // glyph ทองแกะสลักตัวใหญ่กลางภาพ
+  engraveGlyph(ctx, glyph, cx, cx + 6, 148, "gold");
+
+  const tex = toTexture(c);
+  cache.set(key, tex);
+  return tex;
+}
+
 // กาแล็กซีก้นหอยในลูกเต๋าคริสตัล — sprite หมุนวนอยู่กลางเนื้อแก้ว
 let galaxyTex: THREE.CanvasTexture | null = null;
 export function galaxyTexture(): THREE.CanvasTexture {

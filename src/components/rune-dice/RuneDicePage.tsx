@@ -160,6 +160,7 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
               phase={phase}
               set={set}
               assignment={assignment}
+              results={results}
               power={power}
               onSettling={onSettling}
               onSettled={onSettled}

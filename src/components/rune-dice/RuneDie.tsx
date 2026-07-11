@@ -13,6 +13,7 @@ import {
   ensureRuneFont,
   faceTexture,
   galaxyTexture,
+  glyphBurstTexture,
 } from "./runeTextures";
 import { DIE_SIZE } from "./dicePhysics";
 
@@ -29,12 +30,33 @@ interface RuneDieProps {
   onCollide?: (payload: CollisionEnterPayload) => void;
   /** เรืองแสงหลังทอยเสร็จ (phase === "revealed") */
   glow?: boolean;
+  /** สัญลักษณ์หน้าที่ทอยได้ — crystal ใช้แตกลูกแล้วโชว์สัญลักษณ์นี้ลอยแทน */
+  revealSymbol?: DiceSymbol;
 }
 
+const FRAG_COUNT = 16;
+
 const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
-  { faces, shape, setId, materialStyle, position, onCollide, glow = false },
+  {
+    faces,
+    shape,
+    setId,
+    materialStyle,
+    position,
+    onCollide,
+    glow = false,
+    revealSymbol,
+  },
   ref,
 ) {
+  // เก็บ ref ภายในควบคู่ forwarded ref — ต้องอ่าน quaternion ของ body ตอนแตก
+  const bodyRef = useRef<RapierRigidBody | null>(null);
+  const setBodyRef = (rb: RapierRigidBody | null) => {
+    bodyRef.current = rb;
+    if (typeof ref === "function") ref(rb);
+    else if (ref)
+      (ref as React.MutableRefObject<RapierRigidBody | null>).current = rb;
+  };
   // obsidian: เมทัลลิกทองอบใน map ตัวลูกดำมัน / crystal: แก้วใส transmission
   // หักเหฉากหลังจริง เนื้อออกม่วงอ่อนตาม attenuation
   const materials = useMemo(
@@ -51,7 +73,7 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
               clearcoat: 1,
               clearcoatRoughness: 0.08,
               envMapIntensity: 1.3,
-              attenuationColor: new THREE.Color("#a98ef5"),
+              attenuationColor: new THREE.Color("#481cc3"),
               attenuationDistance: 0.9,
               emissive: new THREE.Color("#ffffff"),
               emissiveIntensity: 0,
@@ -147,7 +169,7 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     const mat = new THREE.PointsMaterial({
-      color: new THREE.Color("#efe4ff"),
+      color: new THREE.Color("#ffe4e4"),
       size: 0.026,
       sizeAttenuation: true,
       transparent: true,
@@ -159,6 +181,69 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     return { geo, mat };
   }, [materialStyle]);
   const starsRef = useRef<THREE.Points>(null);
+
+  // เศษคริสตัลตอนแตก — pool tetrahedron ขนาดสุ่ม วัสดุแก้วม่วงร่วมกัน
+  const shards = useMemo(() => {
+    if (materialStyle !== "crystal") return null;
+    const mat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color("#8b5cf6"),
+      roughness: 0.15,
+      metalness: 0,
+      clearcoat: 1,
+      transparent: true,
+      opacity: 0.85,
+      emissive: new THREE.Color("#a78bfa"),
+      emissiveIntensity: 0.4,
+    });
+    const geos = Array.from(
+      { length: FRAG_COUNT },
+      () => new THREE.TetrahedronGeometry(0.05 + Math.random() * 0.07),
+    );
+    return { mat, geos };
+  }, [materialStyle]);
+  const shardRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const shardVel = useRef<THREE.Vector3[]>(
+    Array.from({ length: FRAG_COUNT }, () => new THREE.Vector3()),
+  );
+  const shardAng = useRef<THREE.Vector3[]>(
+    Array.from({ length: FRAG_COUNT }, () => new THREE.Vector3()),
+  );
+
+  // สัญลักษณ์ทองเรืองแสงลอยแทนลูกที่แตก
+  const burstMat = useMemo(
+    () =>
+      materialStyle === "crystal"
+        ? new THREE.SpriteMaterial({
+            transparent: true,
+            depthWrite: false,
+            depthTest: false,
+            // NormalBlending ให้เส้นเข้มของ glyph ทองคงอยู่ (additive จะจางหาย)
+            blending: THREE.NormalBlending,
+            opacity: 0,
+          })
+        : null,
+    [materialStyle],
+  );
+  const burstSpriteRef = useRef<THREE.Sprite>(null);
+  useEffect(() => {
+    if (!burstMat || !revealSymbol) return;
+    let cancelled = false;
+    void ensureRuneFont().then(() => {
+      if (cancelled) return;
+      burstMat.map = glyphBurstTexture(revealSymbol.glyph);
+      burstMat.needsUpdate = true;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [burstMat, revealSymbol]);
+
+  // สถานะการแตก: progress + แกนโลกในพิกัด local ของ body (คำนวณตอนเริ่มแตก)
+  const burstActive = useRef(false);
+  const burstP = useRef(0);
+  const upLocal = useRef(new THREE.Vector3(0, 1, 0));
+  const gLocal = useRef(new THREE.Vector3(0, -9, 0));
+  const visualsRef = useRef<THREE.Group>(null);
 
   // โครงทอง 12 สัน + หัวมุมทอง/เม็ดพลอยม่วง 6 จุด (เฉพาะ d8 คริสตัล — ตามภาพอ้างอิง)
   const frame = useMemo(
@@ -172,7 +257,7 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     () =>
       frame
         ? new THREE.MeshStandardMaterial({
-            color: new THREE.Color("#e8c25a"),
+            color: new THREE.Color("#372609"),
             metalness: 1,
             roughness: 0.28,
             envMapIntensity: 1.6,
@@ -184,11 +269,11 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     () =>
       frame
         ? new THREE.MeshPhysicalMaterial({
-            color: new THREE.Color("#c084fc"),
+            color: new THREE.Color("rgb(255, 205, 24)"),
             roughness: 0.12,
             metalness: 0,
             clearcoat: 1,
-            emissive: new THREE.Color("#a855f7"),
+            emissive: new THREE.Color("#ffc800"),
             emissiveIntensity: 0.35,
           })
         : null,
@@ -256,6 +341,86 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
       }
       stars.mat.opacity = 0.72 + 0.22 * Math.sin(t.current * 2.6);
     }
+
+    // ── crystal: แตกออกเป็นสัญลักษณ์หน้าที่ทอยได้ ──
+    if (materialStyle === "crystal" && shards) {
+      // เริ่มแตก: ตอน reveal — คำนวณแกนโลกใน local space + สุ่มความเร็วเศษ
+      if (glow && !burstActive.current) {
+        burstActive.current = true;
+        burstP.current = 0;
+        const rb = bodyRef.current;
+        if (rb) {
+          const r = rb.rotation();
+          const qi = new THREE.Quaternion(r.x, r.y, r.z, r.w).invert();
+          upLocal.current.set(0, 1, 0).applyQuaternion(qi);
+          gLocal.current.set(0, -9, 0).applyQuaternion(qi);
+        }
+        shardRefs.current.forEach((m, i) => {
+          if (!m) return;
+          m.visible = true;
+          m.position.set(0, 0, 0);
+          m.rotation.set(
+            Math.random() * Math.PI,
+            Math.random() * Math.PI,
+            Math.random() * Math.PI,
+          );
+          // กระเด็นออกทุกทิศ + เหวี่ยงขึ้นตามแกนโลกเล็กน้อย
+          shardVel.current[i]
+            .randomDirection()
+            .multiplyScalar(1.1 + Math.random() * 0.9)
+            .addScaledVector(upLocal.current, 1.2 + Math.random() * 0.6);
+          shardAng.current[i].set(
+            (Math.random() - 0.5) * 10,
+            (Math.random() - 0.5) * 10,
+            (Math.random() - 0.5) * 10,
+          );
+        });
+        shards.mat.opacity = 0.85;
+      }
+      // ทอยใหม่/รีเซ็ต: คืนลูกเต๋า ซ่อนเศษ+สัญลักษณ์
+      if (!glow && burstActive.current) {
+        burstActive.current = false;
+        burstP.current = 0;
+        if (visualsRef.current) visualsRef.current.visible = true;
+        shardRefs.current.forEach((m) => m && (m.visible = false));
+        if (burstMat) burstMat.opacity = 0;
+        if (burstSpriteRef.current)
+          burstSpriteRef.current.scale.set(0.001, 0.001, 0.001);
+      }
+      if (burstActive.current) {
+        burstP.current = Math.min(burstP.current + dt, 1);
+        const p = burstP.current;
+        // ลูกหายไปหลังเศษเริ่มกระจาย (แวบแรกยังเห็นลูกให้ต่อเนื่อง)
+        if (visualsRef.current) visualsRef.current.visible = p < 0.08;
+        // เศษ: โปรเจกไทล์ใน local space (แรงโน้มถ่วงโลกแปลงแล้ว) + จางหาย
+        if (p < 1) {
+          shardRefs.current.forEach((m, i) => {
+            if (!m || !m.visible) return;
+            const v = shardVel.current[i];
+            v.addScaledVector(gLocal.current, dt);
+            m.position.addScaledVector(v, dt);
+            const av = shardAng.current[i];
+            m.rotation.x += av.x * dt;
+            m.rotation.y += av.y * dt;
+            m.rotation.z += av.z * dt;
+          });
+          shards.mat.opacity = 0.85 * (1 - p);
+        } else {
+          shardRefs.current.forEach((m) => m && (m.visible = false));
+        }
+        // สัญลักษณ์ทองลอย: pop เข้าแบบ ease-out แล้วลอย bob ตามแกนโลก
+        if (burstMat && burstSpriteRef.current) {
+          const k = Math.min(p * 1.8, 1);
+          const ease = 1 - Math.pow(1 - k, 3);
+          const s = 1.15 * ease;
+          burstSpriteRef.current.scale.set(s, s, s);
+          burstMat.opacity = ease;
+          burstSpriteRef.current.position
+            .copy(upLocal.current)
+            .multiplyScalar(0.52 + 0.06 * Math.sin(t.current * 1.6));
+        }
+      }
+    }
   });
 
   useEffect(() => {
@@ -269,13 +434,18 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
       }
       goldMat?.dispose();
       gemMat?.dispose();
+      if (shards) {
+        shards.mat.dispose();
+        shards.geos.forEach((g) => g.dispose());
+      }
+      burstMat?.dispose();
       dieGeometry.dispose();
     };
-  }, [materials, auraMat, galaxies, stars, goldMat, gemMat, dieGeometry]);
+  }, [materials, auraMat, galaxies, stars, goldMat, gemMat, shards, burstMat, dieGeometry]);
 
   return (
     <RigidBody
-      ref={ref}
+      ref={setBodyRef}
       colliders={shape.collider}
       ccd
       position={position}
@@ -285,6 +455,7 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
       angularDamping={0.45}
       onCollisionEnter={onCollide}
     >
+      <group ref={visualsRef}>
       <mesh
         castShadow
         receiveShadow
@@ -334,6 +505,28 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
       ))}
       {stars && (
         <points geometry={stars.geo} material={stars.mat} ref={starsRef} renderOrder={4} />
+      )}
+      </group>
+      {/* เศษคริสตัลตอนแตก (เริ่มซ่อน — โผล่เมื่อ reveal) */}
+      {shards?.geos.map((geo, i) => (
+        <mesh
+          key={`shard-${i}`}
+          ref={(el) => {
+            shardRefs.current[i] = el;
+          }}
+          geometry={geo}
+          material={shards.mat}
+          visible={false}
+        />
+      ))}
+      {/* สัญลักษณ์ทองเรืองแสงของหน้าที่ทอยได้ — ลอยแทนลูกที่แตก */}
+      {burstMat && (
+        <sprite
+          ref={burstSpriteRef}
+          material={burstMat}
+          scale={[0.001, 0.001, 0.001]}
+          renderOrder={8}
+        />
       )}
       {/* ออร่า reveal — เฉพาะ obsidian (crystal ไม่เรืองแสงตอนทอยเสร็จ) */}
       {materialStyle !== "crystal" && (

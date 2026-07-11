@@ -47,6 +47,8 @@ interface RuneDiceBoardProps {
   set: DiceSetDef;
   /** symbolId[3][faceCount] */
   assignment: string[][];
+  /** ผลหลัง settle — ใช้บอกลูกเต๋าคริสตัลว่าแตกแล้วโชว์สัญลักษณ์ไหน */
+  results: DieResult[];
   /** ตัวคูณความแรงของการทอย (อ่านตอนทอยจริง) */
   power: number;
   onSettling: () => void;
@@ -217,6 +219,7 @@ export default function RuneDiceBoard({
   phase,
   set,
   assignment,
+  results,
   power,
   onSettling,
   onSettled,
@@ -323,19 +326,26 @@ export default function RuneDiceBoard({
         <Physics gravity={[0, -18, 0]}>
           <Table />
           <Bounds />
-          {assignment.map((faceIds, i) => (
-            <RuneDie
-              key={`${set.id}-${i}`}
-              ref={dieRefs[i]}
-              faces={faceIds.map((id) => symbolById(set, id))}
-              shape={shape}
-              setId={set.id}
-              materialStyle={set.material}
-              position={REST_SPOTS[i]}
-              onCollide={handleCollide}
-              glow={phase === "revealed"}
-            />
-          ))}
+          {assignment.map((faceIds, i) => {
+            const res =
+              phase === "revealed"
+                ? results.find((r) => r.die === i)
+                : undefined;
+            return (
+              <RuneDie
+                key={`${set.id}-${i}`}
+                ref={dieRefs[i]}
+                faces={faceIds.map((id) => symbolById(set, id))}
+                shape={shape}
+                setId={set.id}
+                materialStyle={set.material}
+                position={REST_SPOTS[i]}
+                onCollide={handleCollide}
+                glow={phase === "revealed"}
+                revealSymbol={res ? symbolById(set, res.symbolId) : undefined}
+              />
+            );
+          })}
           <DiceController
             rollId={rollId}
             phase={phase}
