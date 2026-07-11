@@ -330,6 +330,7 @@ export default function RuneDiceBoard({
               faces={faceIds.map((id) => symbolById(set, id))}
               shape={shape}
               setId={set.id}
+              materialStyle={set.material}
               position={REST_SPOTS[i]}
               onCollide={handleCollide}
               glow={phase === "revealed"}

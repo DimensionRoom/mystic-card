@@ -6,7 +6,7 @@ import {
   type CollisionEnterPayload,
   type RapierRigidBody,
 } from "@react-three/rapier";
-import type { DiceSymbol } from "../../data/diceSets";
+import type { DiceMaterialStyle, DiceSymbol } from "../../data/diceSets";
 import type { DiceShape } from "./diceShapes";
 import { auraTexture, ensureRuneFont, faceTexture } from "./runeTextures";
 import { DIE_SIZE } from "./dicePhysics";
@@ -18,6 +18,8 @@ interface RuneDieProps {
   shape: DiceShape;
   /** id ชุดลูกเต๋า — ใช้เป็นส่วนของ cache key ให้ texture ไม่ชนกันข้ามชุด */
   setId: string;
+  /** สไตล์วัสดุ: obsidian ดำทอง / crystal ใสหักเหแสง */
+  materialStyle: DiceMaterialStyle;
   position: [number, number, number];
   onCollide?: (payload: CollisionEnterPayload) => void;
   /** เรืองแสงหลังทอยเสร็จ (phase === "revealed") */
@@ -25,24 +27,38 @@ interface RuneDieProps {
 }
 
 const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
-  { faces, shape, setId, position, onCollide, glow = false },
+  { faces, shape, setId, materialStyle, position, onCollide, glow = false },
   ref,
 ) {
-  // วัสดุเมทัลลิก: ทองอบใน map, ตัวลูกดำมัน — สะท้อนแสงจาก Environment ในซีน
+  // obsidian: เมทัลลิกทองอบใน map ตัวลูกดำมัน / crystal: แก้วใส transmission
+  // หักเหฉากหลังจริง เนื้อออกม่วงอ่อนตาม attenuation
   const materials = useMemo(
     () =>
-      Array.from(
-        { length: shape.faceCount },
-        () =>
-          new THREE.MeshStandardMaterial({
-            roughness: 0.3,
-            metalness: 0.9,
-            envMapIntensity: 1.7,
-            emissive: new THREE.Color("#ffffff"),
-            emissiveIntensity: 0,
-          }),
+      Array.from({ length: shape.faceCount }, () =>
+        materialStyle === "crystal"
+          ? new THREE.MeshPhysicalMaterial({
+              roughness: 0.12,
+              metalness: 0,
+              transmission: 1,
+              thickness: 0.55,
+              ior: 1.45,
+              clearcoat: 1,
+              clearcoatRoughness: 0.06,
+              envMapIntensity: 1.2,
+              attenuationColor: new THREE.Color("#a98ef5"),
+              attenuationDistance: 0.9,
+              emissive: new THREE.Color("#ffffff"),
+              emissiveIntensity: 0,
+            })
+          : new THREE.MeshStandardMaterial({
+              roughness: 0.3,
+              metalness: 0.9,
+              envMapIntensity: 1.7,
+              emissive: new THREE.Color("#ffffff"),
+              emissiveIntensity: 0,
+            }),
       ),
-    [shape.faceCount],
+    [shape.faceCount, materialStyle],
   );
 
   // เรขาคณิตตามทรง — ทั้งสองทรงคงกลุ่มวัสดุรายหน้า + UV รายหน้า
@@ -56,13 +72,15 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
       if (cancelled) return;
       faces.forEach((sym, i) => {
         if (i >= materials.length) return;
+        const style = materialStyle === "crystal" ? "crystal" : "gold";
         const tex = faceTexture(
           sym.glyph,
-          `${setId}:${sym.id}:${shape.frame}`,
+          `${setId}:${sym.id}:${shape.frame}:${style}`,
           shape.frame,
+          style,
         );
         materials[i].map = tex;
-        // emissiveMap = texture เดียวกัน → เฉพาะทองเปล่งแสง แผงดำเรือง ≈ 0
+        // emissiveMap = texture เดียวกัน → ส่วนสว่างของหน้าเปล่งแสงตอน reveal
         materials[i].emissiveMap = tex;
         materials[i].needsUpdate = true;
       });
@@ -70,7 +88,7 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     return () => {
       cancelled = true;
     };
-  }, [faces, materials, setId, shape.frame]);
+  }, [faces, materials, setId, shape.frame, materialStyle]);
 
   // วัสดุ sprite ออร่า (ทองเรือง โปร่งขอบ) — เริ่มโปร่งใส
   const auraMat = useMemo(
@@ -97,8 +115,9 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     gRef.current += ((glow ? 1 : 0) - gRef.current) * Math.min(dt * 4, 1);
     const g = gRef.current;
     const pulse = 0.5 + 0.5 * Math.sin(t.current * 3);
-    // ผิวทองเปล่งแสง
-    const em = g * (0.3 + 0.5 * pulse);
+    // ผิวเปล่งแสง — crystal ลดแรงลง ไม่ให้ขาววาบจน glyph จม
+    const em =
+      g * (0.3 + 0.5 * pulse) * (materialStyle === "crystal" ? 0.28 : 1);
     for (const m of materials) m.emissiveIntensity = em;
     // halo sprite
     auraMat.opacity = g * (0.5 + 0.35 * pulse);
