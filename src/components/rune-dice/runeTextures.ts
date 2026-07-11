@@ -81,22 +81,40 @@ function cornerOrnament(
   ctx.restore();
 }
 
-// cache ต่อ runeId — 24 ใบ, ไม่ dispose ระหว่างทอย
+// cache ต่อ cacheKey (`${set}:${symbol}:${frame}`) — ไม่ dispose ระหว่างทอย
 const cache = new Map<string, THREE.CanvasTexture>();
 
+// ฟอนต์วาด glyph: รูนใช้ Noto Sans Runic (โหลดเอง) ส่วนราศี/ดาวเคราะห์
+// พึ่ง system symbol fonts (VS-15 ในสตริงบังคับ text presentation แล้ว)
+const GLYPH_FONT = '"Noto Sans Runic", "Apple Symbols", "Segoe UI Symbol", sans-serif';
+
 /**
- * วาดหน้าลูกเต๋าแบบ obsidian ดำ + กรอบทองแกะสลัก + รูนทองนูน (canvas 256×256)
- * ทุกลูกเป็นทองเหมือนกัน (ตามภาพอ้างอิง) — ทองอบไว้ใน texture ให้ดูเมทัลลิก
+ * วาดหน้าลูกเต๋าแบบ obsidian ดำ + กรอบทองแกะสลัก + glyph ทองนูน (canvas 256×256)
+ * frame "square" = หน้าลูกบาศก์ d6, "triangle" = หน้า octahedron d8
+ * (พิกัดสามเหลี่ยมต้องตรงกับ TRI_UV ใน diceShapes.ts)
  */
-export function runeFaceTexture(glyph: string, runeId: string): THREE.CanvasTexture {
-  const hit = cache.get(runeId);
+export function faceTexture(
+  glyph: string,
+  cacheKey: string,
+  frame: "square" | "triangle" = "square",
+): THREE.CanvasTexture {
+  const hit = cache.get(cacheKey);
   if (hit) return hit;
 
+  const c2 = document.createElement("canvas");
+  c2.width = c2.height = 256;
+  const tex =
+    frame === "triangle"
+      ? drawTriangleFace(c2, glyph)
+      : drawSquareFace(c2, glyph);
+  cache.set(cacheKey, tex);
+  return tex;
+}
+
+function drawSquareFace(c: HTMLCanvasElement, glyph: string): THREE.CanvasTexture {
   const size = 256;
   const cx = size / 2;
   const cy = size / 2 + 4;
-  const c = document.createElement("canvas");
-  c.width = c.height = size;
   const ctx = c.getContext("2d")!;
 
   // 1) พื้นทองเต็มสี่เหลี่ยม (ถึงมุมทุกมุม) — ขอบลูกบาศก์จึงเป็นทองเต็ม ไม่มีช่องดำ
@@ -136,31 +154,119 @@ export function runeFaceTexture(glyph: string, runeId: string): THREE.CanvasText
   cornerOrnament(ctx, size - m, size - m, Math.PI, gold);
   cornerOrnament(ctx, m, size - m, -Math.PI / 2, gold);
 
-  // 5) รูนทองนูน (engraved): เงายุบ → ทอง gradient แนวตั้ง → ขอบเข้ม
-  ctx.font = '150px "Noto Sans Runic"';
+  // 5) glyph ทองนูน (engraved): เงายุบ → ทอง gradient แนวตั้ง → ขอบเข้ม
+  engraveGlyph(ctx, glyph, cx, cy, 150);
+
+  return toTexture(c);
+}
+
+/** วาด glyph สไตล์แกะสลักทอง (เงายุบ + gradient + ขอบคม) ใช้ร่วมทุกทรง */
+function engraveGlyph(
+  ctx: CanvasRenderingContext2D,
+  glyph: string,
+  cx: number,
+  cy: number,
+  px: number,
+): void {
+  ctx.font = `${px}px ${GLYPH_FONT}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   // เงายุบลง (ล่าง-ขวา)
   ctx.fillStyle = "rgba(0,0,0,0.6)";
   ctx.fillText(glyph, cx + 2.5, cy + 3);
   // ทอง gradient แนวตั้ง (สว่างบน → เข้มล่าง ให้ดูนูน)
-  const gtext = ctx.createLinearGradient(0, cy - 70, 0, cy + 70);
-  gtext.addColorStop(0, "#fff6cf");
-  gtext.addColorStop(0.45, "#eac35a");
-  gtext.addColorStop(0.6, "#c8931f");
-  gtext.addColorStop(1, "#e6bb52");
-  ctx.fillStyle = gtext;
+  const g = ctx.createLinearGradient(0, cy - px * 0.47, 0, cy + px * 0.47);
+  g.addColorStop(0, "#fff6cf");
+  g.addColorStop(0.45, "#eac35a");
+  g.addColorStop(0.6, "#c8931f");
+  g.addColorStop(1, "#e6bb52");
+  ctx.fillStyle = g;
   ctx.fillText(glyph, cx, cy);
   // ขอบเข้มให้คมเหมือนแกะร่อง
   ctx.lineWidth = 1.6;
   ctx.strokeStyle = "rgba(90,60,10,0.85)";
   ctx.strokeText(glyph, cx, cy);
+}
 
+function toTexture(c: HTMLCanvasElement): THREE.CanvasTexture {
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
-  cache.set(runeId, tex);
   return tex;
+}
+
+/**
+ * หน้าสามเหลี่ยม (d8): พื้นทองเต็มผืน + แผงดำสามเหลี่ยมเว้ากรอบ + glyph ที่ centroid
+ * พิกัดสามเหลี่ยม (apex บน) ตรงกับ TRI_UV ใน diceShapes.ts:
+ * apex(128,15) left(18,220) right(238,220) บน canvas 256 (แกน y กลับจาก UV)
+ */
+function drawTriangleFace(c: HTMLCanvasElement, glyph: string): THREE.CanvasTexture {
+  const size = 256;
+  const ctx = c.getContext("2d")!;
+
+  // จุดยอดสามเหลี่ยมตาม UV (v → y = (1-v)*size)
+  const A = { x: 0.5 * size, y: (1 - 0.94) * size }; // apex
+  const L = { x: 0.07 * size, y: (1 - 0.14) * size };
+  const R = { x: 0.93 * size, y: (1 - 0.14) * size };
+
+  // 1) พื้นทองเต็มผืน — ขอบ/สันของ octahedron จึงเป็นทองเสมอ
+  ctx.fillStyle = goldGradient(ctx, 0, 0, size, size);
+  ctx.fillRect(0, 0, size, size);
+
+  // 2) แผงดำสามเหลี่ยมหดเข้าจากขอบ (คงกรอบทองหนาไว้)
+  const cx = (A.x + L.x + R.x) / 3;
+  const cy = (A.y + L.y + R.y) / 3;
+  const shrink = (p: { x: number; y: number }, k: number) => ({
+    x: cx + (p.x - cx) * k,
+    y: cy + (p.y - cy) * k,
+  });
+  const a1 = shrink(A, 0.8);
+  const l1 = shrink(L, 0.8);
+  const r1 = shrink(R, 0.8);
+  const panel = ctx.createLinearGradient(0, a1.y, 0, l1.y);
+  panel.addColorStop(0, "#211d18");
+  panel.addColorStop(1, "#0a0908");
+  ctx.fillStyle = panel;
+  ctx.beginPath();
+  ctx.moveTo(a1.x, a1.y);
+  ctx.lineTo(l1.x, l1.y);
+  ctx.lineTo(r1.x, r1.y);
+  ctx.closePath();
+  ctx.fill();
+  // เงาในกรอบ (แผงดูยุบลง)
+  ctx.strokeStyle = "rgba(0,0,0,0.55)";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // 3) เส้นทองบางด้านในแผง
+  const a2 = shrink(A, 0.66);
+  const l2 = shrink(L, 0.66);
+  const r2 = shrink(R, 0.66);
+  ctx.strokeStyle = goldGradient(ctx, l2.x, a2.y, r2.x, l2.y);
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(a2.x, a2.y);
+  ctx.lineTo(l2.x, l2.y);
+  ctx.lineTo(r2.x, r2.y);
+  ctx.closePath();
+  ctx.stroke();
+
+  // เพชรเล็กที่มุมทั้งสาม (ลวดลายแบบเดียวกับมุมกรอบ d6)
+  ctx.fillStyle = goldGradient(ctx, 0, 0, size, size);
+  for (const p of [shrink(A, 0.52), shrink(L, 0.52), shrink(R, 0.52)]) {
+    ctx.beginPath();
+    ctx.moveTo(p.x + 7, p.y);
+    ctx.lineTo(p.x, p.y - 7);
+    ctx.lineTo(p.x - 7, p.y);
+    ctx.lineTo(p.x, p.y + 7);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // 4) glyph ที่ centroid (เล็กกว่า d6 เพราะพื้นที่สามเหลี่ยมแคบกว่า)
+  engraveGlyph(ctx, glyph, cx, cy + 14, 96);
+
+  return toTexture(c);
 }
 
 // ออร่ารอบลูกเต๋า — radial gradient ทองนุ่ม โปร่งขอบ (ใช้กับ sprite)

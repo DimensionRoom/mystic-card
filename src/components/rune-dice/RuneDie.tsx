@@ -1,19 +1,23 @@
 import { forwardRef, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { RoundedBoxGeometry } from "three-stdlib";
 import { useFrame } from "@react-three/fiber";
 import {
   RigidBody,
   type CollisionEnterPayload,
   type RapierRigidBody,
 } from "@react-three/rapier";
-import { runeById, type RuneId } from "../../data/runes";
-import { auraTexture, ensureRuneFont, runeFaceTexture } from "./runeTextures";
+import type { DiceSymbol } from "../../data/diceSets";
+import type { DiceShape } from "./diceShapes";
+import { auraTexture, ensureRuneFont, faceTexture } from "./runeTextures";
 import { DIE_SIZE } from "./dicePhysics";
 
 interface RuneDieProps {
-  /** 6 รูนที่แจกให้หน้าลูกเต๋าลูกนี้ (index 0-5 ตรงกับ +X,-X,+Y,-Y,+Z,-Z) */
-  faces: RuneId[];
+  /** สัญลักษณ์ที่แจกให้หน้าลูกเต๋าลูกนี้ (ยาว = shape.faceCount, index ตรง material group) */
+  faces: DiceSymbol[];
+  /** ทรงลูกเต๋า (d6 ลูกบาศก์ / d8 octahedron) จาก diceShapes */
+  shape: DiceShape;
+  /** id ชุดลูกเต๋า — ใช้เป็นส่วนของ cache key ให้ texture ไม่ชนกันข้ามชุด */
+  setId: string;
   position: [number, number, number];
   onCollide?: (payload: CollisionEnterPayload) => void;
   /** เรืองแสงหลังทอยเสร็จ (phase === "revealed") */
@@ -21,14 +25,14 @@ interface RuneDieProps {
 }
 
 const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
-  { faces, position, onCollide, glow = false },
+  { faces, shape, setId, position, onCollide, glow = false },
   ref,
 ) {
   // วัสดุเมทัลลิก: ทองอบใน map, ตัวลูกดำมัน — สะท้อนแสงจาก Environment ในซีน
   const materials = useMemo(
     () =>
       Array.from(
-        { length: 6 },
+        { length: shape.faceCount },
         () =>
           new THREE.MeshStandardMaterial({
             roughness: 0.3,
@@ -38,18 +42,25 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
             emissiveIntensity: 0,
           }),
       ),
-    [],
+    [shape.faceCount],
   );
 
-  // เปลี่ยน texture ทุกครั้งที่หน้าไพ่ถูกแจกใหม่ (ก่อนยิง impulse รอบถัดไป)
+  // เรขาคณิตตามทรง — ทั้งสองทรงคงกลุ่มวัสดุรายหน้า + UV รายหน้า
+  const dieGeometry = useMemo(() => shape.makeGeometry(DIE_SIZE), [shape]);
+
+  // เปลี่ยน texture ทุกครั้งที่หน้าถูกแจกใหม่ (ก่อนยิง impulse รอบถัดไป)
   // วาดหลังฟอนต์พร้อมเสมอ กัน cache เก็บ glyph ที่เป็นกล่องเปล่า (tofu)
   useEffect(() => {
     let cancelled = false;
     void ensureRuneFont().then(() => {
       if (cancelled) return;
-      faces.forEach((id, i) => {
-        const rune = runeById(id);
-        const tex = runeFaceTexture(rune.glyph, rune.id);
+      faces.forEach((sym, i) => {
+        if (i >= materials.length) return;
+        const tex = faceTexture(
+          sym.glyph,
+          `${setId}:${sym.id}:${shape.frame}`,
+          shape.frame,
+        );
         materials[i].map = tex;
         // emissiveMap = texture เดียวกัน → เฉพาะทองเปล่งแสง แผงดำเรือง ≈ 0
         materials[i].emissiveMap = tex;
@@ -59,14 +70,7 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     return () => {
       cancelled = true;
     };
-  }, [faces, materials]);
-
-  // เรขาคณิตลูกเต๋าขอบมน — extends BoxGeometry จึงคงกลุ่มวัสดุ 6 หน้า + UV รายหน้า
-  // (รูนยังแมปครบทุกด้าน ต่างจาก RoundedBox ของ drei ที่มีแค่ 2 กลุ่ม)
-  const dieGeometry = useMemo(
-    () => new RoundedBoxGeometry(DIE_SIZE, DIE_SIZE, DIE_SIZE, 4, 0.12),
-    [],
-  );
+  }, [faces, materials, setId, shape.frame]);
 
   // วัสดุ sprite ออร่า (ทองเรือง โปร่งขอบ) — เริ่มโปร่งใส
   const auraMat = useMemo(
@@ -117,7 +121,7 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
   return (
     <RigidBody
       ref={ref}
-      colliders="cuboid"
+      colliders={shape.collider}
       ccd
       position={position}
       restitution={0.3}
