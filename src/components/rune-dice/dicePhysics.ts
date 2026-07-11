@@ -20,7 +20,7 @@ export const SETTLE_TIMEOUT_MS = 6000;
 
 // ช่วงความแรงของการทอยที่ผู้ใช้ปรับได้ (คูณกับ impulse/torque/ความสูงจุดปล่อย)
 export const STRENGTH_MIN = 0.6;
-export const STRENGTH_MAX = 1.5;
+export const STRENGTH_MAX = 3;
 export const STRENGTH_DEFAULT = 1;
 
 // ตำแหน่งวางนิ่งบนโต๊ะ (สถานะเริ่มต้น ก่อนทอยครั้งแรก)
@@ -45,8 +45,9 @@ export function throwDie(
 ): void {
   const x = spawn[0] + rand(-SPAWN_JITTER, SPAWN_JITTER);
   const z = spawn[2] + rand(-SPAWN_JITTER, SPAWN_JITTER);
-  // ทอยแรง = ปล่อยสูงขึ้นเล็กน้อย ให้ตกกระแทกดูรุนแรงกว่า
-  const y = spawn[1] + (strength - 1) * 1.2;
+  // ทอยแรง = ปล่อยสูงขึ้น ให้ตกกระแทกดูรุนแรงกว่า
+  // จำกัดไม่ให้ทะลุเพดาน (collider เพดานอยู่ y≈7.0, ลูกเต๋าครึ่งขนาด 0.45)
+  const y = Math.min(spawn[1] + (strength - 1) * 0.8, 6.3);
   rb.setTranslation({ x, y, z }, true);
 
   const q = new THREE.Quaternion().setFromEuler(
