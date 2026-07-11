@@ -20,7 +20,7 @@ export const SETTLE_TIMEOUT_MS = 6000;
 
 // ช่วงความแรงของการทอยที่ผู้ใช้ปรับได้ (คูณกับ impulse/torque/ความสูงจุดปล่อย)
 export const STRENGTH_MIN = 0.6;
-export const STRENGTH_MAX = 3;
+export const STRENGTH_MAX = 10;
 export const STRENGTH_DEFAULT = 1;
 
 // ตำแหน่งวางนิ่งบนโต๊ะ (สถานะเริ่มต้น ก่อนทอยครั้งแรก)
