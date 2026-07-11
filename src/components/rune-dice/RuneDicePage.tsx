@@ -116,8 +116,8 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
               onSettled={onSettled}
             />
 
-            {/* ตัวปรับความแรงของการทอย — ลอยมุมบนซ้ายของบอร์ด */}
-            <div className="pointer-events-auto absolute left-3 top-3 z-20 flex w-[190px] flex-col gap-1.5 rounded-2xl border border-white/10 bg-black/35 px-3.5 py-2.5 backdrop-blur-md sm:left-4 sm:top-4">
+            {/* ตัวปรับความแรง — บนจอเล็กย้ายไปไว้ใต้บอร์ด (ไม่บังกระดาน) */}
+            <div className="pointer-events-auto absolute left-4 top-4 z-20 hidden w-[190px] flex-col gap-1.5 rounded-2xl border border-white/10 bg-black/35 px-3.5 py-2.5 backdrop-blur-md sm:flex">
               <div className="flex items-center justify-between text-[11px] font-semibold text-amber-100/90">
                 <span>🎲 {t.runeDice.powerLabel}</span>
                 <span className="tabular-nums text-amber-200">
@@ -155,6 +155,27 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
               )}
             </AnimatePresence>
           </motion.div>
+
+          {/* ตัวปรับความแรงสำหรับจอเล็ก — อยู่ใต้บอร์ด ไม่บังกระดาน */}
+          <div className="flex items-center gap-3 rounded-2xl border border-mystic-border-purple bg-white px-4 py-3 sm:hidden">
+            <span className="whitespace-nowrap text-sm font-semibold text-mystic-purple">
+              🎲 {t.runeDice.powerLabel}
+            </span>
+            <input
+              type="range"
+              min={STRENGTH_MIN}
+              max={STRENGTH_MAX}
+              step={0.1}
+              value={power}
+              onChange={(e) => setPower(Number(e.target.value))}
+              disabled={rolling}
+              aria-label={t.runeDice.powerLabel}
+              className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-mystic-lavender accent-mystic-purple disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            <span className="w-10 text-right text-sm font-bold tabular-nums text-mystic-purple">
+              {power.toFixed(1)}×
+            </span>
+          </div>
 
           <div className="flex flex-col items-center gap-3">
             <div className="flex w-full flex-col gap-2.5 sm:flex-row sm:justify-center">
