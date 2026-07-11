@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { RoundedBoxGeometry } from "three-stdlib";
 import { useFrame } from "@react-three/fiber";
 import {
   RigidBody,
@@ -60,6 +61,13 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     };
   }, [faces, materials]);
 
+  // เรขาคณิตลูกเต๋าขอบมน — extends BoxGeometry จึงคงกลุ่มวัสดุ 6 หน้า + UV รายหน้า
+  // (รูนยังแมปครบทุกด้าน ต่างจาก RoundedBox ของ drei ที่มีแค่ 2 กลุ่ม)
+  const dieGeometry = useMemo(
+    () => new RoundedBoxGeometry(DIE_SIZE, DIE_SIZE, DIE_SIZE, 4, 0.12),
+    [],
+  );
+
   // วัสดุ sprite ออร่า (ทองเรือง โปร่งขอบ) — เริ่มโปร่งใส
   const auraMat = useMemo(
     () =>
@@ -102,8 +110,9 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
     return () => {
       materials.forEach((m) => m.dispose());
       auraMat.dispose();
+      dieGeometry.dispose();
     };
-  }, [materials, auraMat]);
+  }, [materials, auraMat, dieGeometry]);
 
   return (
     <RigidBody
@@ -117,9 +126,12 @@ const RuneDie = forwardRef<RapierRigidBody, RuneDieProps>(function RuneDie(
       angularDamping={0.45}
       onCollisionEnter={onCollide}
     >
-      <mesh castShadow receiveShadow material={materials}>
-        <boxGeometry args={[DIE_SIZE, DIE_SIZE, DIE_SIZE]} />
-      </mesh>
+      <mesh
+        castShadow
+        receiveShadow
+        geometry={dieGeometry}
+        material={materials}
+      />
       {/* ออร่ารอบลูกเต๋า — sprite billboard หันเข้ากล้องเสมอ */}
       <sprite ref={spriteRef} material={auraMat} scale={[1.9, 1.9, 1.9]} />
       {/* แสงออร่าเปล่งลงโต๊ะ (ไม่ทำเงา) */}
