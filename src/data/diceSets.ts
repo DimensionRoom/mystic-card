@@ -73,7 +73,7 @@ export const CELESTIALS: readonly (DiceSymbol & { id: CelestialId })[] = [
 ];
 
 // ─── ทะเบียนชุดลูกเต๋า ───
-export type DiceSetId = "runes-d6" | "runes-d8" | "celestial-d8";
+export type DiceSetId = "runes-d6" | "celestial-d8";
 
 /** สไตล์วัสดุลูกเต๋า: obsidian = ดำทอง (เดิม), crystal = คริสตัลใสหักเหแสง */
 export type DiceMaterialStyle = "obsidian" | "crystal";
@@ -91,13 +91,6 @@ export const DICE_SETS: readonly DiceSetDef[] = [
   {
     id: "runes-d6",
     shapeId: "d6",
-    copyGroup: "runes",
-    material: "obsidian",
-    symbols: RUNES,
-  },
-  {
-    id: "runes-d8",
-    shapeId: "d8",
     copyGroup: "runes",
     material: "obsidian",
     symbols: RUNES,

@@ -42,12 +42,10 @@ export default function RuneDicePage({ onNavigate }: RuneDicePageProps) {
 
   const setLabel: Record<DiceSetId, string> = {
     "runes-d6": t.runeDice.setRunesD6,
-    "runes-d8": t.runeDice.setRunesD8,
     "celestial-d8": t.runeDice.setCelestial,
   };
   const setIcon: Record<DiceSetId, string> = {
     "runes-d6": "🎲",
-    "runes-d8": "🔷",
     "celestial-d8": "🌙",
   };
 
